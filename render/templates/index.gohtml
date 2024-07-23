@@ -1,0 +1,73 @@
+<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css" href="static/css/style.css" />
+    <script
+      src="https://unpkg.com/htmx.org@1.9.12"
+      integrity="sha384-ujb1lZYygJmzgSwoxRggbCHcjc0rB2XoQrxeTUQyRjrOnlCoYta87iKBWq3EsdM2"
+      crossorigin="anonymous"
+    ></script>
+    <script src="https://unpkg.com/hyperscript.org@0.9.12"></script>
+  </head>
+  <body>
+    <div class="container">
+      <div class="nav-div">
+        <a
+          hx-post="/"
+          hx-trigger="click"
+          hx-target=".page-div"
+          hx-swap="outerHTML"
+          hx-push-url="true"
+        >
+          Home
+        </a>
+        <a
+          data-hx-post="/shooting"
+          hx-trigger="click"
+          hx-target=".page-div"
+          hx-swap="outerHTML"
+          hx-push-url="true"
+        >
+          Shooting
+        </a>
+        <a
+          data-hx-post="/shotguns"
+          hx-trigger="click"
+          hx-target=".page-div"
+          hx-swap="outerHTML"
+          hx-push-url="true"
+        >
+          Shotguns
+        </a>
+        <a
+          data-hx-post="/hand-to-hand"
+          hx-trigger="click"
+          hx-target=".page-div"
+          hx-swap="outerHTML"
+          hx-push-url="true"
+        >
+          Hand To Hand
+      </a>
+      <a
+        data-hx-post="/equipment"
+        hx-trigger="click"
+        hx-target=".page-div"
+        hx-swap="outerHTML"
+        hx-push-url="true"
+      >
+        Equipment
+      </a>
+      <a
+        data-hx-post="/character"
+        hx-trigger="click"
+        hx-target=".page-div"
+        hx-swap="outerHTML"
+        hx-push-url="true"
+      >
+        Character
+      </a>
+      </div>
+      {{ template "home" . }}
+    </div>
+  </body>
+</html>
