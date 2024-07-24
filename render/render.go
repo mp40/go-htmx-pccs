@@ -8,7 +8,7 @@ import (
 )
 
 func RenderHomePage(w io.Writer) error {
-	tmpl, err := template.ParseFiles(getTemplatePath("index.gohtml"), getTemplatePath("home.gohtml"))
+	tmpl, err := template.ParseFiles(getTemplatePath("index.html"), getTemplatePath("home.html"))
 
 	if err != nil {
 		return err
@@ -23,7 +23,7 @@ func RenderHomePage(w io.Writer) error {
 }
 
 func RenderHomeFragment(w io.Writer) error {
-	tmpl, err := template.New("page").ParseFiles(getTemplatePath("home.gohtml"))
+	tmpl, err := template.New("page").ParseFiles(getTemplatePath("home.html"))
 
 	if err != nil {
 		return err
@@ -38,7 +38,7 @@ func RenderHomeFragment(w io.Writer) error {
 }
 
 func RenderShootingPage(w io.Writer) error {
-	tmpl, err := template.ParseFiles(getTemplatePath("index.gohtml"), getTemplatePath("shooting.gohtml"))
+	tmpl, err := template.ParseFiles(getTemplatePath("index.html"), getTemplatePath("shooting.html"))
 
 	if err != nil {
 		return err
@@ -53,7 +53,7 @@ func RenderShootingPage(w io.Writer) error {
 }
 
 func RenderShootingFragment(w io.Writer) error {
-	tmpl, err := template.New("page").ParseFiles(getTemplatePath("shooting.gohtml"))
+	tmpl, err := template.New("page").ParseFiles(getTemplatePath("shooting.html"))
 
 	if err != nil {
 		return err
