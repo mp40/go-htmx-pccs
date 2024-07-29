@@ -2,17 +2,14 @@
 <html>
   <head>
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
-    <link rel="stylesheet" type="text/css" href="static/css/style.css" />
-    <script
-      src="https://unpkg.com/htmx.org@1.9.12"
-      integrity="sha384-ujb1lZYygJmzgSwoxRggbCHcjc0rB2XoQrxeTUQyRjrOnlCoYta87iKBWq3EsdM2"
-      crossorigin="anonymous"
-    ></script>
+    <link rel="stylesheet" type="text/css" href="/static/css/style.css" />
+    <script src="https://unpkg.com/htmx.org@2.0.1" integrity="sha384-QWGpdj554B4ETpJJC9z+ZHJcA/i59TyjxEPXiiUgN2WmTyV5OEZWCD6gQhgkdpB/" crossorigin="anonymous"></script>
     <script src="https://unpkg.com/hyperscript.org@0.9.12"></script>
   </head>
   <body>
+    <div class="top-strap"></div>
     <div class="container">
-      <div class="nav-div">
+      <div class="nav-container nav-div">
         <a
           hx-post="/"
           hx-trigger="click"
@@ -23,50 +20,52 @@
           Home
         </a>
         <a
-          data-hx-post="/shooting"
+          hx-post="/characters"
           hx-trigger="click"
           hx-target=".page-div"
           hx-swap="outerHTML"
           hx-push-url="true"
         >
-          Shooting
+          Characters
         </a>
         <a
-          data-hx-post="/shotguns"
+          hx-post="/tools"
           hx-trigger="click"
           hx-target=".page-div"
           hx-swap="outerHTML"
           hx-push-url="true"
         >
-          Shotguns
+          Tools
         </a>
-        <a
-          data-hx-post="/hand-to-hand"
-          hx-trigger="click"
-          hx-target=".page-div"
-          hx-swap="outerHTML"
-          hx-push-url="true"
-        >
-          Hand To Hand
-      </a>
-      <a
-        data-hx-post="/equipment"
-        hx-trigger="click"
-        hx-target=".page-div"
-        hx-swap="outerHTML"
-        hx-push-url="true"
-      >
-        Equipment
-      </a>
-      <a
-        data-hx-post="/character"
-        hx-trigger="click"
-        hx-target=".page-div"
-        hx-swap="outerHTML"
-        hx-push-url="true"
-      >
-        Character
-      </a>
+        <div class="nav-div">
+          <a
+            data-hx-post="/tools/shooting"
+            hx-trigger="click"
+            hx-target=".page-div"
+            hx-swap="outerHTML"
+            hx-push-url="true"
+          >
+            Shooting
+          </a>
+          <a
+            data-hx-post="/tools/shotguns"
+            hx-trigger="click"
+            hx-target=".page-div"
+            hx-swap="outerHTML"
+            hx-push-url="true"
+          >
+            Shotguns
+          </a>
+          <a
+            data-hx-post="/tools/hand-to-hand"
+            hx-trigger="click"
+            hx-target=".page-div"
+            hx-swap="outerHTML"
+            hx-push-url="true"
+          >
+            Hand To Hand
+          </a>
+        </div>
       </div>
       {{ template "page" . }}
     </div>

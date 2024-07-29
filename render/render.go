@@ -37,8 +37,8 @@ func RenderHomeFragment(w io.Writer) error {
 	return nil
 }
 
-func RenderShootingPage(w io.Writer) error {
-	tmpl, err := template.ParseFiles(getTemplatePath("index.html"), getTemplatePath("shooting.html"))
+func RenderCharactersPage(w io.Writer) error {
+	tmpl, err := template.ParseFiles(getTemplatePath("index.html"), getTemplatePath("characters.html"))
 
 	if err != nil {
 		return err
@@ -52,8 +52,128 @@ func RenderShootingPage(w io.Writer) error {
 	return nil
 }
 
-func RenderShootingFragment(w io.Writer) error {
-	tmpl, err := template.New("page").ParseFiles(getTemplatePath("shooting.html"))
+func RenderCharactersFragment(w io.Writer) error {
+	tmpl, err := template.New("page").ParseFiles(getTemplatePath("characters.html"))
+
+	if err != nil {
+		return err
+	}
+
+	err = tmpl.Execute(w, nil)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func RenderToolsPage(w io.Writer) error {
+	tmpl, err := template.ParseFiles(getTemplatePath("index.html"), getTemplatePath("tools.html"))
+
+	if err != nil {
+		return err
+	}
+
+	err = tmpl.Execute(w, nil)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func RenderToolsFragment(w io.Writer) error {
+	tmpl, err := template.New("page").ParseFiles(getTemplatePath("tools.html"))
+
+	if err != nil {
+		return err
+	}
+
+	err = tmpl.Execute(w, nil)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func RenderToolsShootingPage(w io.Writer) error {
+	tmpl, err := template.ParseFiles(getTemplatePath("index.html"), getTemplatePath("tools-shooting.html"))
+
+	if err != nil {
+		return err
+	}
+
+	err = tmpl.Execute(w, nil)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func RenderToolsShootingFragment(w io.Writer) error {
+	tmpl, err := template.New("page").ParseFiles(getTemplatePath("tools-shooting.html"))
+
+	if err != nil {
+		return err
+	}
+
+	err = tmpl.Execute(w, nil)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func RenderToolsShotgunsPage(w io.Writer) error {
+	tmpl, err := template.ParseFiles(getTemplatePath("index.html"), getTemplatePath("tools-shotguns.html"))
+
+	if err != nil {
+		return err
+	}
+
+	err = tmpl.Execute(w, nil)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func RenderToolsShotgunsFragment(w io.Writer) error {
+	tmpl, err := template.New("page").ParseFiles(getTemplatePath("tools-shotguns.html"))
+
+	if err != nil {
+		return err
+	}
+
+	err = tmpl.Execute(w, nil)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func RenderToolsHandToHandPage(w io.Writer) error {
+	tmpl, err := template.ParseFiles(getTemplatePath("index.html"), getTemplatePath("tools-hand-to-hand.html"))
+
+	if err != nil {
+		return err
+	}
+
+	err = tmpl.Execute(w, nil)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func RenderToolsHandToHandFragment(w io.Writer) error {
+	tmpl, err := template.New("page").ParseFiles(getTemplatePath("tools-hand-to-hand.html"))
 
 	if err != nil {
 		return err
