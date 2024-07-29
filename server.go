@@ -19,6 +19,7 @@ func NewServer() *Server {
 	staticDir := http.Dir(filepath.Join("static"))
 	staticFileServer := http.FileServer(staticDir)
 	router.Handle("/static/", http.StripPrefix("/static/", staticFileServer))
+	router.Handle("/favicon.ico", http.StripPrefix("/", staticFileServer))
 
 	router.Handle("/", http.HandlerFunc(server.homeHandler))
 	router.Handle("/shooting", http.HandlerFunc(server.shootingHandler))
