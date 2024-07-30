@@ -18,137 +18,143 @@ func NewServer() *Server {
 
 	staticDir := http.Dir(filepath.Join("static"))
 	staticFileServer := http.FileServer(staticDir)
-	router.Handle("/static/", http.StripPrefix("/static/", staticFileServer))
-	router.Handle("/favicon.ico", http.StripPrefix("/", staticFileServer))
+	router.Handle("GET /static/", http.StripPrefix("/static/", staticFileServer))
+	router.Handle("GET /favicon.ico", http.StripPrefix("/", staticFileServer))
 
-	router.Handle("/", http.HandlerFunc(server.homeHandler))
+	router.HandleFunc("GET /", http.HandlerFunc(server.getHomeHandler))
+	router.HandleFunc("POST /", http.HandlerFunc(server.postHomeHandler))
 
-	router.Handle("/characters", http.HandlerFunc(server.charactersHandler))
+	router.HandleFunc("GET /characters", http.HandlerFunc(server.getCharactersHandler))
+	router.HandleFunc("POST /characters", http.HandlerFunc(server.postCharactersHandler))
 
-	router.Handle("/tools", http.HandlerFunc(server.toolsHandler))
-	router.Handle("/tools/shooting", http.HandlerFunc(server.toolsShootingHandler))
-	router.Handle("/tools/shotguns", http.HandlerFunc(server.toolsShotgunsHandler))
-	router.Handle("/tools/hand-to-hand", http.HandlerFunc(server.toolsHandToHandHandler))
+	router.HandleFunc("GET /tools", http.HandlerFunc(server.getToolsHandler))
+	router.HandleFunc("POST /tools", http.HandlerFunc(server.postToolsHandler))
+	router.HandleFunc("GET /tools/shooting", http.HandlerFunc(server.getToolsShootingHandler))
+	router.HandleFunc("POST /tools/shooting", http.HandlerFunc(server.postToolsShootingHandler))
+	router.HandleFunc("GET /tools/shotguns", http.HandlerFunc(server.getToolsShotgunsHandler))
+	router.HandleFunc("POST /tools/shotguns", http.HandlerFunc(server.postToolsShotgunsHandler))
+	router.HandleFunc("GET /tools/hand-to-hand", http.HandlerFunc(server.getToolsHandToHandHandler))
+	router.HandleFunc("POST /tools/hand-to-hand", http.HandlerFunc(server.postToolsHandToHandHandler))
 
 	server.Handler = router
 	return server
 }
 
-func (s *Server) homeHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodGet {
-		err := render.RenderHomePage(w)
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-	}
-
-	if r.Method == http.MethodPost {
-		err := render.RenderHomeFragment(w)
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
+func (s *Server) getHomeHandler(w http.ResponseWriter, r *http.Request) {
+	err := render.RenderHomePage(w)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 
 	w.Header().Set("Content-Type", "text/html")
 }
 
-func (s *Server) charactersHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodGet {
-		err := render.RenderCharactersPage(w)
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-	}
-
-	if r.Method == http.MethodPost {
-		err := render.RenderCharactersFragment(w)
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
+func (s *Server) postHomeHandler(w http.ResponseWriter, r *http.Request) {
+	err := render.RenderHomeFragment(w)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 
 	w.Header().Set("Content-Type", "text/html")
 }
 
-func (s *Server) toolsHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodGet {
-		err := render.RenderToolsPage(w)
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-	}
-
-	if r.Method == http.MethodPost {
-		err := render.RenderToolsFragment(w)
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
+func (s *Server) getCharactersHandler(w http.ResponseWriter, r *http.Request) {
+	err := render.RenderCharactersPage(w)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 
 	w.Header().Set("Content-Type", "text/html")
 }
 
-func (s *Server) toolsShootingHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodGet {
-		err := render.RenderToolsShootingPage(w)
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-	}
-
-	if r.Method == http.MethodPost {
-		err := render.RenderToolsShootingFragment(w)
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
+func (s *Server) postCharactersHandler(w http.ResponseWriter, r *http.Request) {
+	err := render.RenderCharactersFragment(w)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 
 	w.Header().Set("Content-Type", "text/html")
 }
 
-func (s *Server) toolsShotgunsHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodGet {
-		err := render.RenderToolsShotgunsPage(w)
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-	}
-
-	if r.Method == http.MethodPost {
-		err := render.RenderToolsShotgunsFragment(w)
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
+func (s *Server) getToolsHandler(w http.ResponseWriter, r *http.Request) {
+	err := render.RenderToolsPage(w)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 
 	w.Header().Set("Content-Type", "text/html")
 }
 
-func (s *Server) toolsHandToHandHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodGet {
-		err := render.RenderToolsHandToHandPage(w)
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
+func (s *Server) postToolsHandler(w http.ResponseWriter, r *http.Request) {
+	err := render.RenderToolsFragment(w)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 
-	if r.Method == http.MethodPost {
-		err := render.RenderToolsHandToHandFragment(w)
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
+	w.Header().Set("Content-Type", "text/html")
+}
+
+func (s *Server) getToolsShootingHandler(w http.ResponseWriter, r *http.Request) {
+	err := render.RenderToolsShootingPage(w)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/html")
+}
+
+func (s *Server) postToolsShootingHandler(w http.ResponseWriter, r *http.Request) {
+	err := render.RenderToolsShootingFragment(w)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/html")
+}
+
+func (s *Server) getToolsShotgunsHandler(w http.ResponseWriter, r *http.Request) {
+	err := render.RenderToolsShotgunsPage(w)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/html")
+}
+
+func (s *Server) postToolsShotgunsHandler(w http.ResponseWriter, r *http.Request) {
+	err := render.RenderToolsShotgunsFragment(w)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/html")
+}
+
+func (s *Server) getToolsHandToHandHandler(w http.ResponseWriter, r *http.Request) {
+	err := render.RenderToolsHandToHandPage(w)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/html")
+}
+
+func (s *Server) postToolsHandToHandHandler(w http.ResponseWriter, r *http.Request) {
+	err := render.RenderToolsHandToHandFragment(w)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 
 	w.Header().Set("Content-Type", "text/html")

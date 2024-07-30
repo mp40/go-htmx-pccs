@@ -13,7 +13,7 @@ func TestHomeHandler(t *testing.T) {
 		request, _ := http.NewRequest(http.MethodGet, "/", nil)
 		response := httptest.NewRecorder()
 
-		server.homeHandler(response, request)
+		server.getHomeHandler(response, request)
 
 		got := response.Result().StatusCode
 		want := http.StatusOK
@@ -29,7 +29,7 @@ func TestHomeHandler(t *testing.T) {
 		request, _ := http.NewRequest(http.MethodPost, "/", nil)
 		response := httptest.NewRecorder()
 
-		server.homeHandler(response, request)
+		server.postHomeHandler(response, request)
 
 		got := response.Result().StatusCode
 		want := http.StatusOK
