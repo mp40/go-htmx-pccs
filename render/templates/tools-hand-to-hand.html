@@ -1,5 +1,142 @@
 {{ define "page" }}
 <div class="page-div">
+  <script lang="javascript">
+    function handleChange() {
+      const f = document.getElementById("hand-to-hand-form");
+      const data = new FormData(f);
+
+      const attack = data.get("attack");
+      const defense = data.get("defense");
+      const parry = data.get("parry");
+
+      const total = document.getElementsByClassName("total")[0];
+      total.innerText = getHandToHandPercentageToHit(attack, defense, parry);
+    }
+
+    handleChange();
+  </script>
   <h1>Hand To Hand</h1>
+  <p>
+    <span>Chance To Hit: </span>
+    <span class="total"></span>
+    <span>%</span>
+  </p>
+
+  <form id="hand-to-hand-form">
+    <label for="attack">
+      <span>Attack Level</span>
+      <select name="attack" id="attack" onchange="handleChange()">
+        <option value="-2">-2</option>
+        <option value="-1">-1</option>
+        <option value="0" selected="selected">0</option>
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+      </select>
+    </label>
+    <label for="defense">
+      <span>Defense Level</span>
+      <select name="defense" id="defense" onchange="handleChange()">
+        <option value="0" selected="selected">0</option>
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+      </select>
+    </label>
+    <label for="parry">
+      <span>Parry Class</span>
+      <select name="parry" id="parry" onchange="handleChange()">
+        <option value="0">0</option>
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+        <option value="6">6</option>
+        <option value="7">7</option>
+        <option value="8">8</option>
+        <option value="9" selected="selected">9</option>
+      </select>
+    </label>
+  </form>
+
+  <div class="hand-to-hand-table">
+    <div>Parry Column Modifiers</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Target Situation</th>
+          <th>Slashing Attack</th>
+          <th>Stabbing Attack</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>In a Doorway</td>
+          <td>+2</td>
+          <td>0</td>
+        </tr>
+        <tr>
+          <td>In a Window</td>
+          <td>+3</td>
+          <td>+2</td>
+        </tr>
+        <tr>
+          <td>Behind a 3.5 Foot Wall</td>
+          <td>+2</td>
+          <td>+2</td>
+        </tr>
+        <tr>
+          <td>On Knees</td>
+          <td>+2</td>
+          <td>+2</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="hand-to-hand-table">
+    <div>Attack Level Modifiers</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Target Situation</th>
+          <th>Slash with<br />Bladed Weapon</th>
+          <th>Slash with<br />Impact Head</th>
+          <th>Stabbing<br />points</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Back to Wall, Tree, ect</td>
+          <td>-2</td>
+          <td>0</td>
+          <td>0</td>
+        </tr>
+        <tr>
+          <td>On a Ladder</td>
+          <td>-2</td>
+          <td>0</td>
+          <td>0</td>
+        </tr>
+        <tr>
+          <td>Prone</td>
+          <td>-2</td>
+          <td>0</td>
+          <td>0</td>
+        </tr>
+        <tr>
+          <td>Visibility</td>
+          <td>-V / 10</td>
+          <td>-V / 10</td>
+          <td>-V / 10</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 </div> 
 {{ end }}

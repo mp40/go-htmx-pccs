@@ -4,3 +4,8 @@
 $ go build
 $ go run .
 ```
+
+### JS tests
+```
+npx vitest
+```
