@@ -31,6 +31,7 @@ func NewServer() *Server {
 	router.HandleFunc("POST /tools", http.HandlerFunc(server.postToolsHandler))
 	router.HandleFunc("GET /tools/shooting", http.HandlerFunc(server.getToolsShootingHandler))
 	router.HandleFunc("POST /tools/shooting", http.HandlerFunc(server.postToolsShootingHandler))
+	router.HandleFunc("GET /tools/shooting/calculator", http.HandlerFunc(server.getToolsShootingCalculatorHandler))
 	router.HandleFunc("GET /tools/shotguns", http.HandlerFunc(server.getToolsShotgunsHandler))
 	router.HandleFunc("POST /tools/shotguns", http.HandlerFunc(server.postToolsShotgunsHandler))
 	router.HandleFunc("GET /tools/hand-to-hand", http.HandlerFunc(server.getToolsHandToHandHandler))
@@ -112,6 +113,16 @@ func (s *Server) getToolsShootingHandler(w http.ResponseWriter, r *http.Request)
 
 func (s *Server) postToolsShootingHandler(w http.ResponseWriter, r *http.Request) {
 	err := render.RenderToolsShootingFragment(w)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/html")
+}
+
+func (s *Server) getToolsShootingCalculatorHandler(w http.ResponseWriter, r *http.Request) {
+	err := render.RenderToolsShootingCalculatorFragment(w)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return

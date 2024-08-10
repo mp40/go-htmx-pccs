@@ -1,0 +1,195 @@
+{{ define "calculator" }}
+<script type="text/hyperscript">
+    def calculateShootingForm(ele)
+      make a FormData from ele called fd
+      get the first .rof-text in ele then set rof to its innerHTML
+      set result to handleFormChange(fd.get('gun-level') as Int, fd.get('range') as Int, rof, fd.get('shooter-stance'), fd.get('target-size'), fd.get('shooter-movement') as Float, fd.get('target-movement') as Float)
+      put result into the previous .eal-value from ele
+    end
+  </script>
+  <script>
+    function handleFormChange(
+      gunLevel,
+      range,
+      rof,
+      shooterStance,
+      targetSize,
+      shooterMovement,
+      targetMovement
+    ) {
+      let auto = false;
+      if (rof === "Auto") {
+        auto = true;
+      }
+  
+      return calculateEAL(
+        gunLevel,
+        range,
+        auto,
+        shooterStance,
+        targetSize,
+        shooterMovement,
+        targetMovement
+      );
+    }
+  </script>
+  
+  <div class="shooting-fragment">
+    <span>EAL: </span><span class="eal-value">??</span>
+    <form
+      class="shooting-calculator"
+      _="
+      init calculateShootingForm(me) end
+      on change calculateShootingForm(me) end  
+    "
+    >
+      <div>
+        <label>
+          <span>ROF: </span><span name="rof" class="rof-text">Single</span>
+          <br />
+          <span>100% Fun Switch</span>
+          <input
+            type="checkbox"
+            value="rof"
+            _="
+            on click
+            if event.target.checked === true
+              put 'Auto' into the previous .rof-text
+            else
+              put 'Single' into the previous .rof-text
+            end
+            "
+          />
+        </label>
+      </div>
+      <div>
+        <label>
+          <span>Gun Combat Level</span>
+          <select name="gun-level">
+            <option value="0" selected="selected">0</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+            <option value="10">10</option>
+            <option value="11">11</option>
+            <option value="12">12</option>
+            <option value="13">13</option>
+            <option value="14">14</option>
+            <option value="15">15</option>
+          </select>
+        </label>
+  
+        <label>
+          <span>Range</span>
+          <select name="range">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+            <option value="11">11</option>
+            <option value="12">12</option>
+            <option value="14">14</option>
+            <option value="16">16</option>
+            <option value="19">19</option>
+            <option value="22">22</option>
+            <option value="25">25</option>
+            <option value="30">30</option>
+            <option value="35">35</option>
+            <option value="40">40</option>
+            <option value="45">45</option>
+            <option value="50" selected="selected">50</option>
+            <option value="55">55</option>
+            <option value="65">65</option>
+            <option value="75">75</option>
+            <option value="85">85</option>
+            <option value="100">100</option>
+            <option value="115">115</option>
+            <option value="130">130</option>
+            <option value="150">150</option>
+            <option value="170">170</option>
+            <option value="200">200</option>
+            <option value="230">230</option>
+            <option value="250">250</option>
+            <option value="300">200</option>
+            <option value="350">350</option>
+            <option value="400">400</option>
+            <option value="450">450</option>
+            <option value="500">500</option>
+            <option value="600">600</option>
+            <option value="700">700</option>
+          </select>
+        </label>
+      </div>
+  
+      <div>
+        <label>
+          <span>Shooter Stance</span>
+          <select name="shooter-stance">
+            <option value="Standing" selected="selected">Standing</option>
+            <option value="Standing & Braced">Standing & Braced</option>
+            <option value="Kneeling">Kneeling</option>
+            <option value="Kneeling & Braced">Kneeling & Braced</option>
+            <option value="Prone">Prone</option>
+            <option value="Prone & Braced">Prone & Braced</option>
+          </select>
+        </label>
+        <label>
+          <span>Target Size</span>
+          <select name="target-size">
+            <option value="Look Over/Around">Look Over/Around</option>
+            <option value="Fire Over/Around">Fire Over/Around</option>
+            <option value="Standing Exposed" selected="selected">
+              Standing Exposed
+            </option>
+            <option value="Kneeling Exposed">Kneeling Exposed</option>
+            <option value="Prone/Crawl">Prone/Crawl</option>
+            <option value="Running">Running</option>
+            <option value="Low Crouch">Low Crouch</option>
+            <option value="Hands & Knees">Hands & Knees</option>
+            <option value="Low Prone">Low Prone</option>
+          </select>
+        </label>
+      </div>
+  
+      <div>
+        <label>
+          <span>Shooter Movement</span>
+          <select name="shooter-movement">
+            <option value="0" selected="selected">0</option>
+            <option value="0.25">0.25</option>
+            <option value="0.5">0.5</option>
+            <option value="1">1</option>
+            <option value="1.5">1.5</option>
+            <option value="2">2</option>
+            <option value="2.5">2.5</option>
+            <option value="3">3</option>
+          </select>
+        </label>
+        <label>
+          <span>Target Movement</span>
+          <select name="target-movement">
+            <option value="0" selected="selected">0</option>
+            <option value="0.25">0.25</option>
+            <option value="0.5">0.5</option>
+            <option value="1">1</option>
+            <option value="1.5">1.5</option>
+            <option value="2">2</option>
+            <option value="2.5">2.5</option>
+            <option value="3">3</option>
+          </select>
+        </label>
+      </div>
+    </form>
+  </div>
+{{ end }}

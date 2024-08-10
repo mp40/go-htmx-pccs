@@ -158,6 +158,23 @@ func TestRenderToolsShooting(t *testing.T) {
 	})
 }
 
+func TestRenderToolsShootingCalculator(t *testing.T) {
+	t.Run("it renders shooting calculator", func(t *testing.T) {
+		buf := bytes.Buffer{}
+		err := RenderToolsShootingCalculatorFragment(&buf)
+
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		got := buf.String()
+		want := `<span>EAL:`
+		if !strings.Contains(got, want) {
+			t.Errorf("got '%s' want '%s'", got, want)
+		}
+	})
+}
+
 func TestRenderToolsShotguns(t *testing.T) {
 	t.Run("it renders tools shotguns page", func(t *testing.T) {
 		buf := bytes.Buffer{}

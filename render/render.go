@@ -1,6 +1,7 @@
 package render
 
 import (
+	"fmt"
 	"html/template"
 	"io"
 	"path/filepath"
@@ -98,7 +99,11 @@ func RenderToolsFragment(w io.Writer) error {
 }
 
 func RenderToolsShootingPage(w io.Writer) error {
-	tmpl, err := template.ParseFiles(getTemplatePath("index.html"), getTemplatePath("tools-shooting.html"))
+	tmpl, err := template.ParseFiles(
+		getTemplatePath("index.html"),
+		getTemplatePath("tools-shooting.html"),
+		getTemplatePath("tools-shooting-eal.html"),
+	)
 
 	if err != nil {
 		return err
@@ -113,7 +118,23 @@ func RenderToolsShootingPage(w io.Writer) error {
 }
 
 func RenderToolsShootingFragment(w io.Writer) error {
-	tmpl, err := template.New("page").ParseFiles(getTemplatePath("tools-shooting.html"))
+	tmpl, err := template.New("page").ParseFiles(getTemplatePath("tools-shooting.html"), getTemplatePath("tools-shooting-eal.html"))
+
+	if err != nil {
+		return err
+	}
+
+	err = tmpl.Execute(w, nil)
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+
+	return nil
+}
+
+func RenderToolsShootingCalculatorFragment(w io.Writer) error {
+	tmpl, err := template.New("calculator").ParseFiles(getTemplatePath("tools-shooting-eal.html"))
 
 	if err != nil {
 		return err
