@@ -8,9 +8,12 @@
     <script type="module">
       import { getHandToHandPercentageToHit } from "/static/scripts/handToHand.js";
       import { calculateEAL } from "/static/scripts/calculateEal.js";
+      import { generateLocations } from "/static/scripts/shotguns.js"
       window.getHandToHandPercentageToHit = getHandToHandPercentageToHit;
       window.calculateEAL = calculateEAL;
+      window.generateLocations = generateLocations;
     </script>
+    <script type="module" src="/static/components/shotguns.js"></script>
   </head>
   <body>
     <div class="top-strap"></div>

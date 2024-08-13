@@ -1,5 +1,55 @@
 {{ define "page" }}
 <div class="page-div">
   <h1>Shotguns</h1>
+
+  <shotgun-spread-calculator />
+
+  <template id="shotgun-spread-calculator">
+    <form
+    id="shotguns-form"
+    class="spread-calc-form"
+  >
+    <label>
+      <span>Initial Hit Location</span>
+      <input type="number" min="0" max="999" value="0" name="impactPoint" />
+    </label>
+    <label>
+      <span>SALM</span>
+      <select name="salm" id="salm">
+        <option>-12</option>
+        <option>-10</option>
+        <option>-6</option>
+        <option>-4</option>
+        <option>-2</option>
+        <option>0</option>
+        <option>2</option>
+        <option>4</option>
+        <option>6</option>
+        <option>8</option>
+        <option>10</option>
+        <option>12</option>
+        <option>14</option>
+        <option>16</option>
+        <option>18</option>
+      </select>
+    </label>
+    <label>
+      <span>Additional Hits</span>
+      <input type="number" min="1" max="25" name="hitCount" value="1" />
+    </label>
+    <label>
+      <span>Dice</span>
+      <select name="diceType" id="dice-type">
+        <option>100</option>
+        <option>1000</option>
+      </select>
+    </label>
+    <div>
+      <button type="submit">Random Locations</button>
+      <button type="button" class="clear-locations">Clear Locations</button>
+    </div>
+  </form>
+  <div class="hit-locations"></div>
+  </template>
 </div> 
 {{ end }}

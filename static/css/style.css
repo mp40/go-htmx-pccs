@@ -1,103 +1,131 @@
 :root {
-    --panzer-grey: #383e42;
-    --usaf-light-grey: #c6c5ca;
-    --light-grey: #edf2f8;
-    --insignia-white: #f8f9f3;
-    --golden-olive: #78923b;
-    --white-grey: #eef1ec;
-    --ivory: #eff1d9;
-    --offwhite: #efeee2;
-    --morrow-white: #fefbfd;
-    --luftwaffe-green: #596b3f;
-    --scorpion-green: #48b851;
-    --fluorescent-green: #b6d81a;
-    --german-yellow: #e8e589;
-    --iraqi-sand: #b89972;
-    --khaki: #969163;
-    --green-ochre: #a98969;
-    --khaki-grey: #8b7f5d;
-    --london-grey: #4a555e;
-    --medium-sea-grey: #869393;
-    --basalt-grey: #576860;
-    --silver-grey: #d8dfd5;
-    --stone-grey: #959980;
-    --olive-grey: #39584f;
-    --legacy-pale-green: #effdf0;
-    --legacy-mid-green: #aeb885;
-    --legacy-dark-green: #49531f;
-  }
+  --panzer-grey: #383e42;
+  --usaf-light-grey: #c6c5ca;
+  --light-grey: #edf2f8;
+  --insignia-white: #f8f9f3;
+  --golden-olive: #78923b;
+  --white-grey: #eef1ec;
+  --ivory: #eff1d9;
+  --offwhite: #efeee2;
+  --morrow-white: #fefbfd;
+  --luftwaffe-green: #596b3f;
+  --scorpion-green: #48b851;
+  --fluorescent-green: #b6d81a;
+  --german-yellow: #e8e589;
+  --iraqi-sand: #b89972;
+  --khaki: #969163;
+  --green-ochre: #a98969;
+  --khaki-grey: #8b7f5d;
+  --london-grey: #4a555e;
+  --medium-sea-grey: #869393;
+  --basalt-grey: #576860;
+  --silver-grey: #d8dfd5;
+  --stone-grey: #959980;
+  --olive-grey: #39584f;
+  --legacy-pale-green: #effdf0;
+  --legacy-mid-green: #aeb885;
+  --legacy-dark-green: #49531f;
+}
   
-  * {
-    margin: 0;
-    padding: 0;
-  }
+* {
+  margin: 0;
+  padding: 0;
+}
   
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
-      "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
-      sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
 
-  .top-strap {
-    font-size: 1.4rem;
-    position: fixed;
-    top: 0;
-    height: 4rem;
-    width: 100%;
-    color: whitesmoke;
-    background-color: var(--london-grey);
-    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
-    z-index: 5;
-  }
-  
-  .container {
-    display: flex;
-    min-height: calc(100vh - 4rem);
-    background-color: var(--insignia-white);
-    margin-top: 4rem;
-  }
+.top-strap {
+  font-size: 1.4rem;
+  position: fixed;
+  top: 0;
+  height: 4rem;
+  width: 100%;
+  color: whitesmoke;
+  background-color: var(--london-grey);
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+  z-index: 5;
+}
 
-  .nav-container {
-    background-color: var(--usaf-light-grey);
-    height: calc(100vh - 4rem);
-    width: 15em;
-    margin-right: 1.5em;
-    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
-  }
+.container {
+  display: flex;
+  min-height: calc(100vh - 4rem);
+  background-color: var(--insignia-white);
+  margin-top: 4rem;
+}
 
-  .nav-div {
-    display: flex;
-    flex-direction: column;
-    padding-left: 1em;
-  }
+.nav-container {
+  background-color: var(--usaf-light-grey);
+  height: calc(100vh - 4rem);
+  width: 15em;
+  margin-right: 1.5em;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+}
+
+.nav-div {
+  display: flex;
+  flex-direction: column;
+  padding-left: 1em;
+}
+
+.nav-div > a {
+  margin-top: 1em;
+  text-decoration: none;
+  cursor: pointer;
+  color: var(--london-grey);
+  font-weight: 600;
+}
   
-  .nav-div > a {
-    margin-top: 1em;
-    text-decoration: none;
-    cursor: pointer;
-    color: var(--london-grey);
-    font-weight: 600;
-  }
-  
-  .nav-div > a:hover {
-    color: var(--panzer-grey);
-    font-weight: 800;
-  }
-  
-  .page-div {
-    padding: 0.75em;
-  }
-  
-  .page-div > h1 {
-    margin: 0.66em 0;
-  }
-  
-  .home-page > p {
-    margin: 1em 0;
-  }
-  
-  /* .hand-to-hand-page > p {
-    margin: 1em 0;
-  } */
+.nav-div > a:hover {
+  color: var(--panzer-grey);
+  font-weight: 800;
+}
+
+.page-div {
+  padding: 0.75em;
+}
+
+.page-div > h1 {
+  margin: 0.66em 0;
+}
+
+.home-page > p {
+  margin: 1em 0;
+}
+
+shotgun-spread-calculator > form {
+  display: flex;
+  flex-direction: column;
+  width: fit-content;
+}
+
+shotgun-spread-calculator > form > label {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.25rem;
+}
+
+shotgun-spread-calculator > form > label > span {
+  margin-right: 1em;
+}
+
+shotgun-spread-calculator > .hit-locations {
+  display: flex;
+  width: 15em;
+  flex-wrap: wrap;
+}
+
+shotgun-spread-calculator > .hit-locations > span {
+  background-color: var(--usaf-light-grey);
+  border-radius: 5px;
+  padding: 2px;
+  width: 1.75em;
+  text-align: center;
+  margin-right: 0.5em;
+  margin-top: 1em;
+}
