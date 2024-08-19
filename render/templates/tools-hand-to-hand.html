@@ -1,19 +1,16 @@
 {{ define "page" }}
 <div class="page-div">
+  <script type="text/hyperscript">
+    def handleFormChange(ele)
+      make a FormData from ele called fd
+      set result to handleChange(fd.get('attack') as Int, fd.get('defense') as Int, fd.get('parry') as Int)
+      put result into the previous .total from ele
+    end
+  </script>
   <script lang="javascript">
-    function handleChange() {
-      const f = document.getElementById("hand-to-hand-form");
-      const data = new FormData(f);
-
-      const attack = data.get("attack");
-      const defense = data.get("defense");
-      const parry = data.get("parry");
-
-      const total = document.getElementsByClassName("total")[0];
-      total.innerText = getHandToHandPercentageToHit(attack, defense, parry);
+    function handleChange(attack, defense, parry) {
+      return getHandToHandPercentageToHit(attack, defense, parry);
     }
-
-    handleChange();
   </script>
   <h1>Hand To Hand</h1>
   <p>
@@ -22,10 +19,16 @@
     <span>%</span>
   </p>
 
-  <form id="hand-to-hand-form">
+  <form 
+    id="hand-to-hand-form"
+    _="
+      init handleFormChange(me) end
+      on change handleFormChange(me) end
+    "  
+  >
     <label for="attack">
       <span>Attack Level</span>
-      <select name="attack" id="attack" onchange="handleChange()">
+      <select name="attack">
         <option value="-2">-2</option>
         <option value="-1">-1</option>
         <option value="0" selected="selected">0</option>
@@ -38,7 +41,7 @@
     </label>
     <label for="defense">
       <span>Defense Level</span>
-      <select name="defense" id="defense" onchange="handleChange()">
+      <select name="defense">
         <option value="0" selected="selected">0</option>
         <option value="1">1</option>
         <option value="2">2</option>
@@ -49,7 +52,7 @@
     </label>
     <label for="parry">
       <span>Parry Class</span>
-      <select name="parry" id="parry" onchange="handleChange()">
+      <select name="parry">
         <option value="0">0</option>
         <option value="1">1</option>
         <option value="2">2</option>
