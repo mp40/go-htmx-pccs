@@ -4,16 +4,6 @@
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <link rel="stylesheet" type="text/css" href="/static/css/style.css" />
     <script src="https://unpkg.com/htmx.org@2.0.1" integrity="sha384-QWGpdj554B4ETpJJC9z+ZHJcA/i59TyjxEPXiiUgN2WmTyV5OEZWCD6gQhgkdpB/" crossorigin="anonymous"></script>
-    <script src="https://unpkg.com/hyperscript.org@0.9.12"></script>
-    <script type="module">
-      import { getHandToHandPercentageToHit } from "/static/scripts/handToHand.js";
-      import { calculateEAL } from "/static/scripts/calculateEal.js";
-      import { generateLocations } from "/static/scripts/shotguns.js"
-      window.getHandToHandPercentageToHit = getHandToHandPercentageToHit;
-      window.calculateEAL = calculateEAL;
-      window.generateLocations = generateLocations;
-    </script>
-    <script type="module" src="/static/components/shotguns.js"></script>
   </head>
   <body>
     <div class="top-strap"></div>
@@ -29,52 +19,14 @@
           Home
         </a>
         <a
-          hx-get="/characters"
+          hx-get="/account"
           hx-trigger="click"
           hx-target=".page-div"
           hx-swap="outerHTML"
           hx-push-url="true"
         >
-          Characters
+          Account
         </a>
-        <a
-          hx-post="/tools"
-          hx-trigger="click"
-          hx-target=".page-div"
-          hx-swap="outerHTML"
-          hx-push-url="true"
-        >
-          Tools
-        </a>
-        <div class="nav-div">
-          <a
-            data-hx-post="/tools/shooting"
-            hx-trigger="click"
-            hx-target=".page-div"
-            hx-swap="outerHTML"
-            hx-push-url="true"
-          >
-            Shooting
-          </a>
-          <a
-            data-hx-post="/tools/shotguns"
-            hx-trigger="click"
-            hx-target=".page-div"
-            hx-swap="outerHTML"
-            hx-push-url="true"
-          >
-            Shotguns
-          </a>
-          <a
-            data-hx-post="/tools/hand-to-hand"
-            hx-trigger="click"
-            hx-target=".page-div"
-            hx-swap="outerHTML"
-            hx-push-url="true"
-          >
-            Hand To Hand
-          </a>
-        </div>
       </div>
       {{ template "page" . }}
     </div>
