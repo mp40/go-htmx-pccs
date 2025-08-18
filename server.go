@@ -32,6 +32,9 @@ func NewServer(render Render) *Server {
 	router.Handle("GET /favicon.ico", http.StripPrefix("/", staticFileServer))
 
 	router.HandleFunc("GET /", server.getHomeHandler)
+	router.HandleFunc("GET /account", server.getAccountHandler)
+
+	router.HandleFunc("POST /account/sign-in", server.signInHandler)
 
 	server.Handler = router
 	return server
@@ -74,124 +77,16 @@ func (s *Server) getAccountHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+
+	w.Header().Set("Content-Type", "text/html")
 }
 
-// func (s *Server) postHomeHandler(w http.ResponseWriter, r *http.Request) {
-// 	err := render.RenderHomeFragment(w)
-// 	if err != nil {
-// 		w.WriteHeader(http.StatusInternalServerError)
-// 		return
-// 	}
+func (s *Server) signInHandler(w http.ResponseWriter, r *http.Request) {
+	// call some auth package
+	// if no - something
+	// if yes
 
-// 	w.Header().Set("Content-Type", "text/html")
-// }
-
-// func (s *Server) getCharactersHandler(w http.ResponseWriter, r *http.Request) {
-// 	err := render.RenderCharactersPage(w)
-// 	if err != nil {
-// 		w.WriteHeader(http.StatusInternalServerError)
-// 		return
-// 	}
-
-// 	w.Header().Set("Content-Type", "text/html")
-// }
-
-// func (s *Server) postCharactersHandler(w http.ResponseWriter, r *http.Request) {
-// 	err := render.RenderCharactersFragment(w)
-// 	if err != nil {
-// 		w.WriteHeader(http.StatusInternalServerError)
-// 		return
-// 	}
-
-// 	w.Header().Set("Content-Type", "text/html")
-// }
-
-// func (s *Server) getToolsHandler(w http.ResponseWriter, r *http.Request) {
-// 	err := render.RenderToolsPage(w)
-// 	if err != nil {
-// 		w.WriteHeader(http.StatusInternalServerError)
-// 		return
-// 	}
-
-// 	w.Header().Set("Content-Type", "text/html")
-// }
-
-// func (s *Server) postToolsHandler(w http.ResponseWriter, r *http.Request) {
-// 	err := render.RenderToolsFragment(w)
-// 	if err != nil {
-// 		w.WriteHeader(http.StatusInternalServerError)
-// 		return
-// 	}
-
-// 	w.Header().Set("Content-Type", "text/html")
-// }
-
-// func (s *Server) getToolsShootingHandler(w http.ResponseWriter, r *http.Request) {
-// 	err := render.RenderToolsShootingPage(w)
-// 	if err != nil {
-// 		w.WriteHeader(http.StatusInternalServerError)
-// 		return
-// 	}
-
-// 	w.Header().Set("Content-Type", "text/html")
-// }
-
-// func (s *Server) postToolsShootingHandler(w http.ResponseWriter, r *http.Request) {
-// 	err := render.RenderToolsShootingFragment(w)
-// 	if err != nil {
-// 		w.WriteHeader(http.StatusInternalServerError)
-// 		return
-// 	}
-
-// 	w.Header().Set("Content-Type", "text/html")
-// }
-
-// func (s *Server) getToolsShootingCalculatorHandler(w http.ResponseWriter, r *http.Request) {
-// 	err := render.RenderToolsShootingCalculatorFragment(w)
-// 	if err != nil {
-// 		w.WriteHeader(http.StatusInternalServerError)
-// 		return
-// 	}
-
-// 	w.Header().Set("Content-Type", "text/html")
-// }
-
-// func (s *Server) getToolsShotgunsHandler(w http.ResponseWriter, r *http.Request) {
-// 	err := render.RenderToolsShotgunsPage(w)
-// 	if err != nil {
-// 		w.WriteHeader(http.StatusInternalServerError)
-// 		return
-// 	}
-
-// 	w.Header().Set("Content-Type", "text/html")
-// }
-
-// func (s *Server) postToolsShotgunsHandler(w http.ResponseWriter, r *http.Request) {
-// 	err := render.RenderToolsShotgunsFragment(w)
-// 	if err != nil {
-// 		w.WriteHeader(http.StatusInternalServerError)
-// 		return
-// 	}
-
-// 	w.Header().Set("Content-Type", "text/html")
-// }
-
-// func (s *Server) getToolsHandToHandHandler(w http.ResponseWriter, r *http.Request) {
-// 	err := render.RenderToolsHandToHandPage(w)
-// 	if err != nil {
-// 		w.WriteHeader(http.StatusInternalServerError)
-// 		return
-// 	}
-
-// 	w.Header().Set("Content-Type", "text/html")
-// }
-
-// func (s *Server) postToolsHandToHandHandler(w http.ResponseWriter, r *http.Request) {
-// 	err := render.RenderToolsHandToHandFragment(w)
-// 	if err != nil {
-// 		w.WriteHeader(http.StatusInternalServerError)
-// 		return
-// 	}
-
-// 	w.Header().Set("Content-Type", "text/html")
-// }
+	w.Header().Set("Location", "/")
+	w.WriteHeader(http.StatusSeeOther)
+	w.Header().Set("Content-Type", "text/html")
+}

@@ -86,7 +86,7 @@ func TestHomeHandler(t *testing.T) {
 }
 
 func TestAccountHandler(t *testing.T) {
-	t.Run("it should return 200 and full page on successuful GET request", func(t *testing.T) {
+	t.Run("it should return 200 and full page on successful GET request", func(t *testing.T) {
 		stub := StubRender{}
 		server := NewServer(&stub)
 
@@ -110,7 +110,7 @@ func TestAccountHandler(t *testing.T) {
 		}
 	})
 
-	t.Run("it should return 200 and partial on successuful HTMX GET request", func(t *testing.T) {
+	t.Run("it should return 200 and partial on successful HTMX GET request", func(t *testing.T) {
 		stub := StubRender{}
 		server := NewServer(&stub)
 
@@ -132,6 +132,32 @@ func TestAccountHandler(t *testing.T) {
 		}
 		if stub.renderAccountFragmentCalls != 1 {
 			t.Errorf("want 1 call to renderHomeFragment, got %d", stub.renderHomeFragmentCalls)
+		}
+	})
+}
+
+func TestSignInHandler(t *testing.T) {
+	t.Run("it should redirect to Home page on successful POST request", func(t *testing.T) {
+		stub := StubRender{}
+		server := NewServer(&stub)
+
+		request, _ := http.NewRequest(http.MethodPost, "/account/sign-in", nil)
+		response := httptest.NewRecorder()
+
+		server.signInHandler(response, request)
+
+		gotStatus := response.Result().StatusCode
+		gotHeaderLocation := response.Result().Header.Get("Location")
+
+		wantStatus := http.StatusSeeOther
+		wantHeaderLocation := "/"
+
+		if gotStatus != wantStatus {
+			t.Errorf("got http status %v want http status %v", gotStatus, wantStatus)
+		}
+
+		if gotHeaderLocation != wantHeaderLocation {
+			t.Errorf("got header Location %v, want header Location %v", gotHeaderLocation, wantHeaderLocation)
 		}
 	})
 }
