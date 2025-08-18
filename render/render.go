@@ -43,6 +43,14 @@ func (r *Render) RenderHomeFragment(w io.Writer) error {
 	return nil
 }
 
+func (r *Render) RenderAccountPage(w io.Writer) error {
+	return nil
+}
+
+func (r *Render) RenderAccountFragment(w io.Writer) error {
+	return nil
+}
+
 // func RenderCharactersPage(w io.Writer) error {
 // 	tmpl, err := template.ParseFiles(getTemplatePath("index.html"), getTemplatePath("characters.html"))
 

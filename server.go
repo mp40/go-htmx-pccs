@@ -10,6 +10,8 @@ import (
 type Render interface {
 	RenderHomePage(w io.Writer) error
 	RenderHomeFragment(w io.Writer) error
+	RenderAccountPage(w io.Writer) error
+	RenderAccountFragment(w io.Writer) error
 }
 
 type Server struct {
@@ -54,6 +56,24 @@ func (s *Server) getHomeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "text/html")
+}
+
+func (s *Server) getAccountHandler(w http.ResponseWriter, r *http.Request) {
+	htmxHeader := r.Header.Get("HX-Request")
+	isHtmx, _ := strconv.ParseBool(htmxHeader)
+	if isHtmx {
+		err := s.render.RenderAccountFragment(w)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+	} else {
+		err := s.render.RenderAccountPage(w)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+	}
 }
 
 // func (s *Server) postHomeHandler(w http.ResponseWriter, r *http.Request) {
