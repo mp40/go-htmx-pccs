@@ -85,7 +85,6 @@ func (s *Server) signInHandler(w http.ResponseWriter, r *http.Request) {
 	// call some auth package
 	// if no - something
 	// if yes
-
 	w.Header().Set("Location", "/")
 	w.WriteHeader(http.StatusSeeOther)
 	w.Header().Set("Content-Type", "text/html")

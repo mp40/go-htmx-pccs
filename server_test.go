@@ -41,8 +41,7 @@ func TestHomeHandler(t *testing.T) {
 
 		request, _ := http.NewRequest(http.MethodGet, "/", nil)
 		response := httptest.NewRecorder()
-
-		server.getHomeHandler(response, request)
+		server.Handler.ServeHTTP(response, request)
 
 		got := response.Result().StatusCode
 		want := http.StatusOK
@@ -66,8 +65,7 @@ func TestHomeHandler(t *testing.T) {
 		request, _ := http.NewRequest(http.MethodGet, "/", nil)
 		request.Header.Set("HX-Request", "true")
 		response := httptest.NewRecorder()
-
-		server.getHomeHandler(response, request)
+		server.Handler.ServeHTTP(response, request)
 
 		got := response.Result().StatusCode
 		want := http.StatusOK
@@ -90,10 +88,9 @@ func TestAccountHandler(t *testing.T) {
 		stub := StubRender{}
 		server := NewServer(&stub)
 
-		request, _ := http.NewRequest(http.MethodGet, "/sign-in", nil)
+		request, _ := http.NewRequest(http.MethodGet, "/account", nil)
 		response := httptest.NewRecorder()
-
-		server.getAccountHandler(response, request)
+		server.Handler.ServeHTTP(response, request)
 
 		got := response.Result().StatusCode
 		want := http.StatusOK
@@ -114,11 +111,10 @@ func TestAccountHandler(t *testing.T) {
 		stub := StubRender{}
 		server := NewServer(&stub)
 
-		request, _ := http.NewRequest(http.MethodPost, "/sign-in", nil)
+		request, _ := http.NewRequest(http.MethodGet, "/account", nil)
 		request.Header.Set("HX-Request", "true")
 		response := httptest.NewRecorder()
-
-		server.getAccountHandler(response, request)
+		server.Handler.ServeHTTP(response, request)
 
 		got := response.Result().StatusCode
 		want := http.StatusOK
@@ -143,8 +139,7 @@ func TestSignInHandler(t *testing.T) {
 
 		request, _ := http.NewRequest(http.MethodPost, "/account/sign-in", nil)
 		response := httptest.NewRecorder()
-
-		server.signInHandler(response, request)
+		server.Handler.ServeHTTP(response, request)
 
 		gotStatus := response.Result().StatusCode
 		gotHeaderLocation := response.Result().Header.Get("Location")
