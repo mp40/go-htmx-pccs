@@ -148,3 +148,50 @@ body {
   );
   filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#bed264",endColorstr="#55673f",GradientType=1);
 }
+
+.page-div.account-page > .buttons {
+  display: flex;
+  flex-direction: column;
+  max-width: fit-content;
+  margin-bottom: 2em;
+}
+
+.page-button-grey {
+  border: none;
+  color: whitesmoke;
+  background-color: var(--medium-sea-grey);
+  border-radius: 4px;
+  box-shadow: inset 0px 0px 0px 1px var(--stone-grey);
+  padding: 0.25em 3em;
+  margin-bottom: 5px;
+  position: relative;
+}
+
+.page-button-grey:hover {
+  box-shadow: 0px 0px 1.15px 1.15px var(--legacy-pale-green);
+}
+
+.page-button-grey:active {
+  box-shadow: 0px 0px 1px 1px var(--stone-grey);
+}
+
+.page-div.account-page > .modal-div.sign-in {
+  background-color: var(--usaf-light-grey);
+  padding: 1.25em 1.5em;
+  border-radius: 3px;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+  transition: 0.3s;
+}
+
+.page-div.account-page > .modal-div.sign-in > form { 
+  display: flex;
+  flex-direction: column;
+}
+
+.page-div.account-page > .modal-div.sign-in > form > label { 
+  margin-bottom: 5px;
+}
+
+.page-div.account-page > .modal-div.sign-in > form > input { 
+  margin-bottom: 15px;
+}
