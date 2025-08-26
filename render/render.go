@@ -74,6 +74,17 @@ func (r *Render) RenderAccountFragment(w io.Writer) error {
 }
 
 func (r *Render) RenderSignInModal(w io.Writer) error {
+	tmpl, err := template.New("modal").ParseFiles(getTemplatePath("sign-in-modal.html"))
+
+	if err != nil {
+		return err
+	}
+
+	err = tmpl.Execute(w, nil)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 

@@ -122,7 +122,7 @@ func (s *Server) signInHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 	} else {
 		// if yes
-		w.Header().Set("Location", "/")
+		w.Header().Set("HX-Redirect", "/")
 		w.WriteHeader(http.StatusSeeOther)
 	}
 	w.Header().Set("Content-Type", "text/html")

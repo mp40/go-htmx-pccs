@@ -1,0 +1,11 @@
+{{ define "modal" }}
+<div class="modal-div sign-in">
+    <form hx-post="/account/sign-in">
+        <label for="email">Email</label>
+        <input type="email" name="email">
+        <label for="password">Password</label>
+        <input type="password" name="password" minlength="3">
+        <input type="submit">
+    </form>
+</div> 
+{{ end }}

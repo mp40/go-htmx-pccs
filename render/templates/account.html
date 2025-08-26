@@ -1,5 +1,21 @@
 {{ define "page" }}
 <div class="page-div">
   <h1>Account</h1>
+  <br/>
+  <button 
+    hx-get="/account/sign-in" 
+    hx-trigger="click"
+    hx-target=".modal-div"
+    hx-swap="outerHTML"
+    >
+    Sign In
+  </button>
+  <br/>
+  <button>Sign Up</button>
+  {{ template "modal" . }}
 </div> 
+{{ end }}
+
+{{ define "modal" }}
+<div class="modal-div"></div>
 {{ end }}
