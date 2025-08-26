@@ -73,6 +73,10 @@ func (r *Render) RenderAccountFragment(w io.Writer) error {
 	return nil
 }
 
+func (r *Render) RenderAccountSignInFailureFragment(w io.Writer) error {
+	return nil
+}
+
 func getTemplatePath(templateName string) string {
 	_, b, _, _ := runtime.Caller(0)
 	basePath := filepath.Dir(b)

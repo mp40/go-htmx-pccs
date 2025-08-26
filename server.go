@@ -12,15 +12,22 @@ type Render interface {
 	RenderHomeFragment(w io.Writer) error
 	RenderAccountPage(w io.Writer) error
 	RenderAccountFragment(w io.Writer) error
+	RenderAccountSignInFailureFragment(w io.Writer) error
+}
+
+type Auth interface {
+	SignIn() error
 }
 
 type Server struct {
 	http.Handler
 	render Render
+	auth   Auth
 }
 
-func NewServer(render Render) *Server {
+func NewServer(auth Auth, render Render) *Server {
 	server := &Server{
+		auth:   auth,
 		render: render,
 	}
 
@@ -83,9 +90,19 @@ func (s *Server) getAccountHandler(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) signInHandler(w http.ResponseWriter, r *http.Request) {
 	// call some auth package
+	err := s.auth.SignIn()
 	// if no - something
-	// if yes
-	w.Header().Set("Location", "/")
-	w.WriteHeader(http.StatusSeeOther)
+	if err != nil {
+		err = s.render.RenderAccountSignInFailureFragment(w)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusBadRequest)
+	} else {
+		// if yes
+		w.Header().Set("Location", "/")
+		w.WriteHeader(http.StatusSeeOther)
+	}
 	w.Header().Set("Content-Type", "text/html")
 }
