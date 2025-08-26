@@ -13,6 +13,7 @@ type Render interface {
 	RenderAccountPage(w io.Writer) error
 	RenderAccountFragment(w io.Writer) error
 	RenderAccountSignInFailureFragment(w io.Writer) error
+	RenderSignInModal(w io.Writer) error
 }
 
 type Auth interface {
@@ -41,6 +42,7 @@ func NewServer(auth Auth, render Render) *Server {
 	router.HandleFunc("GET /", server.getHomeHandler)
 	router.HandleFunc("GET /account", server.getAccountHandler)
 
+	router.HandleFunc("GET /account/sign-in", server.signInModalHandler)
 	router.HandleFunc("POST /account/sign-in", server.signInHandler)
 
 	server.Handler = router
@@ -83,6 +85,25 @@ func (s *Server) getAccountHandler(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
+	}
+
+	w.Header().Set("Content-Type", "text/html")
+}
+
+func (s *Server) signInModalHandler(w http.ResponseWriter, r *http.Request) {
+	htmxHeader := r.Header.Get("HX-Request")
+	isHtmx, _ := strconv.ParseBool(htmxHeader)
+	if isHtmx {
+		err := s.render.RenderSignInModal(w)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+	} else {
+		// ???
+		// what to do if not htmx?
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 
 	w.Header().Set("Content-Type", "text/html")

@@ -18,6 +18,7 @@ type StubRender struct {
 	renderAccountPageCalls                  int
 	renderAccountFragmentCalls              int
 	renderAccountSignInFailureFragmentCalls int
+	renderSignInModalCalls                  int
 }
 
 func (r *StubRender) RenderHomePage(w io.Writer) error {
@@ -42,6 +43,11 @@ func (r *StubRender) RenderAccountFragment(w io.Writer) error {
 
 func (r *StubRender) RenderAccountSignInFailureFragment(w io.Writer) error {
 	r.renderAccountSignInFailureFragmentCalls++
+	return nil
+}
+
+func (r *StubRender) RenderSignInModal(w io.Writer) error {
+	r.renderSignInModalCalls++
 	return nil
 }
 
@@ -143,6 +149,29 @@ func TestAccountHandler(t *testing.T) {
 		}
 		if stubRender.renderAccountFragmentCalls != 1 {
 			t.Errorf("want 1 call to renderHomeFragment, got %d", stubRender.renderHomeFragmentCalls)
+		}
+	})
+}
+
+func TestRenderSignInModalHandler(t *testing.T) {
+	t.Run("it should render the sign in modal on GET /account/sign-in", func(t *testing.T) {
+		stubRender := StubRender{}
+		server := NewServer(nil, &stubRender)
+
+		request, _ := http.NewRequest(http.MethodGet, "/account/sign-in", nil)
+		request.Header.Set("HX-Request", "true")
+		response := httptest.NewRecorder()
+		server.Handler.ServeHTTP(response, request)
+
+		got := response.Result().StatusCode
+		want := http.StatusOK
+
+		if got != want {
+			t.Errorf("got %v want %v", got, want)
+		}
+
+		if stubRender.renderSignInModalCalls != 1 {
+			t.Errorf("want 0 calls to renderHomePage, got %d", stubRender.renderHomePageCalls)
 		}
 	})
 }

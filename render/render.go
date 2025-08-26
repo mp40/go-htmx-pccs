@@ -73,6 +73,10 @@ func (r *Render) RenderAccountFragment(w io.Writer) error {
 	return nil
 }
 
+func (r *Render) RenderSignInModal(w io.Writer) error {
+	return nil
+}
+
 func (r *Render) RenderAccountSignInFailureFragment(w io.Writer) error {
 	return nil
 }
