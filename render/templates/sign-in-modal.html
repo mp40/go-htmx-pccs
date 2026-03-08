@@ -1,5 +1,6 @@
 {{ define "modal" }}
-<div class="modal-div sign-in">
+<div class="modal-div">
+    <button class="modal-close" hx-on:click="this.closest('.modal-container-div').innerHTML = ''">&times;</button>
     <form hx-post="/account/sign-in">
         <label for="email">Email</label>
         <input type="email" name="email">

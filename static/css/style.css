@@ -175,23 +175,36 @@ body {
   box-shadow: 0px 0px 1px 1px var(--stone-grey);
 }
 
-.page-div.account-page > .modal-div.sign-in {
+.modal-div {
   background-color: var(--usaf-light-grey);
   padding: 1.25em 1.5em;
   border-radius: 3px;
   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
   transition: 0.3s;
+  position: relative;
 }
 
-.page-div.account-page > .modal-div.sign-in > form { 
+.modal-div > .modal-close {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 1em;
+  height: 1em;
+  font-family: monospace;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-div > form { 
   display: flex;
   flex-direction: column;
 }
 
-.page-div.account-page > .modal-div.sign-in > form > label { 
+.modal-div > form > label { 
   margin-bottom: 5px;
 }
 
-.page-div.account-page > .modal-div.sign-in > form > input { 
+.modal-div > form > input { 
   margin-bottom: 15px;
-}
+} 

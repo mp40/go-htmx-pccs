@@ -5,8 +5,8 @@
     <button 
       hx-get="/account/sign-in" 
       hx-trigger="click"
-      hx-target=".modal-div"
-      hx-swap="outerHTML"
+      hx-target=".modal-container-div"
+      hx-swap="innerHTML"
       class="page-button-grey"
       >
       Sign In
@@ -18,5 +18,5 @@
 {{ end }}
 
 {{ define "modal" }}
-<div class="modal-div"></div>
+<div class="modal-container-div"></div>
 {{ end }}
