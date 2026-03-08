@@ -92,6 +92,25 @@ func (r *Render) RenderAccountSignInFailureFragment(w io.Writer) error {
 	return nil
 }
 
+func (r *Render) RenderSignUpModal(w io.Writer) error {
+	tmpl, err := template.New("modal").ParseFiles(getTemplatePath("sign-up-modal.html"))
+
+	if err != nil {
+		return err
+	}
+
+	err = tmpl.Execute(w, nil)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *Render) RenderAccountSignUpFailureFragment(w io.Writer) error {
+	return nil
+}
+
 func getTemplatePath(templateName string) string {
 	_, b, _, _ := runtime.Caller(0)
 	basePath := filepath.Dir(b)

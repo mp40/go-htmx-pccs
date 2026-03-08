@@ -14,6 +14,8 @@ type Render interface {
 	RenderAccountFragment(w io.Writer) error
 	RenderAccountSignInFailureFragment(w io.Writer) error
 	RenderSignInModal(w io.Writer) error
+	RenderAccountSignUpFailureFragment(w io.Writer) error
+	RenderSignUpModal(w io.Writer) error
 }
 
 type Auth interface {
@@ -44,6 +46,9 @@ func NewServer(auth Auth, render Render) *Server {
 
 	router.HandleFunc("GET /account/sign-in", server.signInModalHandler)
 	router.HandleFunc("POST /account/sign-in", server.signInHandler)
+
+	router.HandleFunc("GET /account/sign-up", server.signUpModalHandler)
+	router.HandleFunc("POST /account/sign-up", server.signUpHandler)
 
 	server.Handler = router
 	return server
@@ -115,6 +120,44 @@ func (s *Server) signInHandler(w http.ResponseWriter, r *http.Request) {
 	// if no - something
 	if err != nil {
 		err = s.render.RenderAccountSignInFailureFragment(w)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusBadRequest)
+	} else {
+		// if yes
+		w.Header().Set("HX-Redirect", "/")
+		w.WriteHeader(http.StatusSeeOther)
+	}
+	w.Header().Set("Content-Type", "text/html")
+}
+
+func (s *Server) signUpModalHandler(w http.ResponseWriter, r *http.Request) {
+	htmxHeader := r.Header.Get("HX-Request")
+	isHtmx, _ := strconv.ParseBool(htmxHeader)
+	if isHtmx {
+		err := s.render.RenderSignUpModal(w)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+	} else {
+		// ???
+		// what to do if not htmx?
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/html")
+}
+
+func (s *Server) signUpHandler(w http.ResponseWriter, r *http.Request) {
+	// call some auth package
+	err := s.auth.SignIn()
+	// if no - something
+	if err != nil {
+		err = s.render.RenderAccountSignUpFailureFragment(w)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			return

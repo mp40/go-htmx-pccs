@@ -17,8 +17,10 @@ type StubRender struct {
 	renderHomeFragmentCalls                 int
 	renderAccountPageCalls                  int
 	renderAccountFragmentCalls              int
-	renderAccountSignInFailureFragmentCalls int
 	renderSignInModalCalls                  int
+	renderSignUpModalCalls                  int
+	renderAccountSignInFailureFragmentCalls int
+	renderAccountSignUpFailureFragmentCalls int
 }
 
 func (r *StubRender) RenderHomePage(w io.Writer) error {
@@ -46,8 +48,18 @@ func (r *StubRender) RenderAccountSignInFailureFragment(w io.Writer) error {
 	return nil
 }
 
+func (r *StubRender) RenderAccountSignUpFailureFragment(w io.Writer) error {
+	r.renderAccountSignUpFailureFragmentCalls++
+	return nil
+}
+
 func (r *StubRender) RenderSignInModal(w io.Writer) error {
 	r.renderSignInModalCalls++
+	return nil
+}
+
+func (r *StubRender) RenderSignUpModal(w io.Writer) error {
+	r.renderSignUpModalCalls++
 	return nil
 }
 
@@ -121,10 +133,10 @@ func TestAccountHandler(t *testing.T) {
 		}
 
 		if stubRender.renderAccountPageCalls != 1 {
-			t.Errorf("want 0 calls to renderHomePage, got %d", stubRender.renderHomePageCalls)
+			t.Errorf("want 0 calls to renderAccountPageCalls, got %d", stubRender.renderAccountPageCalls)
 		}
 		if stubRender.renderAccountFragmentCalls != 0 {
-			t.Errorf("want 1 call to renderHomeFragment, got %d", stubRender.renderHomeFragmentCalls)
+			t.Errorf("want 1 call to renderAccountFragmentCalls, got %d", stubRender.renderAccountFragmentCalls)
 		}
 	})
 
@@ -145,10 +157,10 @@ func TestAccountHandler(t *testing.T) {
 		}
 
 		if stubRender.renderAccountPageCalls != 0 {
-			t.Errorf("want 0 calls to renderHomePage, got %d", stubRender.renderHomePageCalls)
+			t.Errorf("want 0 calls to renderAccountPageCalls, got %d", stubRender.renderAccountPageCalls)
 		}
 		if stubRender.renderAccountFragmentCalls != 1 {
-			t.Errorf("want 1 call to renderHomeFragment, got %d", stubRender.renderHomeFragmentCalls)
+			t.Errorf("want 1 call to renderAccountFragmentCalls, got %d", stubRender.renderAccountFragmentCalls)
 		}
 	})
 }
@@ -171,7 +183,7 @@ func TestRenderSignInModalHandler(t *testing.T) {
 		}
 
 		if stubRender.renderSignInModalCalls != 1 {
-			t.Errorf("want 0 calls to renderHomePage, got %d", stubRender.renderHomePageCalls)
+			t.Errorf("want 1 call to renderSignInModalCalls, got %d", stubRender.renderSignInModalCalls)
 		}
 	})
 }
@@ -187,17 +199,17 @@ func TestSignInHandler(t *testing.T) {
 		server.Handler.ServeHTTP(response, request)
 
 		gotStatus := response.Result().StatusCode
-		gotHeaderLocation := response.Result().Header.Get("Location")
+		gotHeaderRedirect := response.Result().Header.Get("Hx-Redirect")
 
 		wantStatus := http.StatusSeeOther
-		wantHeaderLocation := "/"
+		wantHeaderRedirect := "/"
 
 		if gotStatus != wantStatus {
 			t.Errorf("got http status %v want http status %v", gotStatus, wantStatus)
 		}
 
-		if gotHeaderLocation != wantHeaderLocation {
-			t.Errorf("got header Location %v, want header Location %v", gotHeaderLocation, wantHeaderLocation)
+		if gotHeaderRedirect != wantHeaderRedirect {
+			t.Errorf("got header Location %v, want header Location %v", gotHeaderRedirect, wantHeaderRedirect)
 		}
 	})
 
@@ -222,6 +234,79 @@ func TestSignInHandler(t *testing.T) {
 		}
 		if stubRender.renderAccountSignInFailureFragmentCalls != 1 {
 			t.Errorf("want 1 call to renderHomeFragment, got %d", stubRender.renderAccountSignInFailureFragmentCalls)
+		}
+	})
+}
+
+func TestRenderSignUpModalHandler(t *testing.T) {
+	t.Run("it should render the sign in modal on GET /account/sign-up", func(t *testing.T) {
+		stubRender := StubRender{}
+		server := NewServer(nil, &stubRender)
+
+		request, _ := http.NewRequest(http.MethodGet, "/account/sign-up", nil)
+		request.Header.Set("HX-Request", "true")
+		response := httptest.NewRecorder()
+		server.Handler.ServeHTTP(response, request)
+
+		got := response.Result().StatusCode
+		want := http.StatusOK
+
+		if got != want {
+			t.Errorf("got %v want %v", got, want)
+		}
+
+		if stubRender.renderSignUpModalCalls != 1 {
+			t.Errorf("want 1 call to renderSignUpModalCalls, got %d", stubRender.renderSignUpModalCalls)
+		}
+	})
+}
+
+func TestSignUpHandler(t *testing.T) {
+	t.Run("it should redirect to Home page on successful POST request", func(t *testing.T) {
+		stubAuth := StubAuth{}
+		stubRender := StubRender{}
+		server := NewServer(&stubAuth, &stubRender)
+
+		request, _ := http.NewRequest(http.MethodPost, "/account/sign-up", nil)
+		response := httptest.NewRecorder()
+		server.Handler.ServeHTTP(response, request)
+
+		gotStatus := response.Result().StatusCode
+		gotHeaderRedirect := response.Result().Header.Get("Hx-Redirect")
+
+		wantStatus := http.StatusSeeOther
+		wantHeaderRedirect := "/"
+
+		if gotStatus != wantStatus {
+			t.Errorf("got http status %v want http status %v", gotStatus, wantStatus)
+		}
+
+		if gotHeaderRedirect != wantHeaderRedirect {
+			t.Errorf("got header Location %v, want header Location %v", gotHeaderRedirect, wantHeaderRedirect)
+		}
+	})
+
+	t.Run("it should return 400 and user feedback unsuccessful POST request", func(t *testing.T) {
+		stubAuth := StubAuth{
+			err: fmt.Errorf("boo"),
+		}
+		stubRender := StubRender{}
+		server := NewServer(&stubAuth, &stubRender)
+
+		stubAuth.err = fmt.Errorf("fake error")
+
+		request, _ := http.NewRequest(http.MethodPost, "/account/sign-up", nil)
+		response := httptest.NewRecorder()
+		server.Handler.ServeHTTP(response, request)
+
+		got := response.Result().StatusCode
+		want := http.StatusBadRequest
+
+		if got != want {
+			t.Errorf("got http status %v want http status %v", got, want)
+		}
+		if stubRender.renderAccountSignUpFailureFragmentCalls != 1 {
+			t.Errorf("want 1 call to renderAccountSignUpFailureFragment, got %d", stubRender.renderAccountSignUpFailureFragmentCalls)
 		}
 	})
 }

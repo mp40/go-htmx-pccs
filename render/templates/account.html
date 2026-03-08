@@ -11,7 +11,15 @@
       >
       Sign In
     </button>
-    <button class="page-button-grey">Sign Up</button>
+    <button class="page-button-grey"
+      hx-get="/account/sign-up" 
+      hx-trigger="click"
+      hx-target=".modal-container-div"
+      hx-swap="innerHTML"
+      class="page-button-grey"
+      >
+      Sign Up
+    </button>
   </div>
   {{ template "modal" . }}
 </div> 
