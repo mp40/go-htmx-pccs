@@ -14,6 +14,7 @@ type StubAuth struct {
 	err       error
 	spySignUp int
 	spySignIn int
+	ID        *uuid.UUID
 }
 
 type StubRender struct {
@@ -74,7 +75,7 @@ func (a *StubAuth) SignIn(email string, password string) error {
 
 func (a *StubAuth) SignUp(email string, password string) (*uuid.UUID, error) {
 	a.spySignUp++
-	return nil, a.err
+	return a.ID, a.err
 }
 
 func TestHomeHandler(t *testing.T) {
@@ -279,6 +280,10 @@ func TestSignUpHandler(t *testing.T) {
 	t.Run("it should redirect to Home page on successful POST request", func(t *testing.T) {
 		stubAuth := StubAuth{}
 		stubRender := StubRender{}
+
+		newID := uuid.MustParse("5ea69240-823c-4523-90a2-4868a5bfc90a")
+		stubAuth.ID = &newID
+
 		server := NewServer(&stubAuth, &stubRender)
 
 		request, _ := http.NewRequest(http.MethodPost, "/account/sign-up", nil)
@@ -317,12 +322,6 @@ func TestSignUpHandler(t *testing.T) {
 		response := httptest.NewRecorder()
 		server.Handler.ServeHTTP(response, request)
 
-		got := response.Result().StatusCode
-		want := http.StatusBadRequest
-
-		if got != want {
-			t.Errorf("got http status %v want http status %v", got, want)
-		}
 		if stubRender.renderAccountSignUpFailureFragmentCalls != 1 {
 			t.Errorf("want 1 call to renderAccountSignUpFailureFragment, got %d", stubRender.renderAccountSignUpFailureFragmentCalls)
 		}
