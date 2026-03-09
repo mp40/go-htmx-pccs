@@ -25,3 +25,6 @@ go-htmx-pccs
 
 # JS related detritus
 node_modules 
+
+# env
+.env

@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"path/filepath"
 	"strconv"
+
+	"github.com/google/uuid"
 )
 
 type Render interface {
@@ -21,7 +23,7 @@ type Render interface {
 
 type Auth interface {
 	SignIn(email string, password string) error
-	SignUp(email string, password string) error
+	SignUp(email string, password string) (*uuid.UUID, error)
 }
 
 type AuthRequest struct {
@@ -130,7 +132,7 @@ func (s *Server) signInHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer r.Body.Close()
-	err = s.auth.SignUp(req.Email, req.Password)
+	err = s.auth.SignIn(req.Email, req.Password)
 
 	// if no - something
 	if err != nil {
@@ -176,9 +178,7 @@ func (s *Server) signUpHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer r.Body.Close()
-	err = s.auth.SignUp(req.Email, req.Password)
-
-	// if no - something
+	newID, err := s.auth.SignUp(req.Email, req.Password)
 	if err != nil {
 		err = s.render.RenderAccountSignUpFailureFragment(w)
 		if err != nil {
@@ -186,10 +186,15 @@ func (s *Server) signUpHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		w.WriteHeader(http.StatusBadRequest)
-	} else {
-		// if yes
-		w.Header().Set("HX-Redirect", "/")
-		w.WriteHeader(http.StatusSeeOther)
+		w.Header().Set("Content-Type", "text/html")
+		return
 	}
+	if newID == nil {
+		// do something about missing id
+		return
+	}
+	// if yes
+	w.Header().Set("HX-Redirect", "/")
+	w.WriteHeader(http.StatusSeeOther)
 	w.Header().Set("Content-Type", "text/html")
 }

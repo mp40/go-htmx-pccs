@@ -5,13 +5,15 @@ import (
 	"net/http"
 
 	"github.com/mp40/go-htmx-pccs/auth"
+	"github.com/mp40/go-htmx-pccs/data"
 	"github.com/mp40/go-htmx-pccs/middleware"
 	"github.com/mp40/go-htmx-pccs/render"
 )
 
 func main() {
 
-	a := auth.NewAuthService()
+	d := data.NewDataService()
+	a := auth.NewAuthService(d)
 	r := render.NewRenderService()
 
 	server := NewServer(a, r)

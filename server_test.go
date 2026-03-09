@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/google/uuid"
 )
 
 type StubAuth struct {
@@ -70,9 +72,9 @@ func (a *StubAuth) SignIn(email string, password string) error {
 	return a.err
 }
 
-func (a *StubAuth) SignUp(email string, password string) error {
+func (a *StubAuth) SignUp(email string, password string) (*uuid.UUID, error) {
 	a.spySignUp++
-	return a.err
+	return nil, a.err
 }
 
 func TestHomeHandler(t *testing.T) {
