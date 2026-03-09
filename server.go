@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"io"
 	"net/http"
 	"path/filepath"
@@ -19,8 +20,13 @@ type Render interface {
 }
 
 type Auth interface {
-	SignIn() error
-	SignUp() error
+	SignIn(email string, password string) error
+	SignUp(email string, password string) error
+}
+
+type AuthRequest struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
 }
 
 type Server struct {
@@ -116,8 +122,16 @@ func (s *Server) signInModalHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) signInHandler(w http.ResponseWriter, r *http.Request) {
-	// call some auth package
-	err := s.auth.SignIn()
+	var req AuthRequest
+	err := json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		// http.Error(w, "invalid request body", http.StatusBadRequest)
+		// instead return body return HTMX/HTML
+		return
+	}
+	defer r.Body.Close()
+	err = s.auth.SignUp(req.Email, req.Password)
+
 	// if no - something
 	if err != nil {
 		err = s.render.RenderAccountSignInFailureFragment(w)
@@ -154,9 +168,15 @@ func (s *Server) signUpModalHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) signUpHandler(w http.ResponseWriter, r *http.Request) {
-	// call some auth package
-
-	err := s.auth.SignUp()
+	var req AuthRequest
+	err := json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		// http.Error(w, "invalid request body", http.StatusBadRequest)
+		// instead return body return HTMX/HTML
+		return
+	}
+	defer r.Body.Close()
+	err = s.auth.SignUp(req.Email, req.Password)
 
 	// if no - something
 	if err != nil {

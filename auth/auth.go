@@ -9,12 +9,12 @@ func NewAuthService() *Auth {
 	return &Auth{}
 }
 
-func (a *Auth) SignIn() error {
+func (a *Auth) SignIn(email string, password string) error {
 	a.signedIn = true
 	return nil
 }
 
-func (a *Auth) SignUp() error {
+func (a *Auth) SignUp(email string, password string) error {
 	a.signedIn = true
 	return nil
 }

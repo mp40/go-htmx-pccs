@@ -65,12 +65,12 @@ func (r *StubRender) RenderSignUpModal(w io.Writer) error {
 	return nil
 }
 
-func (a *StubAuth) SignIn() error {
+func (a *StubAuth) SignIn(email string, password string) error {
 	a.spySignIn++
 	return a.err
 }
 
-func (a *StubAuth) SignUp() error {
+func (a *StubAuth) SignUp(email string, password string) error {
 	a.spySignUp++
 	return a.err
 }
