@@ -13,6 +13,7 @@ type StubData struct {
 	count    int
 	countErr error
 	addErr   error
+	spyAdd   int
 }
 
 func (d *StubData) CountUserByEmail(email string) (int, error) {
@@ -24,6 +25,7 @@ func (d *StubData) AddUser(email string, hash string) (userID uuid.UUID, err err
 }
 
 func TestSignUp(t *testing.T) {
+	t.Setenv("SALT", "1")
 	t.Run("it should return nil error when email not in use", func(t *testing.T) {
 		newID := uuid.MustParse("5ea69240-823c-4523-90a2-4868a5bfc90a")
 		stubData := StubData{}
