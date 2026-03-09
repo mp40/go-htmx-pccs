@@ -13,3 +13,8 @@ func (a *Auth) SignIn() error {
 	a.signedIn = true
 	return nil
 }
+
+func (a *Auth) SignUp() error {
+	a.signedIn = true
+	return nil
+}

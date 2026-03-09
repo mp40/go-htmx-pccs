@@ -9,7 +9,9 @@ import (
 )
 
 type StubAuth struct {
-	err error
+	err       error
+	spySignUp int
+	spySignIn int
 }
 
 type StubRender struct {
@@ -64,6 +66,12 @@ func (r *StubRender) RenderSignUpModal(w io.Writer) error {
 }
 
 func (a *StubAuth) SignIn() error {
+	a.spySignIn++
+	return a.err
+}
+
+func (a *StubAuth) SignUp() error {
+	a.spySignUp++
 	return a.err
 }
 
@@ -204,6 +212,10 @@ func TestSignInHandler(t *testing.T) {
 		wantStatus := http.StatusSeeOther
 		wantHeaderRedirect := "/"
 
+		if stubAuth.spySignIn != 1 {
+			t.Errorf("got %v calls to SignIn want 1", stubAuth.spySignIn)
+		}
+
 		if gotStatus != wantStatus {
 			t.Errorf("got http status %v want http status %v", gotStatus, wantStatus)
 		}
@@ -276,6 +288,10 @@ func TestSignUpHandler(t *testing.T) {
 
 		wantStatus := http.StatusSeeOther
 		wantHeaderRedirect := "/"
+
+		if stubAuth.spySignUp != 1 {
+			t.Errorf("got %v calls to SignUp want 1", stubAuth.spySignUp)
+		}
 
 		if gotStatus != wantStatus {
 			t.Errorf("got http status %v want http status %v", gotStatus, wantStatus)

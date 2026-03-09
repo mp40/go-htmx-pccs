@@ -20,6 +20,7 @@ type Render interface {
 
 type Auth interface {
 	SignIn() error
+	SignUp() error
 }
 
 type Server struct {
@@ -154,7 +155,9 @@ func (s *Server) signUpModalHandler(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) signUpHandler(w http.ResponseWriter, r *http.Request) {
 	// call some auth package
-	err := s.auth.SignIn()
+
+	err := s.auth.SignUp()
+
 	// if no - something
 	if err != nil {
 		err = s.render.RenderAccountSignUpFailureFragment(w)
