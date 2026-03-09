@@ -14,10 +14,8 @@ type Data interface {
 	AddUser(email string, hash string) (userID uuid.UUID, err error)
 }
 
-// temp in memory till need to impliment
 type Auth struct {
-	signedIn bool
-	data     Data
+	data Data
 }
 
 func NewAuthService(data Data) *Auth {
@@ -27,12 +25,11 @@ func NewAuthService(data Data) *Auth {
 }
 
 func (a *Auth) SignIn(email string, password string) error {
-	a.signedIn = true
 	return nil
 }
 
 func (a *Auth) SignUp(email string, password string) (ID *uuid.UUID, err error) {
-	// validation
+	// validation of email and password
 
 	userCount, err := a.data.CountUserByEmail(email)
 	if err != nil {
@@ -61,6 +58,5 @@ func (a *Auth) SignUp(email string, password string) (ID *uuid.UUID, err error) 
 		return nil, fmt.Errorf("unexpected data error: %w", err)
 	}
 
-	a.signedIn = true
 	return &userID, nil
 }

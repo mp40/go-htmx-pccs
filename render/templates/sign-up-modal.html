@@ -8,5 +8,10 @@
         <input type="password" name="password" minlength="8" required>
         <input class="page-button-grey" type="submit">
     </form>
+    {{ template "error" . }}
 </div> 
+{{ end }}
+
+{{ define "error" }}
+<div class="modal-error"></div>
 {{ end }}

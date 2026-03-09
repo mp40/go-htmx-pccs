@@ -11,7 +11,7 @@ func NewDataService() *Data {
 }
 
 func (d *Data) CountUserByEmail(email string) (int, error) {
-	return 1, nil
+	return 0, nil
 }
 
 func (d *Data) AddUser(email string, hash string) (id uuid.UUID, err error) {

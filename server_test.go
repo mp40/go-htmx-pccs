@@ -52,7 +52,7 @@ func (r *StubRender) RenderAccountSignInFailureFragment(w io.Writer) error {
 	return nil
 }
 
-func (r *StubRender) RenderAccountSignUpFailureFragment(w io.Writer) error {
+func (r *StubRender) RenderAccountSignUpFailureFragment(w io.Writer, msg string) error {
 	r.renderAccountSignUpFailureFragmentCalls++
 	return nil
 }

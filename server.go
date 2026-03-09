@@ -1,11 +1,11 @@
 package main
 
 import (
-	"encoding/json"
 	"io"
 	"net/http"
 	"path/filepath"
 	"strconv"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -17,7 +17,7 @@ type Render interface {
 	RenderAccountFragment(w io.Writer) error
 	RenderAccountSignInFailureFragment(w io.Writer) error
 	RenderSignInModal(w io.Writer) error
-	RenderAccountSignUpFailureFragment(w io.Writer) error
+	RenderAccountSignUpFailureFragment(w io.Writer, msg string) error
 	RenderSignUpModal(w io.Writer) error
 }
 
@@ -124,15 +124,10 @@ func (s *Server) signInModalHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) signInHandler(w http.ResponseWriter, r *http.Request) {
-	var req AuthRequest
-	err := json.NewDecoder(r.Body).Decode(&req)
-	if err != nil {
-		// http.Error(w, "invalid request body", http.StatusBadRequest)
-		// instead return body return HTMX/HTML
-		return
-	}
-	defer r.Body.Close()
-	err = s.auth.SignIn(req.Email, req.Password)
+	email := r.FormValue("email")
+	password := r.FormValue("password")
+
+	err := s.auth.SignIn(email, password)
 
 	// if no - something
 	if err != nil {
@@ -170,31 +165,47 @@ func (s *Server) signUpModalHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) signUpHandler(w http.ResponseWriter, r *http.Request) {
-	var req AuthRequest
-	err := json.NewDecoder(r.Body).Decode(&req)
+	email := r.FormValue("email")
+	password := r.FormValue("password")
+
+	newID, err := s.auth.SignUp(email, password)
 	if err != nil {
-		// http.Error(w, "invalid request body", http.StatusBadRequest)
-		// instead return body return HTMX/HTML
-		return
-	}
-	defer r.Body.Close()
-	newID, err := s.auth.SignUp(req.Email, req.Password)
-	if err != nil {
-		err = s.render.RenderAccountSignUpFailureFragment(w)
+		err = s.render.RenderAccountSignUpFailureFragment(w, "nfi")
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
-		w.WriteHeader(http.StatusBadRequest)
 		w.Header().Set("Content-Type", "text/html")
 		return
 	}
+
 	if newID == nil {
-		// do something about missing id
+		err = s.render.RenderAccountSignUpFailureFragment(w, "nfi")
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "text/html")
 		return
 	}
 	// if yes
+	cookie := getSecureCookie(*newID)
+	http.SetCookie(w, &cookie)
 	w.Header().Set("HX-Redirect", "/")
 	w.WriteHeader(http.StatusSeeOther)
 	w.Header().Set("Content-Type", "text/html")
+}
+
+func getSecureCookie(userID uuid.UUID) http.Cookie {
+	oneDay := 24 * time.Hour
+	cookie := http.Cookie{
+		Name:     "userID",
+		Value:    userID.String(),
+		MaxAge:   int(oneDay.Seconds()),
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteLaxMode,
+	}
+
+	return cookie
 }

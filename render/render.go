@@ -107,7 +107,23 @@ func (r *Render) RenderSignUpModal(w io.Writer) error {
 	return nil
 }
 
-func (r *Render) RenderAccountSignUpFailureFragment(w io.Writer) error {
+func (r *Render) RenderAccountSignUpFailureFragment(w io.Writer, msg string) error {
+	tmpl, err := template.New("error").ParseFiles(getTemplatePath("sign-up-error.html"))
+	if err != nil {
+		return err
+	}
+
+	data := struct {
+		ErrorMessage string
+	}{
+		ErrorMessage: msg,
+	}
+
+	err = tmpl.Execute(w, data)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 

@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/joho/godotenv"
 	"github.com/mp40/go-htmx-pccs/auth"
 	"github.com/mp40/go-htmx-pccs/data"
 	"github.com/mp40/go-htmx-pccs/middleware"
@@ -11,6 +12,10 @@ import (
 )
 
 func main() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	d := data.NewDataService()
 	a := auth.NewAuthService(d)
