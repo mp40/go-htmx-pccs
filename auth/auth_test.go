@@ -6,27 +6,38 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
+	"github.com/mp40/go-htmx-pccs/data"
 )
 
 type StubData struct {
-	newID    uuid.UUID
-	count    int
-	countErr error
-	addErr   error
-	spyAdd   int
+	newID                uuid.UUID
+	user                 *data.User
+	count                int
+	countErr             error
+	err                  error
+	spyGetByEmailAndHash int
 }
 
 func (d *StubData) CountUserByEmail(email string) (int, error) {
 	return d.count, d.countErr
 }
 
+func (d *StubData) GetUserByEmail(email string) (user *data.User, err error) {
+	return d.user, d.err
+}
+
+func (d *StubData) GetUserByEmailAndHash(email string, hash string) (user *data.User, err error) {
+	d.spyGetByEmailAndHash++
+	return d.user, d.err
+}
+
 func (d *StubData) AddUser(email string, hash string) (userID uuid.UUID, err error) {
-	return d.newID, d.addErr
+	return d.newID, d.err
 }
 
 func TestSignUp(t *testing.T) {
 	t.Setenv("SALT", "1")
-	t.Run("it should return nil error when email not in use", func(t *testing.T) {
+	t.Run("it should return pointer to ID when email not in use", func(t *testing.T) {
 		newID := uuid.MustParse("5ea69240-823c-4523-90a2-4868a5bfc90a")
 		stubData := StubData{}
 		stubData.newID = newID
@@ -71,6 +82,62 @@ func TestSignUp(t *testing.T) {
 
 		if !strings.Contains(err.Error(), "unexpected data error") {
 			t.Errorf("got unexpected error got %v", err.Error())
+		}
+	})
+}
+
+func TestSignIn(t *testing.T) {
+	t.Setenv("SALT", "1")
+	t.Run("it should return pointer to User when user found by by email and hash", func(t *testing.T) {
+		stubData := StubData{}
+		user := data.User{}
+		stubData.user = &user
+		auth := NewAuthService(&stubData)
+
+		got, err := auth.SignIn("fake@email.com", "fake-password")
+		if err != nil {
+			t.Errorf("got unexpected error: %v", err)
+		}
+
+		if stubData.spyGetByEmailAndHash != 1 {
+			t.Errorf("unexpected calls to data, got %v, want 1", stubData.spyGetByEmailAndHash)
+		}
+
+		if got == nil {
+			t.Errorf("got nil, want user")
+		}
+	})
+
+	t.Run("it should return nil when user not found by email and hash", func(t *testing.T) {
+		stubData := StubData{}
+		auth := NewAuthService(&stubData)
+
+		got, err := auth.SignIn("fake@email.com", "fake-password")
+		if err != nil {
+			t.Errorf("got unexpected error: %v", err)
+		}
+
+		if stubData.spyGetByEmailAndHash != 1 {
+			t.Errorf("unexpected calls to data, got %v, want 1", stubData.spyGetByEmailAndHash)
+		}
+
+		if got != nil {
+			t.Errorf("got user, want nil")
+		}
+	})
+
+	t.Run("it should return error on data error", func(t *testing.T) {
+		stubData := StubData{err: fmt.Errorf("fake")}
+		auth := NewAuthService(&stubData)
+
+		_, err := auth.SignIn("fake@email.com", "fake-password")
+
+		if stubData.spyGetByEmailAndHash != 1 {
+			t.Errorf("unexpected calls to data, got %v, want 1", stubData.spyGetByEmailAndHash)
+		}
+
+		if err == nil {
+			t.Errorf("expected error, got nil")
 		}
 	})
 }

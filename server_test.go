@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
+	"github.com/mp40/go-htmx-pccs/data"
 )
 
 type StubAuth struct {
@@ -17,6 +18,7 @@ type StubAuth struct {
 	spySignUp int
 	spySignIn int
 	ID        *uuid.UUID
+	user      *data.User
 }
 
 type StubRender struct {
@@ -64,9 +66,9 @@ func (r *StubRender) RenderSignUpModal(w io.Writer) error {
 	return nil
 }
 
-func (a *StubAuth) SignIn(email string, password string) error {
+func (a *StubAuth) SignIn(email string, password string) (*data.User, error) {
 	a.spySignIn++
-	return a.err
+	return a.user, a.err
 }
 
 func (a *StubAuth) SignUp(email string, password string) (*uuid.UUID, error) {
@@ -79,7 +81,7 @@ func TestHomeHandler(t *testing.T) {
 		stubRender := StubRender{}
 		server := NewServer(nil, &stubRender)
 
-		request, _ := http.NewRequest(http.MethodGet, "/", nil)
+		request := httptest.NewRequest(http.MethodGet, "/", nil)
 		response := httptest.NewRecorder()
 		server.Handler.ServeHTTP(response, request)
 
@@ -102,7 +104,7 @@ func TestHomeHandler(t *testing.T) {
 		stubRender := StubRender{}
 		server := NewServer(nil, &stubRender)
 
-		request, _ := http.NewRequest(http.MethodGet, "/", nil)
+		request := httptest.NewRequest(http.MethodGet, "/", nil)
 		request.Header.Set("HX-Request", "true")
 		response := httptest.NewRecorder()
 		server.Handler.ServeHTTP(response, request)
@@ -128,7 +130,7 @@ func TestAccountHandler(t *testing.T) {
 		stubRender := StubRender{}
 		server := NewServer(nil, &stubRender)
 
-		request, _ := http.NewRequest(http.MethodGet, "/account", nil)
+		request := httptest.NewRequest(http.MethodGet, "/account", nil)
 		response := httptest.NewRecorder()
 		server.Handler.ServeHTTP(response, request)
 
@@ -151,7 +153,7 @@ func TestAccountHandler(t *testing.T) {
 		stubRender := StubRender{}
 		server := NewServer(nil, &stubRender)
 
-		request, _ := http.NewRequest(http.MethodGet, "/account", nil)
+		request := httptest.NewRequest(http.MethodGet, "/account", nil)
 		request.Header.Set("HX-Request", "true")
 		response := httptest.NewRecorder()
 		server.Handler.ServeHTTP(response, request)
@@ -177,7 +179,7 @@ func TestRenderSignInModalHandler(t *testing.T) {
 		stubRender := StubRender{}
 		server := NewServer(nil, &stubRender)
 
-		request, _ := http.NewRequest(http.MethodGet, "/account/sign-in", nil)
+		request := httptest.NewRequest(http.MethodGet, "/account/sign-in", nil)
 		request.Header.Set("HX-Request", "true")
 		response := httptest.NewRecorder()
 		server.Handler.ServeHTTP(response, request)
@@ -199,9 +201,19 @@ func TestSignInHandler(t *testing.T) {
 	t.Run("it should redirect to Home page on successful POST request", func(t *testing.T) {
 		stubAuth := StubAuth{}
 		stubRender := StubRender{}
+
+		user := data.User{}
+		stubAuth.user = &user
+
 		server := NewServer(&stubAuth, &stubRender)
 
-		request, _ := http.NewRequest(http.MethodPost, "/account/sign-in", nil)
+		formValues := url.Values{
+			"email":    {"762@valid.com"},
+			"password": {"fake-password"},
+		}
+
+		request := httptest.NewRequest(http.MethodPost, "/account/sign-in", strings.NewReader(formValues.Encode()))
+		request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 		response := httptest.NewRecorder()
 		server.Handler.ServeHTTP(response, request)
 
@@ -210,6 +222,12 @@ func TestSignInHandler(t *testing.T) {
 
 		wantStatus := http.StatusSeeOther
 		wantHeaderRedirect := "/"
+
+		gotCookies := response.Result().Cookies()
+
+		if len(gotCookies) != 1 {
+			t.Errorf("expected one cookie to be set, got %v", len(gotCookies))
+		}
 
 		if stubAuth.spySignIn != 1 {
 			t.Errorf("got %v calls to SignIn want 1", stubAuth.spySignIn)
@@ -224,7 +242,31 @@ func TestSignInHandler(t *testing.T) {
 		}
 	})
 
-	t.Run("it should return 400 and user feedback unsuccessful POST request", func(t *testing.T) {
+	t.Run("it should return error message if User not found", func(t *testing.T) {
+		stubAuth := StubAuth{}
+		stubRender := StubRender{}
+
+		server := NewServer(&stubAuth, &stubRender)
+
+		formValues := url.Values{
+			"email":    {"762@valid.com"},
+			"password": {"fake-password"},
+		}
+
+		request := httptest.NewRequest(http.MethodPost, "/account/sign-in", strings.NewReader(formValues.Encode()))
+		request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+		response := httptest.NewRecorder()
+		server.Handler.ServeHTTP(response, request)
+
+		if stubAuth.spySignIn != 1 {
+			t.Errorf("got %v calls to SignIn want 1", stubAuth.spySignIn)
+		}
+		if stubRender.renderErrorMessageFragmentCalls != 1 {
+			t.Errorf("want 1 call to renderErrorMessageFragment, got %d", stubRender.renderErrorMessageFragmentCalls)
+		}
+	})
+
+	t.Run("it should return error message on auth error", func(t *testing.T) {
 		stubAuth := StubAuth{
 			err: fmt.Errorf("boo"),
 		}
@@ -233,15 +275,12 @@ func TestSignInHandler(t *testing.T) {
 
 		stubAuth.err = fmt.Errorf("fake error")
 
-		request, _ := http.NewRequest(http.MethodPost, "/account/sign-in", nil)
+		request := httptest.NewRequest(http.MethodPost, "/account/sign-in", nil)
 		response := httptest.NewRecorder()
 		server.Handler.ServeHTTP(response, request)
 
-		got := response.Result().StatusCode
-		want := http.StatusBadRequest
-
-		if got != want {
-			t.Errorf("got http status %v want http status %v", got, want)
+		if stubAuth.spySignIn != 1 {
+			t.Errorf("got %v calls to SignIn want 1", stubAuth.spySignIn)
 		}
 		if stubRender.renderErrorMessageFragmentCalls != 1 {
 			t.Errorf("want 1 call to renderErrorMessageFragment, got %d", stubRender.renderErrorMessageFragmentCalls)
@@ -254,7 +293,7 @@ func TestRenderSignUpModalHandler(t *testing.T) {
 		stubRender := StubRender{}
 		server := NewServer(nil, &stubRender)
 
-		request, _ := http.NewRequest(http.MethodGet, "/account/sign-up", nil)
+		request := httptest.NewRequest(http.MethodGet, "/account/sign-up", nil)
 		request.Header.Set("HX-Request", "true")
 		response := httptest.NewRecorder()
 		server.Handler.ServeHTTP(response, request)
@@ -297,6 +336,12 @@ func TestSignUpHandler(t *testing.T) {
 
 		wantStatus := http.StatusSeeOther
 		wantHeaderRedirect := "/"
+
+		gotCookies := response.Result().Cookies()
+
+		if len(gotCookies) != 1 {
+			t.Errorf("expected one cookie to be set, got %v", len(gotCookies))
+		}
 
 		if stubAuth.spySignUp != 1 {
 			t.Errorf("got %v calls to SignUp want 1", stubAuth.spySignUp)

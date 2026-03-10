@@ -4,6 +4,10 @@ import (
 	"github.com/google/uuid"
 )
 
+type User struct {
+	ID uuid.UUID `json:"id"`
+}
+
 type Data struct{}
 
 func NewDataService() *Data {
@@ -12,6 +16,16 @@ func NewDataService() *Data {
 
 func (d *Data) CountUserByEmail(email string) (int, error) {
 	return 0, nil
+}
+
+func (d *Data) GetUserByEmail(email string) (*User, error) {
+	user := User{}
+	return &user, nil
+}
+
+func (d *Data) GetUserByEmailAndHash(email string, hash string) (*User, error) {
+	user := User{}
+	return &user, nil
 }
 
 func (d *Data) AddUser(email string, hash string) (id uuid.UUID, err error) {

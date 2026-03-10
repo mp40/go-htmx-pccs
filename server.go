@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/mp40/go-htmx-pccs/data"
 )
 
 type Render interface {
@@ -23,7 +24,7 @@ type Render interface {
 }
 
 type Auth interface {
-	SignIn(email string, password string) error
+	SignIn(email string, password string) (*data.User, error)
 	SignUp(email string, password string) (*uuid.UUID, error)
 }
 
@@ -125,23 +126,34 @@ func (s *Server) signInModalHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) signInHandler(w http.ResponseWriter, r *http.Request) {
-	email := r.FormValue("email")
-	password := r.FormValue("password")
+	email := strings.TrimSpace(r.FormValue("email"))
+	password := strings.TrimSpace(r.FormValue("password"))
 
-	err := s.auth.SignIn(email, password)
-
-	if err != nil {
-		err = s.render.RenderErrorMessageFragment(w, "nfi")
+	user, err := s.auth.SignIn(email, password)
+	if user == nil {
+		err = s.render.RenderErrorMessageFragment(w, "invalid sign in: check email and password")
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
-		w.WriteHeader(http.StatusBadRequest)
-	} else {
-		// if yes
-		w.Header().Set("HX-Redirect", "/")
-		w.WriteHeader(http.StatusSeeOther)
+		w.Header().Set("Content-Type", "text/html")
+		return
 	}
+	if err != nil {
+		err = s.render.RenderErrorMessageFragment(w, "internal server error")
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "text/html")
+		return
+	}
+
+	// if yes
+	cookie := getSecureCookie(user.ID)
+	http.SetCookie(w, &cookie)
+	w.Header().Set("HX-Redirect", "/")
+	w.WriteHeader(http.StatusSeeOther)
 	w.Header().Set("Content-Type", "text/html")
 }
 
