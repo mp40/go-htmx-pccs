@@ -26,11 +26,6 @@ func (d *StubData) GetUserByEmail(email string) (user *data.User, err error) {
 	return d.user, d.err
 }
 
-func (d *StubData) GetUserByEmailAndHash(email string, hash string) (user *data.User, err error) {
-	d.spyGetByEmailAndHash++
-	return d.user, d.err
-}
-
 func (d *StubData) AddUser(email string, hash string) (userID uuid.UUID, err error) {
 	return d.newID, d.err
 }

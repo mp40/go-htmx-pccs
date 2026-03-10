@@ -23,11 +23,6 @@ func (d *Data) GetUserByEmail(email string) (*User, error) {
 	return &user, nil
 }
 
-func (d *Data) GetUserByEmailAndHash(email string, hash string) (*User, error) {
-	user := User{}
-	return &user, nil
-}
-
 func (d *Data) AddUser(email string, hash string) (id uuid.UUID, err error) {
 	ID := uuid.New()
 	return ID, nil

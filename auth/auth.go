@@ -13,7 +13,6 @@ import (
 type Data interface {
 	CountUserByEmail(email string) (int, error)
 	GetUserByEmail(email string) (*data.User, error)
-	GetUserByEmailAndHash(email string, hash string) (*data.User, error)
 	AddUser(email string, hash string) (userID uuid.UUID, err error)
 }
 
@@ -28,6 +27,14 @@ func NewAuthService(data Data) *Auth {
 }
 
 func (a *Auth) SignIn(email string, password string) (*data.User, error) {
+	user, err := a.data.GetUserByEmail(email)
+	if err != nil {
+		return nil, fmt.Errorf("500")
+	}
+	if user == nil {
+		return nil, fmt.Errorf("404")
+	}
+
 	// bad naming
 	SALT := os.Getenv("SALT")
 	if len(SALT) == 0 {
@@ -37,12 +44,16 @@ func (a *Auth) SignIn(email string, password string) (*data.User, error) {
 	if err != nil {
 		return nil, fmt.Errorf("500")
 	}
+
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), parsedSalt)
 	if err != nil {
 		return nil, fmt.Errorf("unexpected data error: %w", err)
 	}
 
-	user, err := a.data.GetUserByEmailAndHash(email, string(hash))
+	err = bcrypt.CompareHashAndPassword(hash, []byte(password))
+	if err != nil {
+		return nil, fmt.Errorf("401")
+	}
 
 	return user, err
 }
