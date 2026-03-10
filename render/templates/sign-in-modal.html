@@ -1,12 +1,19 @@
 {{ define "modal" }}
-<div class="modal-div">
-    <button class="modal-close" hx-on:click="this.closest('.modal-container-div').innerHTML = ''">&times;</button>
-    <form hx-post="/account/sign-in">
-        <label for="email">Email</label>
-        <input type="email" name="email" required>
-        <label for="password">Password</label>
-        <input type="password" name="password" minlength="8" required>
-        <input class="page-button-grey" type="submit">
-    </form>
-</div> 
+<div class="modal-background">
+    <div class="modal-div">
+        <button class="modal-close" hx-on:click="this.closest('.modal-container-div').innerHTML = ''">&times;</button>
+        <form hx-post="/account/sign-in">
+            <label for="email">Email</label>
+            <input type="email" name="email" required>
+            <label for="password">Password</label>
+            <input type="password" name="password" minlength="8" required>
+            <input class="page-button-grey" type="submit">
+        </form>
+        {{ template "error" . }}
+    </div> 
+</div>
+{{ end }}
+
+{{ define "error" }}
+<div class="modal-error"></div>
 {{ end }}

@@ -5,6 +5,8 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
+	"strings"
 	"testing"
 
 	"github.com/google/uuid"
@@ -18,14 +20,13 @@ type StubAuth struct {
 }
 
 type StubRender struct {
-	renderHomePageCalls                     int
-	renderHomeFragmentCalls                 int
-	renderAccountPageCalls                  int
-	renderAccountFragmentCalls              int
-	renderSignInModalCalls                  int
-	renderSignUpModalCalls                  int
-	renderAccountSignInFailureFragmentCalls int
-	renderAccountSignUpFailureFragmentCalls int
+	renderHomePageCalls             int
+	renderHomeFragmentCalls         int
+	renderAccountPageCalls          int
+	renderAccountFragmentCalls      int
+	renderSignInModalCalls          int
+	renderSignUpModalCalls          int
+	renderErrorMessageFragmentCalls int
 }
 
 func (r *StubRender) RenderHomePage(w io.Writer) error {
@@ -48,13 +49,8 @@ func (r *StubRender) RenderAccountFragment(w io.Writer) error {
 	return nil
 }
 
-func (r *StubRender) RenderAccountSignInFailureFragment(w io.Writer) error {
-	r.renderAccountSignInFailureFragmentCalls++
-	return nil
-}
-
-func (r *StubRender) RenderAccountSignUpFailureFragment(w io.Writer, msg string) error {
-	r.renderAccountSignUpFailureFragmentCalls++
+func (r *StubRender) RenderErrorMessageFragment(w io.Writer, msg string) error {
+	r.renderErrorMessageFragmentCalls++
 	return nil
 }
 
@@ -247,8 +243,8 @@ func TestSignInHandler(t *testing.T) {
 		if got != want {
 			t.Errorf("got http status %v want http status %v", got, want)
 		}
-		if stubRender.renderAccountSignInFailureFragmentCalls != 1 {
-			t.Errorf("want 1 call to renderHomeFragment, got %d", stubRender.renderAccountSignInFailureFragmentCalls)
+		if stubRender.renderErrorMessageFragmentCalls != 1 {
+			t.Errorf("want 1 call to renderErrorMessageFragment, got %d", stubRender.renderErrorMessageFragmentCalls)
 		}
 	})
 }
@@ -286,7 +282,13 @@ func TestSignUpHandler(t *testing.T) {
 
 		server := NewServer(&stubAuth, &stubRender)
 
-		request, _ := http.NewRequest(http.MethodPost, "/account/sign-up", nil)
+		formValues := url.Values{
+			"email":    {"762@valid.com"},
+			"password": {"fake-password"},
+		}
+
+		request := httptest.NewRequest(http.MethodPost, "/account/sign-up", strings.NewReader(formValues.Encode()))
+		request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 		response := httptest.NewRecorder()
 		server.Handler.ServeHTTP(response, request)
 
@@ -309,21 +311,73 @@ func TestSignUpHandler(t *testing.T) {
 		}
 	})
 
+	t.Run("it should return error message if invalid email format", func(t *testing.T) {
+		stubAuth := StubAuth{}
+		stubRender := StubRender{}
+		server := NewServer(&stubAuth, &stubRender)
+
+		formValues := url.Values{
+			"email":    {"invalid.com"},
+			"password": {"fake-password"},
+		}
+
+		request := httptest.NewRequest(http.MethodPost, "/account/sign-up", strings.NewReader(formValues.Encode()))
+		request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+		response := httptest.NewRecorder()
+		server.Handler.ServeHTTP(response, request)
+
+		if stubAuth.spySignUp != 0 {
+			t.Errorf("got %v calls to SignUp want 0", stubAuth.spySignUp)
+		}
+
+		if stubRender.renderErrorMessageFragmentCalls != 1 {
+			t.Errorf("want 1 call to renderErrorMessageFragment, got %d", stubRender.renderErrorMessageFragmentCalls)
+		}
+	})
+
+	t.Run("it should return error message if invalid email format", func(t *testing.T) {
+		stubAuth := StubAuth{}
+		stubRender := StubRender{}
+		server := NewServer(&stubAuth, &stubRender)
+
+		formValues := url.Values{
+			"email":    {"762@valid.com"},
+			"password": {"bad"},
+		}
+
+		request := httptest.NewRequest(http.MethodPost, "/account/sign-up", strings.NewReader(formValues.Encode()))
+		request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+		response := httptest.NewRecorder()
+		server.Handler.ServeHTTP(response, request)
+
+		if stubAuth.spySignUp != 0 {
+			t.Errorf("got %v calls to SignUp want 0", stubAuth.spySignUp)
+		}
+
+		if stubRender.renderErrorMessageFragmentCalls != 1 {
+			t.Errorf("want 1 call to renderErrorMessageFragment, got %d", stubRender.renderErrorMessageFragmentCalls)
+		}
+	})
+
 	t.Run("it should return 400 and user feedback unsuccessful POST request", func(t *testing.T) {
 		stubAuth := StubAuth{
-			err: fmt.Errorf("boo"),
+			err: fmt.Errorf("fake error"),
 		}
 		stubRender := StubRender{}
 		server := NewServer(&stubAuth, &stubRender)
 
-		stubAuth.err = fmt.Errorf("fake error")
+		formValues := url.Values{
+			"email":    {"762@valid.com"},
+			"password": {"fake-password"},
+		}
 
-		request, _ := http.NewRequest(http.MethodPost, "/account/sign-up", nil)
+		request := httptest.NewRequest(http.MethodPost, "/account/sign-up", strings.NewReader(formValues.Encode()))
+		request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 		response := httptest.NewRecorder()
 		server.Handler.ServeHTTP(response, request)
 
-		if stubRender.renderAccountSignUpFailureFragmentCalls != 1 {
-			t.Errorf("want 1 call to renderAccountSignUpFailureFragment, got %d", stubRender.renderAccountSignUpFailureFragmentCalls)
+		if stubRender.renderErrorMessageFragmentCalls != 1 {
+			t.Errorf("want 1 call to renderErrorMessageFragment, got %d", stubRender.renderErrorMessageFragmentCalls)
 		}
 	})
 }

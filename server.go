@@ -3,8 +3,10 @@ package main
 import (
 	"io"
 	"net/http"
+	"net/mail"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -15,10 +17,9 @@ type Render interface {
 	RenderHomeFragment(w io.Writer) error
 	RenderAccountPage(w io.Writer) error
 	RenderAccountFragment(w io.Writer) error
-	RenderAccountSignInFailureFragment(w io.Writer) error
 	RenderSignInModal(w io.Writer) error
-	RenderAccountSignUpFailureFragment(w io.Writer, msg string) error
 	RenderSignUpModal(w io.Writer) error
+	RenderErrorMessageFragment(w io.Writer, msg string) error
 }
 
 type Auth interface {
@@ -129,9 +130,8 @@ func (s *Server) signInHandler(w http.ResponseWriter, r *http.Request) {
 
 	err := s.auth.SignIn(email, password)
 
-	// if no - something
 	if err != nil {
-		err = s.render.RenderAccountSignInFailureFragment(w)
+		err = s.render.RenderErrorMessageFragment(w, "nfi")
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
@@ -165,12 +165,23 @@ func (s *Server) signUpModalHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) signUpHandler(w http.ResponseWriter, r *http.Request) {
-	email := r.FormValue("email")
-	password := r.FormValue("password")
+	email := strings.TrimSpace(r.FormValue("email"))
+	password := strings.TrimSpace(r.FormValue("password"))
+
+	_, err := mail.ParseAddress(email)
+	if err != nil || len(password) < 8 {
+		err = s.render.RenderErrorMessageFragment(w, "invalid sign up: provide email and password at least 8 characters long")
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "text/html")
+		return
+	}
 
 	newID, err := s.auth.SignUp(email, password)
 	if err != nil {
-		err = s.render.RenderAccountSignUpFailureFragment(w, "nfi")
+		err = s.render.RenderErrorMessageFragment(w, "nfi")
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
@@ -180,7 +191,7 @@ func (s *Server) signUpHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if newID == nil {
-		err = s.render.RenderAccountSignUpFailureFragment(w, "nfi")
+		err = s.render.RenderErrorMessageFragment(w, "internal server error")
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			return

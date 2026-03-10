@@ -29,8 +29,6 @@ func (a *Auth) SignIn(email string, password string) error {
 }
 
 func (a *Auth) SignUp(email string, password string) (ID *uuid.UUID, err error) {
-	// validation of email and password
-
 	userCount, err := a.data.CountUserByEmail(email)
 	if err != nil {
 		return nil, fmt.Errorf("unexpected data error: %w", err)
@@ -39,6 +37,7 @@ func (a *Auth) SignUp(email string, password string) (ID *uuid.UUID, err error) 
 		return nil, fmt.Errorf("409")
 	}
 
+	// bad naming
 	SALT := os.Getenv("SALT")
 	if len(SALT) == 0 {
 		return nil, fmt.Errorf("500")

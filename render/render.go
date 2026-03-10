@@ -88,10 +88,6 @@ func (r *Render) RenderSignInModal(w io.Writer) error {
 	return nil
 }
 
-func (r *Render) RenderAccountSignInFailureFragment(w io.Writer) error {
-	return nil
-}
-
 func (r *Render) RenderSignUpModal(w io.Writer) error {
 	tmpl, err := template.New("modal").ParseFiles(getTemplatePath("sign-up-modal.html"))
 
@@ -107,8 +103,8 @@ func (r *Render) RenderSignUpModal(w io.Writer) error {
 	return nil
 }
 
-func (r *Render) RenderAccountSignUpFailureFragment(w io.Writer, msg string) error {
-	tmpl, err := template.New("error").ParseFiles(getTemplatePath("sign-up-error.html"))
+func (r *Render) RenderErrorMessageFragment(w io.Writer, msg string) error {
+	tmpl, err := template.New("error").ParseFiles(getTemplatePath("error-message.html"))
 	if err != nil {
 		return err
 	}
