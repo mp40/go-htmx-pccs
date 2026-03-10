@@ -7,15 +7,16 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/mp40/go-htmx-pccs/data"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type StubData struct {
-	newID                uuid.UUID
-	user                 *data.User
-	count                int
-	countErr             error
-	err                  error
-	spyGetByEmailAndHash int
+	newID         uuid.UUID
+	user          *data.User
+	count         int
+	countErr      error
+	err           error
+	spyGetByEmail int
 }
 
 func (d *StubData) CountUserByEmail(email string) (int, error) {
@@ -23,6 +24,7 @@ func (d *StubData) CountUserByEmail(email string) (int, error) {
 }
 
 func (d *StubData) GetUserByEmail(email string) (user *data.User, err error) {
+	d.spyGetByEmail++
 	return d.user, d.err
 }
 
@@ -82,10 +84,14 @@ func TestSignUp(t *testing.T) {
 }
 
 func TestSignIn(t *testing.T) {
-	t.Setenv("SALT", "1")
+	password := "fake-password"
+	hash, err := bcrypt.GenerateFromPassword([]byte(password), 1)
+	if err != nil {
+		panic("test fixture failure")
+	}
 	t.Run("it should return pointer to User when user found by by email and hash", func(t *testing.T) {
 		stubData := StubData{}
-		user := data.User{}
+		user := data.User{Hash: string(hash)}
 		stubData.user = &user
 		auth := NewAuthService(&stubData)
 
@@ -94,8 +100,8 @@ func TestSignIn(t *testing.T) {
 			t.Errorf("got unexpected error: %v", err)
 		}
 
-		if stubData.spyGetByEmailAndHash != 1 {
-			t.Errorf("unexpected calls to data, got %v, want 1", stubData.spyGetByEmailAndHash)
+		if stubData.spyGetByEmail != 1 {
+			t.Errorf("unexpected calls to data, got %v, want 1", stubData.spyGetByEmail)
 		}
 
 		if got == nil {
@@ -103,7 +109,7 @@ func TestSignIn(t *testing.T) {
 		}
 	})
 
-	t.Run("it should return nil when user not found by email and hash", func(t *testing.T) {
+	t.Run("it should return nil when user not found by email", func(t *testing.T) {
 		stubData := StubData{}
 		auth := NewAuthService(&stubData)
 
@@ -112,12 +118,32 @@ func TestSignIn(t *testing.T) {
 			t.Errorf("got unexpected error: %v", err)
 		}
 
-		if stubData.spyGetByEmailAndHash != 1 {
-			t.Errorf("unexpected calls to data, got %v, want 1", stubData.spyGetByEmailAndHash)
+		if stubData.spyGetByEmail != 1 {
+			t.Errorf("unexpected calls to data, got %v, want 1", stubData.spyGetByEmail)
 		}
 
 		if got != nil {
 			t.Errorf("got user, want nil")
+		}
+	})
+
+	t.Run("it should return pointer to nil when provided password does not match", func(t *testing.T) {
+		stubData := StubData{}
+		user := data.User{Hash: "something-else"}
+		stubData.user = &user
+		auth := NewAuthService(&stubData)
+
+		got, err := auth.SignIn("fake@email.com", "fake-password")
+		if err != nil {
+			t.Errorf("got unexpected error: %v", err)
+		}
+
+		if stubData.spyGetByEmail != 1 {
+			t.Errorf("unexpected calls to data, got %v, want 1", stubData.spyGetByEmail)
+		}
+
+		if got != nil {
+			t.Errorf("expected nil, got user")
 		}
 	})
 
@@ -127,8 +153,8 @@ func TestSignIn(t *testing.T) {
 
 		_, err := auth.SignIn("fake@email.com", "fake-password")
 
-		if stubData.spyGetByEmailAndHash != 1 {
-			t.Errorf("unexpected calls to data, got %v, want 1", stubData.spyGetByEmailAndHash)
+		if stubData.spyGetByEmail != 1 {
+			t.Errorf("unexpected calls to data, got %v, want 1", stubData.spyGetByEmail)
 		}
 
 		if err == nil {

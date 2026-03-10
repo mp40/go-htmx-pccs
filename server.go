@@ -130,8 +130,8 @@ func (s *Server) signInHandler(w http.ResponseWriter, r *http.Request) {
 	password := strings.TrimSpace(r.FormValue("password"))
 
 	user, err := s.auth.SignIn(email, password)
-	if user == nil {
-		err = s.render.RenderErrorMessageFragment(w, "invalid sign in: check email and password")
+	if err != nil {
+		err = s.render.RenderErrorMessageFragment(w, "internal server error")
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
@@ -139,8 +139,8 @@ func (s *Server) signInHandler(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html")
 		return
 	}
-	if err != nil {
-		err = s.render.RenderErrorMessageFragment(w, "internal server error")
+	if user == nil {
+		err = s.render.RenderErrorMessageFragment(w, "invalid sign in: check email and password")
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			return

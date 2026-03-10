@@ -32,27 +32,14 @@ func (a *Auth) SignIn(email string, password string) (*data.User, error) {
 		return nil, fmt.Errorf("500")
 	}
 	if user == nil {
-		return nil, fmt.Errorf("404")
+		// promote to typed error if/when needed
+		return nil, err
 	}
 
-	// bad naming
-	SALT := os.Getenv("SALT")
-	if len(SALT) == 0 {
-		return nil, fmt.Errorf("500")
-	}
-	parsedSalt, err := strconv.Atoi(SALT)
+	err = bcrypt.CompareHashAndPassword([]byte(user.Hash), []byte(password))
 	if err != nil {
-		return nil, fmt.Errorf("500")
-	}
-
-	hash, err := bcrypt.GenerateFromPassword([]byte(password), parsedSalt)
-	if err != nil {
-		return nil, fmt.Errorf("unexpected data error: %w", err)
-	}
-
-	err = bcrypt.CompareHashAndPassword(hash, []byte(password))
-	if err != nil {
-		return nil, fmt.Errorf("401")
+		// promote to typed error if/when needed
+		return nil, nil
 	}
 
 	return user, err

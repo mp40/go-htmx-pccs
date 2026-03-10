@@ -5,7 +5,8 @@ import (
 )
 
 type User struct {
-	ID uuid.UUID `json:"id"`
+	ID   uuid.UUID `json:"id"`
+	Hash string    `json:"hash"`
 }
 
 type Data struct{}
