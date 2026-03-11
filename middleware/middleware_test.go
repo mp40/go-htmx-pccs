@@ -30,7 +30,7 @@ func TestMiddleware(t *testing.T) {
 
 		var contextUserId *uuid.UUID
 		nextHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			raw, ok := r.Context().Value("userID").(uuid.UUID)
+			raw, ok := r.Context().Value(userContextKey).(uuid.UUID)
 			if ok {
 				contextUserId = &raw
 			}
@@ -67,7 +67,7 @@ func TestMiddleware(t *testing.T) {
 
 		var contextUserId *uuid.UUID
 		nextHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			raw, ok := r.Context().Value("userID").(uuid.UUID)
+			raw, ok := r.Context().Value(userContextKey).(uuid.UUID)
 			if ok {
 				contextUserId = &raw
 			}
@@ -100,7 +100,7 @@ func TestMiddleware(t *testing.T) {
 
 		var contextUserId *uuid.UUID
 		nextHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			raw, ok := r.Context().Value("userID").(uuid.UUID)
+			raw, ok := r.Context().Value(userContextKey).(uuid.UUID)
 			if ok {
 				contextUserId = &raw
 			}
@@ -135,7 +135,7 @@ func TestMiddleware(t *testing.T) {
 
 		var contextUserId *uuid.UUID
 		nextHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			raw, ok := r.Context().Value("userID").(uuid.UUID)
+			raw, ok := r.Context().Value(userContextKey).(uuid.UUID)
 			if ok {
 				contextUserId = &raw
 			}
@@ -207,7 +207,7 @@ func TestMiddleware(t *testing.T) {
 
 		var contextUserId *uuid.UUID
 		nextHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			raw, ok := r.Context().Value("userID").(uuid.UUID)
+			raw, ok := r.Context().Value(userContextKey).(uuid.UUID)
 			if ok {
 				contextUserId = &raw
 			}

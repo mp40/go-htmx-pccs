@@ -31,7 +31,7 @@ type StubRender struct {
 	renderErrorMessageFragmentCalls int
 }
 
-func (r *StubRender) RenderHomePage(w io.Writer) error {
+func (r *StubRender) RenderHomePage(w io.Writer, signedIn bool) error {
 	r.renderHomePageCalls++
 	return nil
 }

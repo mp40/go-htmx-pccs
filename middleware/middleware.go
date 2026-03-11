@@ -7,6 +7,10 @@ import (
 	"github.com/google/uuid"
 )
 
+type contextKey string
+
+const userContextKey contextKey = "userID"
+
 type Data interface {
 	CountUserByID(ID uuid.UUID) (int, error)
 }
@@ -23,14 +27,9 @@ func NewMiddlewareService(data Data) *Middleware {
 
 func (m *Middleware) AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		cookie, err := r.Cookie("userID")
+		cookie, err := r.Cookie(string(userContextKey))
 		if err != nil {
 			// GREY - for now fall through
-			next.ServeHTTP(w, r)
-			return
-		}
-		if cookie == nil {
-			// definate NO
 			next.ServeHTTP(w, r)
 			return
 		}
@@ -66,8 +65,25 @@ func (m *Middleware) AuthMiddleware(next http.Handler) http.Handler {
 
 		// if user count = 1, def YES
 		c := r.Context()
-		ctx := context.WithValue(c, "userID", userID)
+		ctx := context.WithValue(c, userContextKey, userID)
 
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
+}
+
+// should these and the key be in Auth? or somewhere else? Or through interface or dep inj
+func GetUserID(ctx context.Context) *uuid.UUID {
+	userID, ok := ctx.Value(userContextKey).(uuid.UUID)
+	if !ok {
+		return nil
+	}
+	return &userID
+}
+
+func IsSignedIn(ctx context.Context) bool {
+	_, ok := ctx.Value(userContextKey).(uuid.UUID)
+	if !ok {
+		return false
+	}
+	return true
 }

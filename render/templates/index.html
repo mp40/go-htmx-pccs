@@ -6,13 +6,7 @@
     <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.6/dist/htmx.min.js" integrity="sha384-Akqfrbj/HpNVo8k11SXBb6TlBWmXXlYQrCSqEWmyKJe+hDm3Z/B2WVG4smwBkRVm" crossorigin="anonymous"></script>
   </head>
   <body>
-    <div class="top-strap">
-      <span class="outer-circle active">
-        <span class="inner-circle">
-        </span>
-      </span>
-      <span>Signed In</span>
-    </div>
+    {{ template "top-strap" . }}
     <div class="container">
       <div class="nav-container nav-div">
         <a

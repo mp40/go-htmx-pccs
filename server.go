@@ -11,10 +11,11 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/mp40/go-htmx-pccs/data"
+	"github.com/mp40/go-htmx-pccs/middleware"
 )
 
 type Render interface {
-	RenderHomePage(w io.Writer) error
+	RenderHomePage(w io.Writer, signedIn bool) error
 	RenderHomeFragment(w io.Writer) error
 	RenderAccountPage(w io.Writer) error
 	RenderAccountFragment(w io.Writer) error
@@ -68,6 +69,8 @@ func NewServer(auth Auth, render Render) *Server {
 func (s *Server) getHomeHandler(w http.ResponseWriter, r *http.Request) {
 	htmxHeader := r.Header.Get("HX-Request")
 	isHtmx, _ := strconv.ParseBool(htmxHeader)
+	signedIn := middleware.IsSignedIn(r.Context())
+
 	if isHtmx {
 		err := s.render.RenderHomeFragment(w)
 
@@ -76,7 +79,7 @@ func (s *Server) getHomeHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	} else {
-		err := s.render.RenderHomePage(w)
+		err := s.render.RenderHomePage(w, signedIn)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			return

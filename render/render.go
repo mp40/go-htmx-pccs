@@ -13,14 +13,19 @@ func NewRenderService() *Render {
 	return &Render{}
 }
 
-func (r *Render) RenderHomePage(w io.Writer) error {
-	tmpl, err := template.ParseFiles(getTemplatePath("index.html"), getTemplatePath("home.html"))
-
+func (r *Render) RenderHomePage(w io.Writer, signedIn bool) error {
+	tmpl, err := template.ParseFiles(getTemplatePath("index.html"), getTemplatePath("top-strap.html"), getTemplatePath("home.html"))
 	if err != nil {
 		return err
 	}
 
-	err = tmpl.Execute(w, nil)
+	data := struct {
+		SignedIn bool
+	}{
+		SignedIn: signedIn,
+	}
+
+	err = tmpl.Execute(w, data)
 	if err != nil {
 		return err
 	}

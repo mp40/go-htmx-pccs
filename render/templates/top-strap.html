@@ -1,0 +1,15 @@
+{{ define "top-strap" }}    
+<div class="top-strap">
+    {{if .SignedIn}}
+    <span class="outer-circle active">
+        <span class="inner-circle"></span>
+    </span>
+    <span>Signed In</span>
+    {{else}}
+    <span class="outer-circle">
+        <span class="inner-circle"></span>
+    </span>
+    <span>Sign In</span>
+    {{end}}
+</div>
+{{ end }}
