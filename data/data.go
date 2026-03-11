@@ -5,8 +5,9 @@ import (
 )
 
 type User struct {
-	ID   uuid.UUID `json:"id"`
-	Hash string    `json:"hash"`
+	ID    uuid.UUID `json:"id"`
+	Email string    `json:"email"`
+	Hash  string    `json:"hash"`
 }
 
 type Data struct{}
@@ -22,6 +23,10 @@ func (d *Data) CountUserByEmail(email string) (int, error) {
 func (d *Data) GetUserByEmail(email string) (*User, error) {
 	user := User{}
 	return &user, nil
+}
+
+func (d *Data) CountUserByID(ID uuid.UUID) (int, error) {
+	return 0, nil
 }
 
 func (d *Data) AddUser(email string, hash string) (id uuid.UUID, err error) {

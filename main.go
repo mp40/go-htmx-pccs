@@ -23,7 +23,7 @@ func main() {
 
 	server := NewServer(a, r)
 
-	m := middleware.NewMiddlewareService()
+	m := middleware.NewMiddlewareService(d)
 	serverWithMiddleware := m.AuthMiddleware(server)
 
 	log.Fatal(http.ListenAndServe(":5050", serverWithMiddleware))
