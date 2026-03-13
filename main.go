@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"log"
 	"net/http"
 
@@ -17,7 +18,12 @@ func main() {
 		log.Fatal(err)
 	}
 
-	d := data.NewDataService()
+	db, err := sql.Open("sqlite3", "./data/app.db")
+	if err != nil {
+		log.Fatalf("init db error: %v", err)
+	}
+
+	d := data.NewDataService(db)
 	a := auth.NewAuthService(d)
 	r := render.NewRenderService()
 

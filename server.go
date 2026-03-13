@@ -95,12 +95,14 @@ func (s *Server) getAccountHandler(w http.ResponseWriter, r *http.Request) {
 	if isHtmx {
 		err := s.render.RenderAccountFragment(w)
 		if err != nil {
+			// log err
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 	} else {
 		err := s.render.RenderAccountPage(w)
 		if err != nil {
+			// log err
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -115,10 +117,12 @@ func (s *Server) signInModalHandler(w http.ResponseWriter, r *http.Request) {
 	if isHtmx {
 		err := s.render.RenderSignInModal(w)
 		if err != nil {
+			// log err
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 	} else {
+		// log err
 		// ???
 		// what to do if not htmx?
 		w.WriteHeader(http.StatusInternalServerError)
@@ -136,6 +140,7 @@ func (s *Server) signInHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		err = s.render.RenderErrorMessageFragment(w, "internal server error")
 		if err != nil {
+			// log err
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -145,6 +150,7 @@ func (s *Server) signInHandler(w http.ResponseWriter, r *http.Request) {
 	if user == nil {
 		err = s.render.RenderErrorMessageFragment(w, "invalid sign in: check email and password")
 		if err != nil {
+			// log err
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -166,10 +172,12 @@ func (s *Server) signUpModalHandler(w http.ResponseWriter, r *http.Request) {
 	if isHtmx {
 		err := s.render.RenderSignUpModal(w)
 		if err != nil {
+			// log err
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 	} else {
+		// log err
 		// ???
 		// what to do if not htmx?
 		w.WriteHeader(http.StatusInternalServerError)
@@ -187,6 +195,7 @@ func (s *Server) signUpHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil || len(password) < 8 {
 		err = s.render.RenderErrorMessageFragment(w, "invalid sign up: provide email and password at least 8 characters long")
 		if err != nil {
+			// log err
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -198,6 +207,7 @@ func (s *Server) signUpHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		err = s.render.RenderErrorMessageFragment(w, "nfi")
 		if err != nil {
+			// log err
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -208,6 +218,7 @@ func (s *Server) signUpHandler(w http.ResponseWriter, r *http.Request) {
 	if newID == nil {
 		err = s.render.RenderErrorMessageFragment(w, "internal server error")
 		if err != nil {
+			// log err
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}

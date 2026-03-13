@@ -32,12 +32,14 @@ func (a *Auth) SignIn(email string, password string) (*data.User, error) {
 		return nil, fmt.Errorf("500")
 	}
 	if user == nil {
+		// log err
 		// promote to typed error if/when needed
 		return nil, err
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.Hash), []byte(password))
 	if err != nil {
+		// log err
 		// promote to typed error if/when needed
 		return nil, nil
 	}
@@ -48,29 +50,35 @@ func (a *Auth) SignIn(email string, password string) (*data.User, error) {
 func (a *Auth) SignUp(email string, password string) (ID *uuid.UUID, err error) {
 	userCount, err := a.data.CountUserByEmail(email)
 	if err != nil {
+		// log err
 		return nil, fmt.Errorf("unexpected data error: %w", err)
 	}
 	if userCount != 0 {
+		// log err
 		return nil, fmt.Errorf("409")
 	}
 
 	// bad naming
-	SALT := os.Getenv("SALT")
-	if len(SALT) == 0 {
+	COST := os.Getenv("COST")
+	if len(COST) == 0 {
+		// log err
 		return nil, fmt.Errorf("500")
 	}
-	parsedSalt, err := strconv.Atoi(SALT)
+	parsedSalt, err := strconv.Atoi(COST)
 	if err != nil {
+		// log err
 		return nil, fmt.Errorf("500")
 	}
 
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), parsedSalt)
 	if err != nil {
+		// log err
 		return nil, fmt.Errorf("unexpected data error: %w", err)
 	}
 
 	userID, err := a.data.AddUser(email, string(hash))
 	if err != nil {
+		// log err
 		return nil, fmt.Errorf("unexpected data error: %w", err)
 	}
 

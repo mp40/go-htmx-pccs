@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"context"
+	"log/slog"
 	"net/http"
 
 	"github.com/google/uuid"
@@ -36,6 +37,7 @@ func (m *Middleware) AuthMiddleware(next http.Handler) http.Handler {
 		rawID := cookie.Value
 		userID, err := uuid.Parse(rawID)
 		if err != nil {
+			slog.Warn("middleware, unparseable user id", "rawID", rawID)
 			// GREY if we set cookie, then we expect parseable id
 			// for now fall through - latter decide other action ie redirect to sign in with err msg
 			next.ServeHTTP(w, r)
@@ -45,18 +47,21 @@ func (m *Middleware) AuthMiddleware(next http.Handler) http.Handler {
 		// get count by id
 		count, err := m.data.CountUserByID(userID)
 		if err != nil {
+			slog.Error("middleware, data error", "err", err)
 			// GREY data layer error - do not know correct count
 			// for now fall through
 			next.ServeHTTP(w, r)
 			return
 		}
 		if count > 1 {
+			slog.Error("middleware, count user error", "got count", count)
 			// GREY if we set cookie, then we expect 1
 			// for now fall through - latter decide other action ie redirect to sign in
 			next.ServeHTTP(w, r)
 			return
 		}
 		if count == 0 {
+			slog.Warn("middleware, count user error - got count zero")
 			// GREY if we set cookie, then we expect 1
 			// for now fall through
 			next.ServeHTTP(w, r)

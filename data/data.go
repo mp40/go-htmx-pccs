@@ -1,6 +1,8 @@
 package data
 
 import (
+	"database/sql"
+
 	"github.com/google/uuid"
 )
 
@@ -10,10 +12,12 @@ type User struct {
 	Hash  string    `json:"hash"`
 }
 
-type Data struct{}
+type Data struct {
+	db *sql.DB
+}
 
-func NewDataService() *Data {
-	return &Data{}
+func NewDataService(db *sql.DB) *Data {
+	return &Data{db: db}
 }
 
 func (d *Data) CountUserByEmail(email string) (int, error) {
