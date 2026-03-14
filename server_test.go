@@ -41,7 +41,7 @@ func (r *StubRender) RenderHomeFragment(w io.Writer) error {
 	return nil
 }
 
-func (r *StubRender) RenderAccountPage(w io.Writer) error {
+func (r *StubRender) RenderAccountPage(w io.Writer, signedIn bool) error {
 	r.renderAccountPageCalls++
 	return nil
 }

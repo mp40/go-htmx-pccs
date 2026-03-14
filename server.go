@@ -18,7 +18,7 @@ import (
 type Render interface {
 	RenderHomePage(w io.Writer, signedIn bool) error
 	RenderHomeFragment(w io.Writer) error
-	RenderAccountPage(w io.Writer) error
+	RenderAccountPage(w io.Writer, signedIn bool) error
 	RenderAccountFragment(w io.Writer) error
 	RenderSignInModal(w io.Writer) error
 	RenderSignUpModal(w io.Writer) error
@@ -94,6 +94,8 @@ func (s *Server) getHomeHandler(w http.ResponseWriter, r *http.Request) {
 func (s *Server) getAccountHandler(w http.ResponseWriter, r *http.Request) {
 	htmxHeader := r.Header.Get("HX-Request")
 	isHtmx, _ := strconv.ParseBool(htmxHeader)
+	signedIn := middleware.IsSignedIn(r.Context())
+
 	if isHtmx {
 		err := s.render.RenderAccountFragment(w)
 		if err != nil {
@@ -102,7 +104,7 @@ func (s *Server) getAccountHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	} else {
-		err := s.render.RenderAccountPage(w)
+		err := s.render.RenderAccountPage(w, signedIn)
 		if err != nil {
 			slog.Error("server error rendering", "err", err)
 			w.WriteHeader(http.StatusInternalServerError)
@@ -163,9 +165,9 @@ func (s *Server) signInHandler(w http.ResponseWriter, r *http.Request) {
 	// if yes
 	cookie := getSecureCookie(user.ID)
 	http.SetCookie(w, &cookie)
+	w.Header().Set("Content-Type", "text/html")
 	w.Header().Set("HX-Redirect", "/")
 	w.WriteHeader(http.StatusSeeOther)
-	w.Header().Set("Content-Type", "text/html")
 }
 
 func (s *Server) signUpModalHandler(w http.ResponseWriter, r *http.Request) {
@@ -230,9 +232,9 @@ func (s *Server) signUpHandler(w http.ResponseWriter, r *http.Request) {
 	// if yes
 	cookie := getSecureCookie(*newID)
 	http.SetCookie(w, &cookie)
+	w.Header().Set("Content-Type", "text/html")
 	w.Header().Set("HX-Redirect", "/")
 	w.WriteHeader(http.StatusSeeOther)
-	w.Header().Set("Content-Type", "text/html")
 }
 
 func getSecureCookie(userID uuid.UUID) http.Cookie {

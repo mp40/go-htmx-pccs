@@ -48,8 +48,8 @@ func (r *Render) RenderHomeFragment(w io.Writer) error {
 	return nil
 }
 
-func (r *Render) RenderAccountPage(w io.Writer) error {
-	tmpl, err := template.ParseFiles(getTemplatePath("index.html"), getTemplatePath("account.html"))
+func (r *Render) RenderAccountPage(w io.Writer, signedIn bool) error {
+	tmpl, err := template.ParseFiles(getTemplatePath("index.html"), getTemplatePath("top-strap.html"), getTemplatePath("account.html"))
 
 	if err != nil {
 		return err
