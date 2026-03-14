@@ -2,6 +2,7 @@ package auth
 
 import (
 	"fmt"
+	"log/slog"
 	"os"
 	"strconv"
 
@@ -29,17 +30,18 @@ func NewAuthService(data Data) *Auth {
 func (a *Auth) SignIn(email string, password string) (*data.User, error) {
 	user, err := a.data.GetUserByEmail(email)
 	if err != nil {
+		slog.Error("auth error getting user", "err", err)
 		return nil, fmt.Errorf("500")
 	}
 	if user == nil {
-		// log err
+		slog.Info("auth user not found", "email", email)
 		// promote to typed error if/when needed
-		return nil, err
+		return nil, nil
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.Hash), []byte(password))
 	if err != nil {
-		// log err
+		slog.Info("auth compare error")
 		// promote to typed error if/when needed
 		return nil, nil
 	}
@@ -50,35 +52,34 @@ func (a *Auth) SignIn(email string, password string) (*data.User, error) {
 func (a *Auth) SignUp(email string, password string) (ID *uuid.UUID, err error) {
 	userCount, err := a.data.CountUserByEmail(email)
 	if err != nil {
-		// log err
+		slog.Error("auth error counting by email", "err", err)
 		return nil, fmt.Errorf("unexpected data error: %w", err)
 	}
 	if userCount != 0 {
-		// log err
+		slog.Info("auth user email in use")
 		return nil, fmt.Errorf("409")
 	}
 
-	// bad naming
 	COST := os.Getenv("COST")
 	if len(COST) == 0 {
-		// log err
+		slog.Error("auth env COST not found")
 		return nil, fmt.Errorf("500")
 	}
-	parsedSalt, err := strconv.Atoi(COST)
+	parsedCost, err := strconv.Atoi(COST)
 	if err != nil {
-		// log err
+		slog.Error("auth env COST parsing error", "err", err)
 		return nil, fmt.Errorf("500")
 	}
 
-	hash, err := bcrypt.GenerateFromPassword([]byte(password), parsedSalt)
+	hash, err := bcrypt.GenerateFromPassword([]byte(password), parsedCost)
 	if err != nil {
-		// log err
+		slog.Error("auth error generating hash", "err", err)
 		return nil, fmt.Errorf("unexpected data error: %w", err)
 	}
 
 	userID, err := a.data.AddUser(email, string(hash))
 	if err != nil {
-		// log err
+		slog.Error("auth error adding user", "err", err)
 		return nil, fmt.Errorf("unexpected data error: %w", err)
 	}
 
