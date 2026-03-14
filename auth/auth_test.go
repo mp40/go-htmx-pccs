@@ -6,29 +6,29 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
-	"github.com/mp40/go-htmx-pccs/data"
+	"github.com/mp40/go-htmx-pccs/store"
 	"golang.org/x/crypto/bcrypt"
 )
 
-type StubData struct {
+type StubStore struct {
 	newID         uuid.UUID
-	user          *data.User
+	user          *store.User
 	count         int
 	countErr      error
 	err           error
 	spyGetByEmail int
 }
 
-func (d *StubData) CountUserByEmail(email string) (int, error) {
+func (d *StubStore) CountUserByEmail(email string) (int, error) {
 	return d.count, d.countErr
 }
 
-func (d *StubData) GetUserByEmail(email string) (user *data.User, err error) {
+func (d *StubStore) GetUserByEmail(email string) (user *store.User, err error) {
 	d.spyGetByEmail++
 	return d.user, d.err
 }
 
-func (d *StubData) AddUser(email string, hash string) (userID uuid.UUID, err error) {
+func (d *StubStore) AddUser(email string, hash string) (userID uuid.UUID, err error) {
 	return d.newID, d.err
 }
 
@@ -36,24 +36,24 @@ func TestSignUp(t *testing.T) {
 	t.Setenv("SALT", "1")
 	t.Run("it should return pointer to ID when email not in use", func(t *testing.T) {
 		newID := uuid.MustParse("5ea69240-823c-4523-90a2-4868a5bfc90a")
-		stubData := StubData{}
-		stubData.newID = newID
-		auth := NewAuthService(&stubData)
+		stubStore := StubStore{}
+		stubStore.newID = newID
+		auth := NewAuthService(&stubStore)
 
 		got, err := auth.SignUp("fake@email.com", "fake-password")
 		if err != nil {
 			t.Errorf("got unexpected error: %v", err)
 		}
 
-		if *got != stubData.newID {
-			t.Errorf("got %v, want %v", *got, stubData.newID)
+		if *got != stubStore.newID {
+			t.Errorf("got %v, want %v", *got, stubStore.newID)
 		}
 	})
 
 	t.Run("it should return conflict error when email in use", func(t *testing.T) {
-		stubData := StubData{}
-		stubData.count = 1
-		auth := NewAuthService(&stubData)
+		stubStore := StubStore{}
+		stubStore.count = 1
+		auth := NewAuthService(&stubStore)
 
 		_, err := auth.SignUp("fake@email.com", "fake-password")
 
@@ -66,10 +66,10 @@ func TestSignUp(t *testing.T) {
 		}
 	})
 
-	t.Run("it should return error on data error", func(t *testing.T) {
-		stubData := StubData{}
-		stubData.countErr = fmt.Errorf("fake error")
-		auth := NewAuthService(&stubData)
+	t.Run("it should return error on store error", func(t *testing.T) {
+		stubStore := StubStore{}
+		stubStore.countErr = fmt.Errorf("fake error")
+		auth := NewAuthService(&stubStore)
 
 		_, err := auth.SignUp("fake@email.com", "fake-password")
 
@@ -77,7 +77,7 @@ func TestSignUp(t *testing.T) {
 			t.Errorf("expected error got nil")
 		}
 
-		if !strings.Contains(err.Error(), "unexpected data error") {
+		if !strings.Contains(err.Error(), "unexpected store error") {
 			t.Errorf("got unexpected error got %v", err.Error())
 		}
 	})
@@ -90,18 +90,18 @@ func TestSignIn(t *testing.T) {
 		panic("test fixture failure")
 	}
 	t.Run("it should return pointer to User when user found by by email and hash", func(t *testing.T) {
-		stubData := StubData{}
-		user := data.User{Hash: string(hash)}
-		stubData.user = &user
-		auth := NewAuthService(&stubData)
+		stubStore := StubStore{}
+		user := store.User{Hash: string(hash)}
+		stubStore.user = &user
+		auth := NewAuthService(&stubStore)
 
 		got, err := auth.SignIn("fake@email.com", "fake-password")
 		if err != nil {
 			t.Errorf("got unexpected error: %v", err)
 		}
 
-		if stubData.spyGetByEmail != 1 {
-			t.Errorf("unexpected calls to data, got %v, want 1", stubData.spyGetByEmail)
+		if stubStore.spyGetByEmail != 1 {
+			t.Errorf("unexpected calls to store, got %v, want 1", stubStore.spyGetByEmail)
 		}
 
 		if got == nil {
@@ -110,16 +110,16 @@ func TestSignIn(t *testing.T) {
 	})
 
 	t.Run("it should return nil when user not found by email", func(t *testing.T) {
-		stubData := StubData{}
-		auth := NewAuthService(&stubData)
+		stubStore := StubStore{}
+		auth := NewAuthService(&stubStore)
 
 		got, err := auth.SignIn("fake@email.com", "fake-password")
 		if err != nil {
 			t.Errorf("got unexpected error: %v", err)
 		}
 
-		if stubData.spyGetByEmail != 1 {
-			t.Errorf("unexpected calls to data, got %v, want 1", stubData.spyGetByEmail)
+		if stubStore.spyGetByEmail != 1 {
+			t.Errorf("unexpected calls to store, got %v, want 1", stubStore.spyGetByEmail)
 		}
 
 		if got != nil {
@@ -128,18 +128,18 @@ func TestSignIn(t *testing.T) {
 	})
 
 	t.Run("it should return pointer to nil when provided password does not match", func(t *testing.T) {
-		stubData := StubData{}
-		user := data.User{Hash: "something-else"}
-		stubData.user = &user
-		auth := NewAuthService(&stubData)
+		stubStore := StubStore{}
+		user := store.User{Hash: "something-else"}
+		stubStore.user = &user
+		auth := NewAuthService(&stubStore)
 
 		got, err := auth.SignIn("fake@email.com", "fake-password")
 		if err != nil {
 			t.Errorf("got unexpected error: %v", err)
 		}
 
-		if stubData.spyGetByEmail != 1 {
-			t.Errorf("unexpected calls to data, got %v, want 1", stubData.spyGetByEmail)
+		if stubStore.spyGetByEmail != 1 {
+			t.Errorf("unexpected calls to store, got %v, want 1", stubStore.spyGetByEmail)
 		}
 
 		if got != nil {
@@ -147,14 +147,14 @@ func TestSignIn(t *testing.T) {
 		}
 	})
 
-	t.Run("it should return error on data error", func(t *testing.T) {
-		stubData := StubData{err: fmt.Errorf("fake")}
-		auth := NewAuthService(&stubData)
+	t.Run("it should return error on store error", func(t *testing.T) {
+		stubStore := StubStore{err: fmt.Errorf("fake")}
+		auth := NewAuthService(&stubStore)
 
 		_, err := auth.SignIn("fake@email.com", "fake-password")
 
-		if stubData.spyGetByEmail != 1 {
-			t.Errorf("unexpected calls to data, got %v, want 1", stubData.spyGetByEmail)
+		if stubStore.spyGetByEmail != 1 {
+			t.Errorf("unexpected calls to store, got %v, want 1", stubStore.spyGetByEmail)
 		}
 
 		if err == nil {

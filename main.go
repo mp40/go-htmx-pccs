@@ -8,9 +8,9 @@ import (
 
 	"github.com/joho/godotenv"
 	"github.com/mp40/go-htmx-pccs/auth"
-	"github.com/mp40/go-htmx-pccs/data"
 	"github.com/mp40/go-htmx-pccs/middleware"
 	"github.com/mp40/go-htmx-pccs/render"
+	"github.com/mp40/go-htmx-pccs/store"
 )
 
 func main() {
@@ -24,13 +24,13 @@ func main() {
 		log.Fatalf("init db error: %v", err)
 	}
 
-	d := data.NewDataService(db)
-	a := auth.NewAuthService(d)
+	s := store.NewStoreService(db)
+	a := auth.NewAuthService(s)
 	r := render.NewRenderService()
 
 	server := NewServer(a, r)
 
-	m := middleware.NewMiddlewareService(d)
+	m := middleware.NewMiddlewareService(s)
 	serverWithMiddleware := m.AuthMiddleware(server)
 
 	log.Fatal(http.ListenAndServe(":5050", serverWithMiddleware))

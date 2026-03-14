@@ -7,28 +7,28 @@ import (
 	"strconv"
 
 	"github.com/google/uuid"
-	"github.com/mp40/go-htmx-pccs/data"
+	"github.com/mp40/go-htmx-pccs/store"
 	"golang.org/x/crypto/bcrypt"
 )
 
-type Data interface {
+type Store interface {
 	CountUserByEmail(email string) (int, error)
-	GetUserByEmail(email string) (*data.User, error)
+	GetUserByEmail(email string) (*store.User, error)
 	AddUser(email string, hash string) (userID uuid.UUID, err error)
 }
 
 type Auth struct {
-	data Data
+	store Store
 }
 
-func NewAuthService(data Data) *Auth {
+func NewAuthService(store Store) *Auth {
 	return &Auth{
-		data: data,
+		store: store,
 	}
 }
 
-func (a *Auth) SignIn(email string, password string) (*data.User, error) {
-	user, err := a.data.GetUserByEmail(email)
+func (a *Auth) SignIn(email string, password string) (*store.User, error) {
+	user, err := a.store.GetUserByEmail(email)
 	if err != nil {
 		slog.Error("auth error getting user", "err", err)
 		return nil, fmt.Errorf("500")
@@ -50,10 +50,10 @@ func (a *Auth) SignIn(email string, password string) (*data.User, error) {
 }
 
 func (a *Auth) SignUp(email string, password string) (ID *uuid.UUID, err error) {
-	userCount, err := a.data.CountUserByEmail(email)
+	userCount, err := a.store.CountUserByEmail(email)
 	if err != nil {
 		slog.Error("auth error counting by email", "err", err)
-		return nil, fmt.Errorf("unexpected data error: %w", err)
+		return nil, fmt.Errorf("unexpected store error: %w", err)
 	}
 	if userCount != 0 {
 		slog.Info("auth user email in use")
@@ -74,13 +74,13 @@ func (a *Auth) SignUp(email string, password string) (ID *uuid.UUID, err error) 
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), parsedCost)
 	if err != nil {
 		slog.Error("auth error generating hash", "err", err)
-		return nil, fmt.Errorf("unexpected data error: %w", err)
+		return nil, fmt.Errorf("unexpected store error: %w", err)
 	}
 
-	userID, err := a.data.AddUser(email, string(hash))
+	userID, err := a.store.AddUser(email, string(hash))
 	if err != nil {
 		slog.Error("auth error adding user", "err", err)
-		return nil, fmt.Errorf("unexpected data error: %w", err)
+		return nil, fmt.Errorf("unexpected store error: %w", err)
 	}
 
 	return &userID, nil

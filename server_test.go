@@ -10,7 +10,7 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
-	"github.com/mp40/go-htmx-pccs/data"
+	"github.com/mp40/go-htmx-pccs/store"
 )
 
 type StubAuth struct {
@@ -18,7 +18,7 @@ type StubAuth struct {
 	spySignUp int
 	spySignIn int
 	ID        *uuid.UUID
-	user      *data.User
+	user      *store.User
 }
 
 type StubRender struct {
@@ -66,7 +66,7 @@ func (r *StubRender) RenderSignUpModal(w io.Writer) error {
 	return nil
 }
 
-func (a *StubAuth) SignIn(email string, password string) (*data.User, error) {
+func (a *StubAuth) SignIn(email string, password string) (*store.User, error) {
 	a.spySignIn++
 	return a.user, a.err
 }
@@ -202,7 +202,7 @@ func TestSignInHandler(t *testing.T) {
 		stubAuth := StubAuth{}
 		stubRender := StubRender{}
 
-		user := data.User{}
+		user := store.User{}
 		stubAuth.user = &user
 
 		server := NewServer(&stubAuth, &stubRender)

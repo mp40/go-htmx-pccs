@@ -11,8 +11,8 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/mp40/go-htmx-pccs/data"
 	"github.com/mp40/go-htmx-pccs/middleware"
+	"github.com/mp40/go-htmx-pccs/store"
 )
 
 type Render interface {
@@ -26,7 +26,7 @@ type Render interface {
 }
 
 type Auth interface {
-	SignIn(email string, password string) (*data.User, error)
+	SignIn(email string, password string) (*store.User, error)
 	SignUp(email string, password string) (*uuid.UUID, error)
 }
 
