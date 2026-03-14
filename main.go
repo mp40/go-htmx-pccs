@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"log"
+	"log/slog"
 	"net/http"
 
 	"github.com/joho/godotenv"
@@ -33,4 +34,5 @@ func main() {
 	serverWithMiddleware := m.AuthMiddleware(server)
 
 	log.Fatal(http.ListenAndServe(":5050", serverWithMiddleware))
+	slog.Info("server running on :5050")
 }
