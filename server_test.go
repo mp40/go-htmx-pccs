@@ -24,9 +24,10 @@ type StubAuth struct {
 
 type StubSession struct {
 	// session       *session.Session
-	userID        uuid.UUID
+	sessionID     uuid.UUID
 	err           error
-	spyGetSession int
+	spyAddSession int
+	// spyGetSession int
 }
 
 type StubRender struct {
@@ -90,8 +91,8 @@ func (a *StubAuth) SignUp(email string, password string) (*uuid.UUID, error) {
 // }
 
 func (s *StubSession) AddSession(userID uuid.UUID, expiresAt time.Time) (uuid.UUID, error) {
-	s.spyGetSession++
-	return s.userID, s.err
+	s.spyAddSession++
+	return s.sessionID, s.err
 }
 
 func TestHomeHandler(t *testing.T) {
@@ -224,6 +225,9 @@ func TestSignInHandler(t *testing.T) {
 		user := store.User{}
 		stubAuth.user = &user
 
+		// sessionID := uuid.New()
+		// stubSession.sessionID = sessionID
+
 		server := NewServer(&stubAuth, &stubSession, &stubRender)
 
 		formValues := url.Values{
@@ -250,6 +254,10 @@ func TestSignInHandler(t *testing.T) {
 
 		if stubAuth.spySignIn != 1 {
 			t.Errorf("got %v calls to SignIn want 1", stubAuth.spySignIn)
+		}
+
+		if stubSession.spyAddSession != 1 {
+			t.Errorf("got %v calls to AddSession want 1", stubSession.spyAddSession)
 		}
 
 		if gotStatus != wantStatus {
