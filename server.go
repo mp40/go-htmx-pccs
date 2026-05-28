@@ -248,7 +248,19 @@ func (s *Server) signUpHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// if yes
-	cookie := getSecureCookie(*newID)
+	now := time.Now()
+	sessionID, err := s.session.AddSession(*newID, now.Add(12*time.Hour))
+	if err != nil {
+		err = s.render.RenderErrorMessageFragment(w, "internal server error")
+		if err != nil {
+			slog.Error("server error rendering", "err", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "text/html")
+		return
+	}
+	cookie := getSecureCookie(sessionID)
 	http.SetCookie(w, &cookie)
 	w.Header().Set("Content-Type", "text/html")
 	w.Header().Set("HX-Redirect", "/")
