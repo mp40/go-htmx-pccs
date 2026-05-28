@@ -53,7 +53,7 @@ func main() {
 
 	server := NewServer(authService, sessionService, renderService)
 
-	m := middleware.NewMiddlewareService(storeService, sessionService)
+	m := middleware.NewMiddlewareService(sessionService)
 	serverWithMiddleware := m.AuthMiddleware(server)
 
 	slog.Info("server running", "on", "http://localhost:5050")

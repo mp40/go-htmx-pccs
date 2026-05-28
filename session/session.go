@@ -22,12 +22,12 @@ func NewSessionService(db *sql.DB) *Store {
 	return &Store{db: db}
 }
 
-func (s *Store) GetSessionByID(ID uuid.UUID) (*Session, error) {
+func (s *Store) GetValidSessionByID(ID uuid.UUID) (*Session, error) {
 	session := Session{}
 	var idStr string
 	var userIdStr string
 	err := s.db.QueryRow(
-		"SELECT id, user_id, created_at, expires_at FROM sessions WHERE id = ?", ID.String(),
+		"SELECT id, user_id, created_at, expires_at FROM sessions WHERE id = ? AND expires_at > strftime('%s','now')", ID.String(),
 	).Scan(&idStr, &userIdStr, &session.CreatedAt, &session.ExpiresAt)
 	if err == sql.ErrNoRows {
 		return nil, nil
