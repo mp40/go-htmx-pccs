@@ -10,37 +10,27 @@ import (
 	"github.com/mp40/go-htmx-pccs/session"
 )
 
-type StubStore struct {
-	count        int
-	err          error
-	spyCountUser int
-}
-
 type StubSession struct {
 	session       *session.Session
 	err           error
 	spyGetSession int
 }
 
-func (s *StubStore) CountUserByID(ID uuid.UUID) (int, error) {
-	s.spyCountUser++
-	return s.count, s.err
-}
-
-func (s *StubSession) GetSessionByID(ID uuid.UUID) (*session.Session, error) {
+func (s *StubSession) GetValidSessionByID(ID uuid.UUID) (*session.Session, error) {
 	s.spyGetSession++
 	return s.session, s.err
 }
 
 func TestMiddleware(t *testing.T) {
-	t.Run("it should handle cookie with uuid as user id", func(t *testing.T) {
-		stubStore := StubStore{}
+	t.Run("it should handle cookie with uuid as session id", func(t *testing.T) {
 		stubSession := StubSession{}
-		stubStore.count = 1
-		middleware := NewMiddlewareService(&stubStore, &stubSession)
+		userID := uuid.MustParse("10000000-0000-4523-90a2-4868a5bfc90a")
+		fakeSession := session.Session{UserID: userID}
+		stubSession.session = &fakeSession
 
-		ID := uuid.MustParse("5ea69240-823c-4523-90a2-4868a5bfc90a")
+		middleware := NewMiddlewareService(&stubSession)
 
+		sessionID := "69000000-0000-4523-90a2-4868a5bfc90a"
 		var contextUserId *uuid.UUID
 		nextHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			raw, ok := r.Context().Value(userContextKey).(uuid.UUID)
@@ -52,13 +42,13 @@ func TestMiddleware(t *testing.T) {
 
 		handler := middleware.AuthMiddleware(nextHandler)
 		request := httptest.NewRequest("GET", "/", nil)
-		request.AddCookie(&http.Cookie{Name: "userID", Value: ID.String()})
+		request.AddCookie(&http.Cookie{Name: "sessionID", Value: sessionID})
 
 		response := httptest.NewRecorder()
 		handler.ServeHTTP(response, request)
 
-		if stubStore.spyCountUser != 1 {
-			t.Errorf("want 1 call to data, got: %v", stubStore.spyCountUser)
+		if stubSession.spyGetSession != 1 {
+			t.Errorf("want 1 call to data, got: %v", stubSession.spyGetSession)
 		}
 
 		if response.Code != http.StatusOK {
@@ -69,15 +59,14 @@ func TestMiddleware(t *testing.T) {
 			t.Errorf("expected user uuid in context, got nil")
 		}
 
-		if *contextUserId != ID {
+		if *contextUserId != userID {
 			t.Errorf("unexpected user uuid in context, got %v", contextUserId)
 		}
 	})
 
-	t.Run("it should handle cookie with unparsable user id", func(t *testing.T) {
-		stubStore := StubStore{}
+	t.Run("it should handle cookie with unparsable session id", func(t *testing.T) {
 		stubSession := StubSession{}
-		middleware := NewMiddlewareService(&stubStore, &stubSession)
+		middleware := NewMiddlewareService(&stubSession)
 
 		var contextUserId *uuid.UUID
 		nextHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -90,13 +79,13 @@ func TestMiddleware(t *testing.T) {
 
 		handler := middleware.AuthMiddleware(nextHandler)
 		request := httptest.NewRequest("GET", "/", nil)
-		request.AddCookie(&http.Cookie{Name: "userID", Value: "whoops"})
+		request.AddCookie(&http.Cookie{Name: "sessionID", Value: "whoops"})
 
 		response := httptest.NewRecorder()
 		handler.ServeHTTP(response, request)
 
-		if stubStore.spyCountUser != 0 {
-			t.Errorf("want 1 call to data, got: %v", stubStore.spyCountUser)
+		if stubSession.spyGetSession != 0 {
+			t.Errorf("want 0 calls to session data, got: %v", stubSession.spyGetSession)
 		}
 
 		if response.Code != http.StatusOK {
@@ -109,9 +98,8 @@ func TestMiddleware(t *testing.T) {
 	})
 
 	t.Run("it should handle requests without cookie", func(t *testing.T) {
-		stubStore := StubStore{}
 		stubSession := StubSession{}
-		middleware := NewMiddlewareService(&stubStore, &stubSession)
+		middleware := NewMiddlewareService(&stubSession)
 
 		var contextUserId *uuid.UUID
 		nextHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -128,8 +116,8 @@ func TestMiddleware(t *testing.T) {
 		response := httptest.NewRecorder()
 		handler.ServeHTTP(response, request)
 
-		if stubStore.spyCountUser != 0 {
-			t.Errorf("want 0 call to data, got: %v", stubStore.spyCountUser)
+		if stubSession.spyGetSession != 0 {
+			t.Errorf("want 0 calls to session data, got: %v", stubSession.spyGetSession)
 		}
 
 		if response.Code != http.StatusOK {
@@ -141,12 +129,11 @@ func TestMiddleware(t *testing.T) {
 		}
 	})
 
-	t.Run("it should handle user id with count 0", func(t *testing.T) {
-		stubStore := StubStore{}
+	t.Run("it should handle null session", func(t *testing.T) {
 		stubSession := StubSession{}
-		middleware := NewMiddlewareService(&stubStore, &stubSession)
+		middleware := NewMiddlewareService(&stubSession)
 
-		ID := uuid.MustParse("5ea69240-823c-4523-90a2-4868a5bfc90a")
+		sessionID := "69000000-0000-4523-90a2-4868a5bfc90a"
 
 		var contextUserId *uuid.UUID
 		nextHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -159,13 +146,13 @@ func TestMiddleware(t *testing.T) {
 
 		handler := middleware.AuthMiddleware(nextHandler)
 		request := httptest.NewRequest("GET", "/", nil)
-		request.AddCookie(&http.Cookie{Name: "userID", Value: ID.String()})
+		request.AddCookie(&http.Cookie{Name: "sessionID", Value: sessionID})
 
 		response := httptest.NewRecorder()
 		handler.ServeHTTP(response, request)
 
-		if stubStore.spyCountUser != 1 {
-			t.Errorf("want 1 call to data, got: %v", stubStore.spyCountUser)
+		if stubSession.spyGetSession != 1 {
+			t.Errorf("want 1 call to session data, got: %v", stubSession.spyGetSession)
 		}
 
 		if response.Code != http.StatusOK {
@@ -177,49 +164,12 @@ func TestMiddleware(t *testing.T) {
 		}
 	})
 
-	t.Run("it should handle user id with count greater than 1", func(t *testing.T) {
-		stubStore := StubStore{}
+	t.Run("it should handle errors from get session", func(t *testing.T) {
 		stubSession := StubSession{}
-		middleware := NewMiddlewareService(&stubStore, &stubSession)
+		stubSession.err = fmt.Errorf("fake-err")
+		middleware := NewMiddlewareService(&stubSession)
 
-		ID := uuid.MustParse("5ea69240-823c-4523-90a2-4868a5bfc90a")
-
-		var contextUserId *uuid.UUID
-		nextHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			raw, ok := r.Context().Value("userID").(uuid.UUID)
-			if ok {
-				contextUserId = &raw
-			}
-			w.WriteHeader(http.StatusOK)
-		})
-
-		handler := middleware.AuthMiddleware(nextHandler)
-		request := httptest.NewRequest("GET", "/", nil)
-		request.AddCookie(&http.Cookie{Name: "userID", Value: ID.String()})
-
-		response := httptest.NewRecorder()
-		handler.ServeHTTP(response, request)
-
-		if stubStore.spyCountUser != 1 {
-			t.Errorf("want 1 call to data, got: %v", stubStore.spyCountUser)
-		}
-
-		if response.Code != http.StatusOK {
-			t.Errorf("unexpected status, got: %v", response.Code)
-		}
-
-		if contextUserId != nil {
-			t.Errorf("unexpected user uuid in context, got %v", *contextUserId)
-		}
-	})
-
-	t.Run("it should handle errors from count user", func(t *testing.T) {
-		stubStore := StubStore{}
-		stubSession := StubSession{}
-		stubStore.err = fmt.Errorf("fake-err")
-		middleware := NewMiddlewareService(&stubStore, &stubSession)
-
-		ID := uuid.MustParse("5ea69240-823c-4523-90a2-4868a5bfc90a")
+		sessionID := "69000000-0000-4523-90a2-4868a5bfc90a"
 
 		var contextUserId *uuid.UUID
 		nextHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -232,13 +182,13 @@ func TestMiddleware(t *testing.T) {
 
 		handler := middleware.AuthMiddleware(nextHandler)
 		request := httptest.NewRequest("GET", "/", nil)
-		request.AddCookie(&http.Cookie{Name: "userID", Value: ID.String()})
+		request.AddCookie(&http.Cookie{Name: "sessionID", Value: sessionID})
 
 		response := httptest.NewRecorder()
 		handler.ServeHTTP(response, request)
 
-		if stubStore.spyCountUser != 1 {
-			t.Errorf("want 1 call to data, got: %v", stubStore.spyCountUser)
+		if stubSession.spyGetSession != 1 {
+			t.Errorf("want 1 call to session data, got: %v", stubSession.spyGetSession)
 		}
 
 		if response.Code != http.StatusOK {

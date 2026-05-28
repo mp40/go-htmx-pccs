@@ -12,6 +12,7 @@ import (
 type contextKey string
 
 const userContextKey contextKey = "userID"
+const sessionContextKey contextKey = "sessionID"
 
 type Store interface {
 	CountUserByID(ID uuid.UUID) (int, error)

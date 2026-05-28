@@ -270,7 +270,7 @@ func (s *Server) signUpHandler(w http.ResponseWriter, r *http.Request) {
 func getSecureCookie(sessionID uuid.UUID) http.Cookie {
 	oneDay := 24 * time.Hour
 	cookie := http.Cookie{
-		Name:     "userID",
+		Name:     "sessionID",
 		Value:    sessionID.String(),
 		MaxAge:   int(oneDay.Seconds()),
 		Path:     "/",
