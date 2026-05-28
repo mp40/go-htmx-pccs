@@ -6,23 +6,30 @@ import (
 	"net/http"
 
 	"github.com/google/uuid"
+	"github.com/mp40/go-htmx-pccs/session"
 )
 
 type contextKey string
 
 const userContextKey contextKey = "userID"
 
-type Data interface {
+type Store interface {
 	CountUserByID(ID uuid.UUID) (int, error)
 }
 
-type Middleware struct {
-	data Data
+type Session interface {
+	GetSessionByID(ID uuid.UUID) (*session.Session, error)
 }
 
-func NewMiddlewareService(data Data) *Middleware {
+type Middleware struct {
+	store   Store
+	session Session
+}
+
+func NewMiddlewareService(store Store, session Session) *Middleware {
 	return &Middleware{
-		data: data,
+		store:   store,
+		session: session,
 	}
 }
 
@@ -45,7 +52,7 @@ func (m *Middleware) AuthMiddleware(next http.Handler) http.Handler {
 		}
 
 		// get count by id
-		count, err := m.data.CountUserByID(userID)
+		count, err := m.store.CountUserByID(userID)
 		if err != nil {
 			slog.Error("middleware, data error", "err", err)
 			// GREY data layer error - do not know correct count

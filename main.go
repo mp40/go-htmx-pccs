@@ -10,6 +10,7 @@ import (
 	"github.com/mp40/go-htmx-pccs/auth"
 	"github.com/mp40/go-htmx-pccs/middleware"
 	"github.com/mp40/go-htmx-pccs/render"
+	"github.com/mp40/go-htmx-pccs/session"
 	"github.com/mp40/go-htmx-pccs/store"
 	_ "modernc.org/sqlite"
 )
@@ -20,24 +21,39 @@ func main() {
 		log.Fatal(err)
 	}
 
-	db, err := sql.Open("sqlite", "./pccs_store.db")
+	storeDB, err := sql.Open("sqlite", "./pccs_store.db")
 	if err != nil {
 		log.Fatalf("init store db error: %v", err)
 	}
-	defer db.Close()
+	defer storeDB.Close()
 	// fine for now but need to do this only if in local dev mode once deployed
-	_, err = db.Exec("CREATE TABLE IF NOT EXISTS users (id TEXT PRIMARY KEY NOT NULL, email TEXT UNIQUE NOT NULL, hash TEXT NOT NULL, created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL)")
+	_, err = storeDB.Exec("CREATE TABLE IF NOT EXISTS users (id TEXT PRIMARY KEY NOT NULL, email TEXT UNIQUE NOT NULL, hash TEXT NOT NULL, created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL)")
 	if err != nil {
-		log.Fatalf("db create table error: %v", err)
+		log.Fatalf("db create user table error: %v", err)
 	}
 
-	s := store.NewStoreService(db)
-	a := auth.NewAuthService(s)
+	sessionDB, err := sql.Open("sqlite", ":memory:")
+	if err != nil {
+		log.Fatalf("init session db error: %v", err)
+	}
+	defer sessionDB.Close()
+	// fine for now but need to do this only if in local dev mode once deployed
+	_, err = sessionDB.Exec("CREATE TABLE IF NOT EXISTS sessions (id TEXT PRIMARY KEY NOT NULL, user_id TEXT NOT NULL, created_at INTEGER NOT NULL, expires_at INTEGER NOT NULL)")
+	if err != nil {
+		log.Fatalf("db create session table error: %v", err)
+	}
+
+	// third SQLite db to be called state
+	// a read only db ships with app for pccs game data
+
+	storeService := store.NewStoreService(storeDB)
+	sessionService := session.NewSessionService(sessionDB)
+	a := auth.NewAuthService(storeService)
 	r := render.NewRenderService()
 
 	server := NewServer(a, r)
 
-	m := middleware.NewMiddlewareService(s)
+	m := middleware.NewMiddlewareService(storeService, sessionService)
 	serverWithMiddleware := m.AuthMiddleware(server)
 
 	slog.Info("server running", "on", "http://localhost:5050")

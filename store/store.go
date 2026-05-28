@@ -23,16 +23,16 @@ func NewStoreService(db *sql.DB) *Store {
 	return &Store{db: db}
 }
 
-func (d *Store) CountUserByEmail(email string) (int, error) {
+func (s *Store) CountUserByEmail(email string) (int, error) {
 	var count int
-	err := d.db.QueryRow("SELECT COUNT(*) FROM users WHERE email = ?", email).Scan(&count)
+	err := s.db.QueryRow("SELECT COUNT(*) FROM users WHERE email = ?", email).Scan(&count)
 	return count, err
 }
 
-func (d *Store) GetUserByEmail(email string) (*User, error) {
+func (s *Store) GetUserByEmail(email string) (*User, error) {
 	user := User{}
 	var idStr string
-	err := d.db.QueryRow("SELECT id, email, hash, created_at, updated_at FROM users WHERE email = ?", email).
+	err := s.db.QueryRow("SELECT id, email, hash, created_at, updated_at FROM users WHERE email = ?", email).
 		Scan(&idStr, &user.Email, &user.Hash, &user.CreatedAt, &user.UpdatedAt)
 	if err == sql.ErrNoRows {
 		return nil, nil
@@ -47,16 +47,16 @@ func (d *Store) GetUserByEmail(email string) (*User, error) {
 	return &user, nil
 }
 
-func (d *Store) CountUserByID(ID uuid.UUID) (int, error) {
+func (s *Store) CountUserByID(ID uuid.UUID) (int, error) {
 	var count int
-	err := d.db.QueryRow("SELECT COUNT(*) FROM users WHERE id = ?", ID.String()).Scan(&count)
+	err := s.db.QueryRow("SELECT COUNT(*) FROM users WHERE id = ?", ID.String()).Scan(&count)
 	return count, err
 }
 
-func (d *Store) AddUser(email string, hash string) (uuid.UUID, error) {
+func (s *Store) AddUser(email string, hash string) (uuid.UUID, error) {
 	ID := uuid.New()
 	now := time.Now().Unix()
-	_, err := d.db.Exec(
+	_, err := s.db.Exec(
 		"INSERT INTO users (id, email, hash, created_at, updated_at) VALUES (?, ?, ?, ?, ?)",
 		ID.String(), email, hash, now, now,
 	)
