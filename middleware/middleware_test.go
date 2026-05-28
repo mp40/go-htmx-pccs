@@ -17,7 +17,7 @@ type StubStore struct {
 }
 
 type StubSession struct {
-	session       *session.Session // down the road DTO for this and other structs will help decouple
+	session       *session.Session
 	err           error
 	spyGetSession int
 }

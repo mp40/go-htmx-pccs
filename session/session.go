@@ -46,12 +46,12 @@ func (s *Store) GetSessionByID(ID uuid.UUID) (*Session, error) {
 	return &session, nil
 }
 
-func (s *Store) AddSession(UserID uuid.UUID, expiresAt time.Time) (uuid.UUID, error) {
+func (s *Store) AddSession(userID uuid.UUID, expiresAt time.Time) (uuid.UUID, error) {
 	ID := uuid.New()
 	now := time.Now().Unix()
 	_, err := s.db.Exec(
 		"INSERT INTO sessions (id, user_id, created_at, expires_at) VALUES (?, ?, ?, ?)",
-		ID.String(), UserID.String(), now, expiresAt.Unix(),
+		ID.String(), userID.String(), now, expiresAt.Unix(),
 	)
 	if err != nil {
 		return uuid.Nil, err

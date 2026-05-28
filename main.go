@@ -48,10 +48,10 @@ func main() {
 
 	storeService := store.NewStoreService(storeDB)
 	sessionService := session.NewSessionService(sessionDB)
-	a := auth.NewAuthService(storeService)
-	r := render.NewRenderService()
+	authService := auth.NewAuthService(storeService)
+	renderService := render.NewRenderService()
 
-	server := NewServer(a, r)
+	server := NewServer(authService, sessionService, renderService)
 
 	m := middleware.NewMiddlewareService(storeService, sessionService)
 	serverWithMiddleware := m.AuthMiddleware(server)

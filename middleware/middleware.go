@@ -18,6 +18,7 @@ type Store interface {
 }
 
 type Session interface {
+	// down the road make Session DTO to replace session.Session - and other structs in code base, will help decouple
 	GetSessionByID(ID uuid.UUID) (*session.Session, error)
 }
 

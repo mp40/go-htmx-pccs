@@ -30,6 +30,10 @@ type Auth interface {
 	SignUp(email string, password string) (*uuid.UUID, error)
 }
 
+type Session interface {
+	AddSession(userID uuid.UUID, expiresAt time.Time) (uuid.UUID, error)
+}
+
 type AuthRequest struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
@@ -41,7 +45,7 @@ type Server struct {
 	auth   Auth
 }
 
-func NewServer(auth Auth, render Render) *Server {
+func NewServer(auth Auth, session Session, render Render) *Server {
 	server := &Server{
 		auth:   auth,
 		render: render,
