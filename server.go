@@ -41,14 +41,16 @@ type AuthRequest struct {
 
 type Server struct {
 	http.Handler
-	render Render
-	auth   Auth
+	render  Render
+	auth    Auth
+	session Session
 }
 
 func NewServer(auth Auth, session Session, render Render) *Server {
 	server := &Server{
-		auth:   auth,
-		render: render,
+		auth:    auth,
+		session: session,
+		render:  render,
 	}
 
 	router := http.NewServeMux()
@@ -167,7 +169,19 @@ func (s *Server) signInHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// if yes
-	cookie := getSecureCookie(user.ID)
+	now := time.Now()
+	sessionID, err := s.session.AddSession(user.ID, now.Add(12*time.Hour))
+	if err != nil {
+		err = s.render.RenderErrorMessageFragment(w, "internal server error")
+		if err != nil {
+			slog.Error("server error rendering", "err", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "text/html")
+		return
+	}
+	cookie := getSecureCookie(sessionID)
 	http.SetCookie(w, &cookie)
 	w.Header().Set("Content-Type", "text/html")
 	w.Header().Set("HX-Redirect", "/")
@@ -241,11 +255,11 @@ func (s *Server) signUpHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusSeeOther)
 }
 
-func getSecureCookie(userID uuid.UUID) http.Cookie {
+func getSecureCookie(sessionID uuid.UUID) http.Cookie {
 	oneDay := 24 * time.Hour
 	cookie := http.Cookie{
 		Name:     "userID",
-		Value:    userID.String(),
+		Value:    sessionID.String(),
 		MaxAge:   int(oneDay.Seconds()),
 		Path:     "/",
 		HttpOnly: true,
