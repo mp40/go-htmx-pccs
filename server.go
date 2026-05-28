@@ -243,6 +243,7 @@ func getSecureCookie(userID uuid.UUID) http.Cookie {
 		Name:     "userID",
 		Value:    userID.String(),
 		MaxAge:   int(oneDay.Seconds()),
+		Path:     "/",
 		HttpOnly: true,
 		Secure:   true,
 		SameSite: http.SameSiteLaxMode,

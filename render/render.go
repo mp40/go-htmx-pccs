@@ -50,12 +50,17 @@ func (r *Render) RenderHomeFragment(w io.Writer) error {
 
 func (r *Render) RenderAccountPage(w io.Writer, signedIn bool) error {
 	tmpl, err := template.ParseFiles(getTemplatePath("index.html"), getTemplatePath("top-strap.html"), getTemplatePath("account.html"))
-
 	if err != nil {
 		return err
 	}
 
-	err = tmpl.Execute(w, nil)
+	data := struct {
+		SignedIn bool
+	}{
+		SignedIn: signedIn,
+	}
+
+	err = tmpl.Execute(w, data)
 	if err != nil {
 		return err
 	}
