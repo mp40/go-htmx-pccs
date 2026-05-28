@@ -23,11 +23,9 @@ type StubAuth struct {
 }
 
 type StubSession struct {
-	// session       *session.Session
 	sessionID     uuid.UUID
 	err           error
 	spyAddSession int
-	// spyGetSession int
 }
 
 type StubRender struct {
@@ -225,9 +223,6 @@ func TestSignInHandler(t *testing.T) {
 		user := store.User{}
 		stubAuth.user = &user
 
-		// sessionID := uuid.New()
-		// stubSession.sessionID = sessionID
-
 		server := NewServer(&stubAuth, &stubSession, &stubRender)
 
 		formValues := url.Values{
@@ -376,6 +371,10 @@ func TestSignUpHandler(t *testing.T) {
 
 		if stubAuth.spySignUp != 1 {
 			t.Errorf("got %v calls to SignUp want 1", stubAuth.spySignUp)
+		}
+
+		if stubSession.spyAddSession != 1 {
+			t.Errorf("got %v calls to AddSession want 1", stubSession.spyAddSession)
 		}
 
 		if gotStatus != wantStatus {
