@@ -53,7 +53,7 @@ func (r *StubRender) RenderAccountPage(w io.Writer, signedIn bool) error {
 	return nil
 }
 
-func (r *StubRender) RenderAccountFragment(w io.Writer) error {
+func (r *StubRender) RenderAccountFragment(w io.Writer, signedIn bool) error {
 	r.renderAccountFragmentCalls++
 	return nil
 }
@@ -82,11 +82,6 @@ func (a *StubAuth) SignUp(email string, password string) (*uuid.UUID, error) {
 	a.spySignUp++
 	return a.ID, a.err
 }
-
-// func (s *StubSession) GetSessionByID(ID uuid.UUID) (*session.Session, error) {
-// 	s.spyGetSession++
-// 	return s.session, s.err
-// }
 
 func (s *StubSession) AddSession(userID uuid.UUID, expiresAt time.Time) (uuid.UUID, error) {
 	s.spyAddSession++

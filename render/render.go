@@ -68,14 +68,19 @@ func (r *Render) RenderAccountPage(w io.Writer, signedIn bool) error {
 	return nil
 }
 
-func (r *Render) RenderAccountFragment(w io.Writer) error {
+func (r *Render) RenderAccountFragment(w io.Writer, signedIn bool) error {
 	tmpl, err := template.New("page").ParseFiles(getTemplatePath("account.html"))
-
 	if err != nil {
 		return err
 	}
 
-	err = tmpl.Execute(w, nil)
+	data := struct {
+		SignedIn bool
+	}{
+		SignedIn: signedIn,
+	}
+
+	err = tmpl.Execute(w, data)
 	if err != nil {
 		return err
 	}

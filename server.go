@@ -19,7 +19,7 @@ type Render interface {
 	RenderHomePage(w io.Writer, signedIn bool) error
 	RenderHomeFragment(w io.Writer) error
 	RenderAccountPage(w io.Writer, signedIn bool) error
-	RenderAccountFragment(w io.Writer) error
+	RenderAccountFragment(w io.Writer, signedIn bool) error
 	RenderSignInModal(w io.Writer) error
 	RenderSignUpModal(w io.Writer) error
 	RenderErrorMessageFragment(w io.Writer, msg string) error
@@ -103,7 +103,7 @@ func (s *Server) getAccountHandler(w http.ResponseWriter, r *http.Request) {
 	signedIn := middleware.IsSignedIn(r.Context())
 
 	if isHtmx {
-		err := s.render.RenderAccountFragment(w)
+		err := s.render.RenderAccountFragment(w, signedIn)
 		if err != nil {
 			slog.Error("server error rendering", "err", err)
 			w.WriteHeader(http.StatusInternalServerError)

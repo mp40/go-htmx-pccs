@@ -2,7 +2,18 @@
 <div class="page-div account-page">
   <h1>Account</h1>
   <div class="buttons">
-    <button 
+    {{if .SignedIn}}
+    <button class="page-button-grey"
+      hx-get="/account/sign-out" 
+      hx-trigger="click"
+      hx-target=".modal-container-div"
+      hx-swap="innerHTML"
+      class="page-button-grey"
+      >
+      Sign Out
+    </button>
+    {{else}}
+        <button 
       hx-get="/account/sign-in" 
       hx-trigger="click"
       hx-target=".modal-container-div"
@@ -20,6 +31,7 @@
       >
       Sign Up
     </button>
+    {{end}}
   </div>
   {{ template "modal" . }}
 </div> 
