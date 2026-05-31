@@ -58,3 +58,14 @@ func (s *Store) AddSession(userID uuid.UUID, expiresAt time.Time) (uuid.UUID, er
 	}
 	return ID, nil
 }
+
+func (s *Store) DeleteSessionByID(ID uuid.UUID) error {
+	_, err := s.db.Exec(
+		"DELETE FROM sessions WHERE id = ?",
+		ID.String(),
+	)
+	if err != nil {
+		return err
+	}
+	return nil
+}

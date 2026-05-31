@@ -77,6 +77,14 @@ func GetUserID(ctx context.Context) *uuid.UUID {
 	return &userID
 }
 
+func GetSessionID(ctx context.Context) *uuid.UUID {
+	sessionID, ok := ctx.Value(sessionCookieKey).(uuid.UUID)
+	if !ok {
+		return nil
+	}
+	return &sessionID
+}
+
 func IsSignedIn(ctx context.Context) bool {
 	_, ok := ctx.Value(userContextKey).(uuid.UUID)
 	if !ok {

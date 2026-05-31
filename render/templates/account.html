@@ -3,40 +3,38 @@
   <h1>Account</h1>
   <div class="buttons">
     {{if .SignedIn}}
-    <button class="page-button-grey"
-      hx-get="/account/sign-out" 
+    <button
+      hx-delete="/account/sign-out"
       hx-trigger="click"
       hx-target=".modal-container-div"
       hx-swap="innerHTML"
       class="page-button-grey"
-      >
+    >
       Sign Out
     </button>
     {{else}}
-        <button 
-      hx-get="/account/sign-in" 
+    <button
+      hx-get="/account/sign-in"
       hx-trigger="click"
       hx-target=".modal-container-div"
       hx-swap="innerHTML"
       class="page-button-grey"
-      >
+    >
       Sign In
     </button>
-    <button class="page-button-grey"
-      hx-get="/account/sign-up" 
+    <button
+      hx-get="/account/sign-up"
       hx-trigger="click"
       hx-target=".modal-container-div"
       hx-swap="innerHTML"
       class="page-button-grey"
-      >
+    >
       Sign Up
     </button>
     {{end}}
   </div>
   {{ template "modal" . }}
-</div> 
-{{ end }}
-
-{{ define "modal" }}
+</div>
+{{ end }} {{ define "modal" }}
 <div class="modal-container-div"></div>
 {{ end }}

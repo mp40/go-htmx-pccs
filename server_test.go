@@ -23,9 +23,10 @@ type StubAuth struct {
 }
 
 type StubSession struct {
-	sessionID     uuid.UUID
-	err           error
-	spyAddSession int
+	sessionID        uuid.UUID
+	err              error
+	spyAddSession    int
+	spyDeleteSession int
 }
 
 type StubRender struct {
@@ -86,6 +87,11 @@ func (a *StubAuth) SignUp(email string, password string) (*uuid.UUID, error) {
 func (s *StubSession) AddSession(userID uuid.UUID, expiresAt time.Time) (uuid.UUID, error) {
 	s.spyAddSession++
 	return s.sessionID, s.err
+}
+
+func (s *StubSession) DeleteSessionByID(ID uuid.UUID) error {
+	s.spyDeleteSession++
+	return s.err
 }
 
 func TestHomeHandler(t *testing.T) {
@@ -451,6 +457,52 @@ func TestSignUpHandler(t *testing.T) {
 
 		if stubRender.renderErrorMessageFragmentCalls != 1 {
 			t.Errorf("want 1 call to renderErrorMessageFragment, got %d", stubRender.renderErrorMessageFragmentCalls)
+		}
+	})
+}
+
+func TestSignOutHandler(t *testing.T) {
+	t.Run("it should redirect to Home page on successful sign out", func(t *testing.T) {
+		stubAuth := StubAuth{}
+		stubSession := StubSession{}
+		stubRender := StubRender{}
+
+		server := NewServer(&stubAuth, &stubSession, &stubRender)
+
+		cookie := getSecureCookie(uuid.MustParse("69000000-0000-4523-90a2-4868a5bfc90a"))
+
+		request := httptest.NewRequest(http.MethodDelete, "/account/sign-out", nil)
+		request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+		request.AddCookie(&cookie)
+		response := httptest.NewRecorder()
+		server.Handler.ServeHTTP(response, request)
+
+		gotStatus := response.Result().StatusCode
+		gotHeaderRedirect := response.Result().Header.Get("Hx-Redirect")
+
+		wantStatus := http.StatusSeeOther
+		wantHeaderRedirect := "/"
+
+		gotCookies := response.Result().Cookies()
+
+		if len(gotCookies) != 1 {
+			t.Errorf("expected cookie to be set, got %v", len(gotCookies))
+		}
+
+		if gotCookies[0].MaxAge >= 0 {
+			t.Errorf("expected cookie max age to be less than 0, got %v", len(gotCookies))
+		}
+
+		if stubSession.spyDeleteSession != 1 {
+			t.Errorf("got %v calls to DeleteSessionByID want 1", stubSession.spyDeleteSession)
+		}
+
+		if gotStatus != wantStatus {
+			t.Errorf("got http status %v want http status %v", gotStatus, wantStatus)
+		}
+
+		if gotHeaderRedirect != wantHeaderRedirect {
+			t.Errorf("got header Location %v, want header Location %v", gotHeaderRedirect, wantHeaderRedirect)
 		}
 	})
 }
