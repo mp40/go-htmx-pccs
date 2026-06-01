@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/mp40/go-htmx-pccs/middleware"
+	"github.com/mp40/go-htmx-pccs/domain"
 	"github.com/mp40/go-htmx-pccs/store"
 )
 
@@ -35,8 +35,13 @@ type Session interface {
 	DeleteSessionByID(ID uuid.UUID) error
 }
 
-type Store interface {
-	AddCharacter(character store.Character) (*store.Character, error)
+type CharacterService interface {
+	AddCharacter(userID uuid.UUID, rawCharacter domain.RawCharacter) (*store.Character, error)
+}
+
+type Identity interface {
+	GetUserID(r *http.Request) *uuid.UUID
+	IsSignedIn(r *http.Request) bool
 }
 
 type AuthRequest struct {
@@ -46,18 +51,20 @@ type AuthRequest struct {
 
 type Server struct {
 	http.Handler
-	render  Render
-	auth    Auth
-	session Session
-	store   Store
+	render           Render
+	auth             Auth
+	session          Session
+	characterService CharacterService
+	identity         Identity
 }
 
-func NewServer(auth Auth, session Session, store Store, render Render) *Server {
+func NewServer(auth Auth, session Session, identity Identity, characterService CharacterService, render Render) *Server {
 	server := &Server{
-		auth:    auth,
-		session: session,
-		store:   store,
-		render:  render,
+		auth:             auth,
+		session:          session,
+		identity:         identity,
+		render:           render,
+		characterService: characterService,
 	}
 
 	router := http.NewServeMux()
@@ -78,7 +85,7 @@ func NewServer(auth Auth, session Session, store Store, render Render) *Server {
 
 	router.HandleFunc("DELETE /account/sign-out", server.signOutHandler)
 
-	router.HandleFunc("POST /account/characters", server.postCharacterHandler)
+	router.Handle("POST /account/characters", handlePostCharacter(server.characterService, server.identity))
 
 	server.Handler = router
 	return server
@@ -87,7 +94,7 @@ func NewServer(auth Auth, session Session, store Store, render Render) *Server {
 func (s *Server) getHomeHandler(w http.ResponseWriter, r *http.Request) {
 	htmxHeader := r.Header.Get("HX-Request")
 	isHtmx, _ := strconv.ParseBool(htmxHeader)
-	signedIn := middleware.IsSignedIn(r.Context())
+	signedIn := s.identity.IsSignedIn(r)
 
 	if isHtmx {
 		err := s.render.RenderHomeFragment(w)
@@ -111,7 +118,7 @@ func (s *Server) getHomeHandler(w http.ResponseWriter, r *http.Request) {
 func (s *Server) getAccountHandler(w http.ResponseWriter, r *http.Request) {
 	htmxHeader := r.Header.Get("HX-Request")
 	isHtmx, _ := strconv.ParseBool(htmxHeader)
-	signedIn := middleware.IsSignedIn(r.Context())
+	signedIn := s.identity.IsSignedIn(r)
 
 	if isHtmx {
 		err := s.render.RenderAccountFragment(w, signedIn)
@@ -301,28 +308,23 @@ func (s *Server) signOutHandler(w http.ResponseWriter, r *http.Request) {
 	redirectWithExpiredCookie(w)
 }
 
-func (s *Server) postCharacterHandler(w http.ResponseWriter, r *http.Request) {
-	// email := strings.TrimSpace(r.FormValue("email"))
-	// password := strings.TrimSpace(r.FormValue("password"))
-	cookie, err := r.Cookie("userID")
-	if err != nil {
-		// send back error msg
-		return
-	}
+func handlePostCharacter(characterService CharacterService, identity Identity) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		userID := identity.GetUserID(r)
+		if userID == nil {
+			// handle nil user id somehow
+			return
+		}
 
-	userID, err := middleware.GetUserID()
+		_, err := characterService.AddCharacter(*userID, domain.RawCharacter{})
+		if err != nil {
+			// handle err some how
+		}
 
-	rawCharacter := store.Character{
-		UserID: userID,
-	}
-
-	_, err = s.store.AddCharacter(rawCharacter)
-	if err != nil {
-		// send back err msg
-	}
-
-	w.Header().Set("Content-Type", "text/html")
-	w.WriteHeader(http.StatusCreated)
+		// return render character fragment
+		w.Header().Set("Content-Type", "text/html")
+		w.WriteHeader(http.StatusCreated)
+	})
 }
 
 func redirectWithExpiredCookie(w http.ResponseWriter) {

@@ -11,8 +11,9 @@ import (
 
 type contextKey string
 
-const userContextKey contextKey = "userID"
 const sessionCookieKey contextKey = "sessionID"
+
+type EnrichContextWithUserIDFunc func(ctx context.Context, userID uuid.UUID) context.Context
 
 type Session interface {
 	// down the road make Session DTO to replace session.Session - and other structs in code base, will help decouple
@@ -20,12 +21,14 @@ type Session interface {
 }
 
 type Middleware struct {
-	session Session
+	session           Session
+	enrichContextFunc EnrichContextWithUserIDFunc
 }
 
-func NewMiddlewareService(session Session) *Middleware {
+func NewMiddlewareService(session Session, cb EnrichContextWithUserIDFunc) *Middleware {
 	return &Middleware{
-		session: session,
+		session:           session,
+		enrichContextFunc: cb,
 	}
 }
 
@@ -62,19 +65,10 @@ func (m *Middleware) AuthMiddleware(next http.Handler) http.Handler {
 		}
 
 		c := r.Context()
-		ctx := context.WithValue(c, userContextKey, session.UserID)
+		ctx := m.enrichContextFunc(c, session.UserID)
 
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
-}
-
-// should these and the key be in Auth? or somewhere else? Or through interface or dep inj
-func GetUserID(ctx context.Context) *uuid.UUID {
-	userID, ok := ctx.Value(userContextKey).(uuid.UUID)
-	if !ok {
-		return nil
-	}
-	return &userID
 }
 
 func GetSessionID(ctx context.Context) *uuid.UUID {
@@ -83,12 +77,4 @@ func GetSessionID(ctx context.Context) *uuid.UUID {
 		return nil
 	}
 	return &sessionID
-}
-
-func IsSignedIn(ctx context.Context) bool {
-	_, ok := ctx.Value(userContextKey).(uuid.UUID)
-	if !ok {
-		return false
-	}
-	return true
 }

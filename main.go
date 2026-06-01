@@ -8,8 +8,10 @@ import (
 
 	"github.com/joho/godotenv"
 	"github.com/mp40/go-htmx-pccs/auth"
+	"github.com/mp40/go-htmx-pccs/identity"
 	"github.com/mp40/go-htmx-pccs/middleware"
 	"github.com/mp40/go-htmx-pccs/render"
+	"github.com/mp40/go-htmx-pccs/service"
 	"github.com/mp40/go-htmx-pccs/session"
 	"github.com/mp40/go-htmx-pccs/store"
 	_ "modernc.org/sqlite"
@@ -51,9 +53,13 @@ func main() {
 	authService := auth.NewAuthService(storeService)
 	renderService := render.NewRenderService()
 
-	server := NewServer(authService, sessionService, storeService, renderService)
+	characterService := service.NewCharacterService(storeService)
+	identityPkg := &identity.Identity{}
 
-	m := middleware.NewMiddlewareService(sessionService)
+	server := NewServer(authService, sessionService, identityPkg, characterService, renderService)
+
+	enrichFunc := identity.EnrichContextWithUserID
+	m := middleware.NewMiddlewareService(sessionService, enrichFunc)
 	serverWithMiddleware := m.AuthMiddleware(server)
 
 	slog.Info("server running", "on", "http://localhost:5050")

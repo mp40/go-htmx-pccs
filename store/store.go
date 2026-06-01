@@ -80,11 +80,10 @@ func (s *Store) AddUser(email string, hash string) (uuid.UUID, error) {
 }
 
 func (s *Store) AddCharacter(character Character) (*Character, error) {
-	ID := uuid.New()
 	now := time.Now().Unix()
 	_, err := s.db.Exec(
 		"INSERT INTO characters (id, user_id, name, str, int, wil, hlt, agi, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-		ID.String(), character.UserID, character.Name, character.Str, character.Int, character.Wil, character.Hlt, character.Agi, now, now,
+		character.ID, character.UserID, character.Name, character.Str, character.Int, character.Wil, character.Hlt, character.Agi, now, now,
 	)
 	if err != nil {
 		return nil, err

@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -21,6 +22,10 @@ func (s *StubSession) GetValidSessionByID(ID uuid.UUID) (*session.Session, error
 	return s.session, s.err
 }
 
+func fakeEnrichFunc(ctx context.Context, userID uuid.UUID) context.Context {
+	return context.WithValue(ctx, "fake-user-context-key", userID)
+}
+
 func TestMiddleware(t *testing.T) {
 	t.Run("it should handle cookie with uuid as session id", func(t *testing.T) {
 		stubSession := StubSession{}
@@ -28,12 +33,12 @@ func TestMiddleware(t *testing.T) {
 		fakeSession := session.Session{UserID: userID}
 		stubSession.session = &fakeSession
 
-		middleware := NewMiddlewareService(&stubSession)
+		middleware := NewMiddlewareService(&stubSession, fakeEnrichFunc)
 
 		sessionID := "69000000-0000-4523-90a2-4868a5bfc90a"
 		var contextUserId *uuid.UUID
 		nextHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			raw, ok := r.Context().Value(userContextKey).(uuid.UUID)
+			raw, ok := r.Context().Value("fake-user-context-key").(uuid.UUID)
 			if ok {
 				contextUserId = &raw
 			}
@@ -66,11 +71,11 @@ func TestMiddleware(t *testing.T) {
 
 	t.Run("it should handle cookie with unparsable session id", func(t *testing.T) {
 		stubSession := StubSession{}
-		middleware := NewMiddlewareService(&stubSession)
+		middleware := NewMiddlewareService(&stubSession, fakeEnrichFunc)
 
 		var contextUserId *uuid.UUID
 		nextHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			raw, ok := r.Context().Value(userContextKey).(uuid.UUID)
+			raw, ok := r.Context().Value("fake-user-context-key").(uuid.UUID)
 			if ok {
 				contextUserId = &raw
 			}
@@ -99,11 +104,11 @@ func TestMiddleware(t *testing.T) {
 
 	t.Run("it should handle requests without cookie", func(t *testing.T) {
 		stubSession := StubSession{}
-		middleware := NewMiddlewareService(&stubSession)
+		middleware := NewMiddlewareService(&stubSession, fakeEnrichFunc)
 
 		var contextUserId *uuid.UUID
 		nextHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			raw, ok := r.Context().Value(userContextKey).(uuid.UUID)
+			raw, ok := r.Context().Value("fake-user-context-key").(uuid.UUID)
 			if ok {
 				contextUserId = &raw
 			}
@@ -131,13 +136,13 @@ func TestMiddleware(t *testing.T) {
 
 	t.Run("it should handle null session", func(t *testing.T) {
 		stubSession := StubSession{}
-		middleware := NewMiddlewareService(&stubSession)
+		middleware := NewMiddlewareService(&stubSession, fakeEnrichFunc)
 
 		sessionID := "69000000-0000-4523-90a2-4868a5bfc90a"
 
 		var contextUserId *uuid.UUID
 		nextHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			raw, ok := r.Context().Value(userContextKey).(uuid.UUID)
+			raw, ok := r.Context().Value("fake-user-context-key").(uuid.UUID)
 			if ok {
 				contextUserId = &raw
 			}
@@ -167,13 +172,13 @@ func TestMiddleware(t *testing.T) {
 	t.Run("it should handle errors from get session", func(t *testing.T) {
 		stubSession := StubSession{}
 		stubSession.err = fmt.Errorf("fake-err")
-		middleware := NewMiddlewareService(&stubSession)
+		middleware := NewMiddlewareService(&stubSession, fakeEnrichFunc)
 
 		sessionID := "69000000-0000-4523-90a2-4868a5bfc90a"
 
 		var contextUserId *uuid.UUID
 		nextHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			raw, ok := r.Context().Value(userContextKey).(uuid.UUID)
+			raw, ok := r.Context().Value("fake-user-context-key").(uuid.UUID)
 			if ok {
 				contextUserId = &raw
 			}
