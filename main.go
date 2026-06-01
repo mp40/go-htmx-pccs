@@ -51,7 +51,7 @@ func main() {
 	authService := auth.NewAuthService(storeService)
 	renderService := render.NewRenderService()
 
-	server := NewServer(authService, sessionService, renderService)
+	server := NewServer(authService, sessionService, storeService, renderService)
 
 	m := middleware.NewMiddlewareService(sessionService)
 	serverWithMiddleware := m.AuthMiddleware(server)

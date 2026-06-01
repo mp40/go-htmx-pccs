@@ -35,6 +35,10 @@ type Session interface {
 	DeleteSessionByID(ID uuid.UUID) error
 }
 
+type Store interface {
+	AddCharacter(character store.Character) (*store.Character, error)
+}
+
 type AuthRequest struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
@@ -45,12 +49,14 @@ type Server struct {
 	render  Render
 	auth    Auth
 	session Session
+	store   Store
 }
 
-func NewServer(auth Auth, session Session, render Render) *Server {
+func NewServer(auth Auth, session Session, store Store, render Render) *Server {
 	server := &Server{
 		auth:    auth,
 		session: session,
+		store:   store,
 		render:  render,
 	}
 
@@ -71,6 +77,8 @@ func NewServer(auth Auth, session Session, render Render) *Server {
 	router.HandleFunc("POST /account/sign-up", server.signUpHandler)
 
 	router.HandleFunc("DELETE /account/sign-out", server.signOutHandler)
+
+	router.HandleFunc("POST /account/characters", server.postCharacterHandler)
 
 	server.Handler = router
 	return server
@@ -291,6 +299,30 @@ func (s *Server) signOutHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	redirectWithExpiredCookie(w)
+}
+
+func (s *Server) postCharacterHandler(w http.ResponseWriter, r *http.Request) {
+	// email := strings.TrimSpace(r.FormValue("email"))
+	// password := strings.TrimSpace(r.FormValue("password"))
+	cookie, err := r.Cookie("userID")
+	if err != nil {
+		// send back error msg
+		return
+	}
+
+	userID, err := middleware.GetUserID()
+
+	rawCharacter := store.Character{
+		UserID: userID,
+	}
+
+	_, err = s.store.AddCharacter(rawCharacter)
+	if err != nil {
+		// send back err msg
+	}
+
+	w.Header().Set("Content-Type", "text/html")
+	w.WriteHeader(http.StatusCreated)
 }
 
 func redirectWithExpiredCookie(w http.ResponseWriter) {

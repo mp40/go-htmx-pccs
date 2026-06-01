@@ -15,6 +15,19 @@ type User struct {
 	UpdatedAt int64     `json:"updated_at"` // unix timestamp
 }
 
+type Character struct {
+	ID        uuid.UUID `json:"id"`
+	UserID    uuid.UUID `json:"user_id"`
+	Name      string    `json:"name"`
+	Str       int       `json:"str"`
+	Int       int       `json:"int"`
+	Wil       int       `json:"wil"`
+	Hlt       int       `json:"hlt"`
+	Agi       int       `json:"agi"`
+	CreatedAt int64     `json:"created_at"` // unix timestamp
+	UpdatedAt int64     `json:"updated_at"` // unix timestamp
+}
+
 type Store struct {
 	db *sql.DB
 }
@@ -64,4 +77,72 @@ func (s *Store) AddUser(email string, hash string) (uuid.UUID, error) {
 		return uuid.Nil, err
 	}
 	return ID, nil
+}
+
+func (s *Store) AddCharacter(character Character) (*Character, error) {
+	ID := uuid.New()
+	now := time.Now().Unix()
+	_, err := s.db.Exec(
+		"INSERT INTO characters (id, user_id, name, str, int, wil, hlt, agi, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+		ID.String(), character.UserID, character.Name, character.Str, character.Int, character.Wil, character.Hlt, character.Agi, now, now,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return &character, nil
+}
+
+func (s *Store) GetCharactersByUserID(userID uuid.UUID) ([]Character, error) {
+	rows, err := s.db.Query("SELECT * FROM characters")
+	if err != nil {
+		return []Character{}, err
+	}
+
+	var characters []Character
+
+	for rows.Next() {
+		character := Character{}
+		var idStr string
+		var userIdStr string
+		err := rows.Scan(&idStr, &userIdStr, &character.Name, &character.Str, &character.Int, &character.Wil, &character.Hlt, &character.Agi, &character.CreatedAt, &character.UpdatedAt)
+		if err != nil {
+			return []Character{}, err
+		}
+
+		character.ID, err = uuid.Parse(idStr)
+		if err != nil {
+			return nil, err
+		}
+		character.UserID, err = uuid.Parse(userIdStr)
+		if err != nil {
+			return nil, err
+		}
+
+		characters = append(characters, character)
+	}
+
+	return characters, nil
+}
+
+func (s *Store) GetCharacterByID(ID uuid.UUID) (*Character, error) {
+	character := Character{}
+	var idStr string
+	var userIdStr string
+	err := s.db.QueryRow("SELECT id, user_id, name, str, int, wil, hlt, agi, created_at, updated_at FROM characters WHERE id = ?", ID).
+		Scan(&idStr, &userIdStr, &character.Name, &character.Str, &character.Int, &character.Wil, &character.Hlt, &character.Agi, &character.CreatedAt, &character.UpdatedAt)
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	character.ID, err = uuid.Parse(idStr)
+	if err != nil {
+		return nil, err
+	}
+	character.UserID, err = uuid.Parse(userIdStr)
+	if err != nil {
+		return nil, err
+	}
+	return &character, nil
 }

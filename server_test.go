@@ -22,6 +22,12 @@ type StubAuth struct {
 	user      *store.User
 }
 
+type StubStore struct {
+	err             error
+	spyAddCharacter int
+	character       *store.Character
+}
+
 type StubSession struct {
 	sessionID        uuid.UUID
 	err              error
@@ -36,6 +42,7 @@ type StubRender struct {
 	renderAccountFragmentCalls      int
 	renderSignInModalCalls          int
 	renderSignUpModalCalls          int
+	renderCharacterCalls            int
 	renderErrorMessageFragmentCalls int
 }
 
@@ -74,6 +81,11 @@ func (r *StubRender) RenderSignUpModal(w io.Writer) error {
 	return nil
 }
 
+func (r *StubRender) RenderCharcater(w io.Writer) error {
+	r.renderCharacterCalls++
+	return nil
+}
+
 func (a *StubAuth) SignIn(email string, password string) (*store.User, error) {
 	a.spySignIn++
 	return a.user, a.err
@@ -94,10 +106,15 @@ func (s *StubSession) DeleteSessionByID(ID uuid.UUID) error {
 	return s.err
 }
 
+func (s *StubStore) AddCharacter(character store.Character) (*store.Character, error) {
+	s.spyAddCharacter++
+	return s.character, s.err
+}
+
 func TestHomeHandler(t *testing.T) {
 	t.Run("it should return 200 and full page on successful GET request", func(t *testing.T) {
 		stubRender := StubRender{}
-		server := NewServer(nil, nil, &stubRender)
+		server := NewServer(nil, nil, nil, &stubRender)
 
 		request := httptest.NewRequest(http.MethodGet, "/", nil)
 		response := httptest.NewRecorder()
@@ -120,7 +137,7 @@ func TestHomeHandler(t *testing.T) {
 
 	t.Run("it should return 200 and partial on successful HTMX GET request", func(t *testing.T) {
 		stubRender := StubRender{}
-		server := NewServer(nil, nil, &stubRender)
+		server := NewServer(nil, nil, nil, &stubRender)
 
 		request := httptest.NewRequest(http.MethodGet, "/", nil)
 		request.Header.Set("HX-Request", "true")
@@ -146,7 +163,7 @@ func TestHomeHandler(t *testing.T) {
 func TestAccountHandler(t *testing.T) {
 	t.Run("it should return 200 and full page on successful GET request", func(t *testing.T) {
 		stubRender := StubRender{}
-		server := NewServer(nil, nil, &stubRender)
+		server := NewServer(nil, nil, nil, &stubRender)
 
 		request := httptest.NewRequest(http.MethodGet, "/account", nil)
 		response := httptest.NewRecorder()
@@ -169,7 +186,7 @@ func TestAccountHandler(t *testing.T) {
 
 	t.Run("it should return 200 and partial on successful HTMX GET request", func(t *testing.T) {
 		stubRender := StubRender{}
-		server := NewServer(nil, nil, &stubRender)
+		server := NewServer(nil, nil, nil, &stubRender)
 
 		request := httptest.NewRequest(http.MethodGet, "/account", nil)
 		request.Header.Set("HX-Request", "true")
@@ -195,7 +212,7 @@ func TestAccountHandler(t *testing.T) {
 func TestRenderSignInModalHandler(t *testing.T) {
 	t.Run("it should render the sign in modal on GET /account/sign-in", func(t *testing.T) {
 		stubRender := StubRender{}
-		server := NewServer(nil, nil, &stubRender)
+		server := NewServer(nil, nil, nil, &stubRender)
 
 		request := httptest.NewRequest(http.MethodGet, "/account/sign-in", nil)
 		request.Header.Set("HX-Request", "true")
@@ -224,7 +241,7 @@ func TestSignInHandler(t *testing.T) {
 		user := store.User{}
 		stubAuth.user = &user
 
-		server := NewServer(&stubAuth, &stubSession, &stubRender)
+		server := NewServer(&stubAuth, &stubSession, nil, &stubRender)
 
 		formValues := url.Values{
 			"email":    {"762@valid.com"},
@@ -270,7 +287,7 @@ func TestSignInHandler(t *testing.T) {
 		stubSession := StubSession{}
 		stubRender := StubRender{}
 
-		server := NewServer(&stubAuth, &stubSession, &stubRender)
+		server := NewServer(&stubAuth, &stubSession, nil, &stubRender)
 
 		formValues := url.Values{
 			"email":    {"762@valid.com"},
@@ -297,7 +314,7 @@ func TestSignInHandler(t *testing.T) {
 		stubSession := StubSession{}
 		stubRender := StubRender{}
 
-		server := NewServer(&stubAuth, &stubSession, &stubRender)
+		server := NewServer(&stubAuth, &stubSession, nil, &stubRender)
 
 		stubAuth.err = fmt.Errorf("fake error")
 
@@ -317,7 +334,7 @@ func TestSignInHandler(t *testing.T) {
 func TestRenderSignUpModalHandler(t *testing.T) {
 	t.Run("it should render the sign in modal on GET /account/sign-up", func(t *testing.T) {
 		stubRender := StubRender{}
-		server := NewServer(nil, nil, &stubRender)
+		server := NewServer(nil, nil, nil, &stubRender)
 
 		request := httptest.NewRequest(http.MethodGet, "/account/sign-up", nil)
 		request.Header.Set("HX-Request", "true")
@@ -341,12 +358,13 @@ func TestSignUpHandler(t *testing.T) {
 	t.Run("it should redirect to Home page on successful POST request", func(t *testing.T) {
 		stubAuth := StubAuth{}
 		stubSession := StubSession{}
+		stubStore := StubStore{}
 		stubRender := StubRender{}
 
 		newID := uuid.MustParse("5ea69240-823c-4523-90a2-4868a5bfc90a")
 		stubAuth.ID = &newID
 
-		server := NewServer(&stubAuth, &stubSession, &stubRender)
+		server := NewServer(&stubAuth, &stubSession, &stubStore, &stubRender)
 
 		formValues := url.Values{
 			"email":    {"762@valid.com"},
@@ -390,8 +408,10 @@ func TestSignUpHandler(t *testing.T) {
 	t.Run("it should return error message if invalid email format", func(t *testing.T) {
 		stubAuth := StubAuth{}
 		stubSession := StubSession{}
+		stubStore := StubStore{}
 		stubRender := StubRender{}
-		server := NewServer(&stubAuth, &stubSession, &stubRender)
+
+		server := NewServer(&stubAuth, &stubSession, &stubStore, &stubRender)
 
 		formValues := url.Values{
 			"email":    {"invalid.com"},
@@ -416,7 +436,8 @@ func TestSignUpHandler(t *testing.T) {
 		stubAuth := StubAuth{}
 		stubSession := StubSession{}
 		stubRender := StubRender{}
-		server := NewServer(&stubAuth, &stubSession, &stubRender)
+
+		server := NewServer(&stubAuth, &stubSession, nil, &stubRender)
 
 		formValues := url.Values{
 			"email":    {"762@valid.com"},
@@ -443,7 +464,8 @@ func TestSignUpHandler(t *testing.T) {
 		}
 		stubSession := StubSession{}
 		stubRender := StubRender{}
-		server := NewServer(&stubAuth, &stubSession, &stubRender)
+
+		server := NewServer(&stubAuth, &stubSession, nil, &stubRender)
 
 		formValues := url.Values{
 			"email":    {"762@valid.com"},
@@ -467,7 +489,7 @@ func TestSignOutHandler(t *testing.T) {
 		stubSession := StubSession{}
 		stubRender := StubRender{}
 
-		server := NewServer(&stubAuth, &stubSession, &stubRender)
+		server := NewServer(&stubAuth, &stubSession, nil, &stubRender)
 
 		cookie := getSecureCookie(uuid.MustParse("69000000-0000-4523-90a2-4868a5bfc90a"))
 
@@ -504,5 +526,44 @@ func TestSignOutHandler(t *testing.T) {
 		if gotHeaderRedirect != wantHeaderRedirect {
 			t.Errorf("got header Location %v, want header Location %v", gotHeaderRedirect, wantHeaderRedirect)
 		}
+	})
+}
+
+func TestPostCharacterHandler(t *testing.T) {
+	t.Run("it should add character and return character", func(t *testing.T) {
+		stubAuth := StubAuth{}
+		stubSession := StubSession{}
+		stubStore := StubStore{}
+		stubRender := StubRender{}
+
+		server := NewServer(&stubAuth, &stubSession, &stubStore, &stubRender)
+
+		formValues := url.Values{
+			"str": {"9"},
+			"int": {"8"},
+			"wil": {"7"},
+			"hlt": {"6"},
+			"agi": {"5"},
+		}
+
+		request := httptest.NewRequest(http.MethodPost, "/account/characters", strings.NewReader(formValues.Encode()))
+		request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+		response := httptest.NewRecorder()
+		server.Handler.ServeHTTP(response, request)
+
+		gotStatus := response.Result().StatusCode
+		wantStatus := http.StatusCreated
+
+		if gotStatus != wantStatus {
+			t.Errorf("got http status %v want http status %v", gotStatus, wantStatus)
+		}
+
+		if stubStore.spyAddCharacter != 1 {
+			t.Errorf("got %v calls to AddCharacter want 1", stubStore.spyAddCharacter)
+		}
+
+		// if stubRender.renderCharacterCalls != 1 {
+		// 	t.Errorf("got %v calls to AddCharacter want 1", stubRender.renderCharacterCalls)
+		// }
 	})
 }
