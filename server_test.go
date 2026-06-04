@@ -87,7 +87,7 @@ func (r *stubrender) RenderSignUpModal(w io.Writer) error {
 	return nil
 }
 
-func (r *stubrender) RenderCharcater(w io.Writer) error {
+func (r *stubrender) RenderCharacter(w io.Writer) error {
 	r.renderCharacterCalls++
 	return nil
 }

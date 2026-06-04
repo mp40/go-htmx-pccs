@@ -118,6 +118,11 @@ func (r *Render) RenderSignUpModal(w io.Writer) error {
 	return nil
 }
 
+func (r *Render) RenderCharacter(w io.Writer) error {
+	// TODO implememnt character fragment
+	return nil
+}
+
 func (r *Render) RenderErrorMessageFragment(w io.Writer, msg string) error {
 	tmpl, err := template.New("error").ParseFiles(getTemplatePath("error-message.html"))
 	if err != nil {

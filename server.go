@@ -23,6 +23,7 @@ type Render interface {
 	RenderSignInModal(w io.Writer) error
 	RenderSignUpModal(w io.Writer) error
 	RenderErrorMessageFragment(w io.Writer, msg string) error
+	RenderCharacter(w io.Writer) error
 }
 
 type Auth interface {
@@ -85,7 +86,7 @@ func NewServer(auth Auth, session Session, identity Identity, characterService C
 
 	router.HandleFunc("DELETE /account/sign-out", server.signOutHandler)
 
-	router.Handle("POST /account/characters", handlePostCharacter(server.characterService, server.identity))
+	router.Handle("POST /account/characters", handlePostCharacter(server.render, server.characterService, server.identity))
 
 	server.Handler = router
 	return server
@@ -308,7 +309,7 @@ func (s *Server) signOutHandler(w http.ResponseWriter, r *http.Request) {
 	redirectWithExpiredCookie(w)
 }
 
-func handlePostCharacter(characterService CharacterService, identity Identity) http.Handler {
+func handlePostCharacter(render Render, characterService CharacterService, identity Identity) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		userID := identity.GetUserID(r)
 		if userID == nil {
@@ -322,6 +323,12 @@ func handlePostCharacter(characterService CharacterService, identity Identity) h
 		}
 
 		// return render character fragment
+		err = render.RenderCharacter(w)
+		if err != nil {
+			slog.Error("server error rendering", "err", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
 		w.Header().Set("Content-Type", "text/html")
 		w.WriteHeader(http.StatusCreated)
 	})
