@@ -23,7 +23,7 @@ type Render interface {
 	RenderSignInModal(w io.Writer) error
 	RenderSignUpModal(w io.Writer) error
 	RenderErrorMessageFragment(w io.Writer, msg string) error
-	RenderCharacter(w io.Writer) error
+	RenderCharacter(w io.Writer, character store.Character) error
 }
 
 type Auth interface {
@@ -313,22 +313,78 @@ func handlePostCharacter(render Render, characterService CharacterService, ident
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		userID := identity.GetUserID(r)
 		if userID == nil {
+			slog.Error("get user id error", "err", "user id is nil")
 			// handle nil user id somehow
 			return
 		}
 
-		_, err := characterService.AddCharacter(*userID, domain.RawCharacter{})
+		// validate payload
+		name := strings.TrimSpace(r.FormValue("name"))
+		rawStr := strings.TrimSpace(r.FormValue("str"))
+		rawItel := strings.TrimSpace(r.FormValue("int"))
+		rawWil := strings.TrimSpace(r.FormValue("wil"))
+		rawHlt := strings.TrimSpace(r.FormValue("hlt"))
+		rawAgi := strings.TrimSpace(r.FormValue("agi"))
+
+		str, err := strconv.Atoi(rawStr)
 		if err != nil {
+			slog.Error("post character, parse to int", "err", err)
+			// do something here
+			return
+		}
+
+		intel, err := strconv.Atoi(rawItel)
+		if err != nil {
+			slog.Error("post character, parse to int", "err", err)
+			// do something here
+			return
+		}
+
+		wil, err := strconv.Atoi(rawWil)
+		if err != nil {
+			slog.Error("post character, parse to int", "err", err)
+			// do something here
+			return
+		}
+
+		hlt, err := strconv.Atoi(rawHlt)
+		if err != nil {
+			slog.Error("post character, parse to int", "err", err)
+			// do something here
+			return
+		}
+
+		agi, err := strconv.Atoi(rawAgi)
+		if err != nil {
+			slog.Error("post character, parse to int", "err", err)
+			// do something here
+			return
+		}
+
+		c := domain.RawCharacter{
+			Name: name,
+			Str:  str,
+			Int:  intel,
+			Wil:  wil,
+			Hlt:  hlt,
+			Agi:  agi,
+		}
+
+		character, err := characterService.AddCharacter(*userID, c)
+		if err != nil {
+			slog.Error("post character, add character error", "err", err)
 			// handle err some how
+			return
 		}
 
 		// return render character fragment
-		err = render.RenderCharacter(w)
+		err = render.RenderCharacter(w, *character)
 		if err != nil {
 			slog.Error("server error rendering", "err", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
+		slog.Info("YAY")
 		w.Header().Set("Content-Type", "text/html")
 		w.WriteHeader(http.StatusCreated)
 	})

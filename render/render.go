@@ -5,6 +5,8 @@ import (
 	"io"
 	"path/filepath"
 	"runtime"
+
+	"github.com/mp40/go-htmx-pccs/store"
 )
 
 type Render struct{}
@@ -49,7 +51,7 @@ func (r *Render) RenderHomeFragment(w io.Writer) error {
 }
 
 func (r *Render) RenderAccountPage(w io.Writer, signedIn bool) error {
-	tmpl, err := template.ParseFiles(getTemplatePath("index.html"), getTemplatePath("top-strap.html"), getTemplatePath("account.html"))
+	tmpl, err := template.ParseFiles(getTemplatePath("index.html"), getTemplatePath("top-strap.html"), getTemplatePath("account.html"), getTemplatePath("characters.html"))
 	if err != nil {
 		return err
 	}
@@ -69,7 +71,7 @@ func (r *Render) RenderAccountPage(w io.Writer, signedIn bool) error {
 }
 
 func (r *Render) RenderAccountFragment(w io.Writer, signedIn bool) error {
-	tmpl, err := template.New("page").ParseFiles(getTemplatePath("account.html"))
+	tmpl, err := template.New("page").ParseFiles(getTemplatePath("account.html"), getTemplatePath("characters.html"))
 	if err != nil {
 		return err
 	}
@@ -118,8 +120,17 @@ func (r *Render) RenderSignUpModal(w io.Writer) error {
 	return nil
 }
 
-func (r *Render) RenderCharacter(w io.Writer) error {
-	// TODO implememnt character fragment
+func (r *Render) RenderCharacter(w io.Writer, c store.Character) error {
+	tmpl, err := template.New("character").ParseFiles(getTemplatePath("character.html"))
+	if err != nil {
+		return err
+	}
+
+	err = tmpl.Execute(w, c)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 

@@ -1,0 +1,23 @@
+{{ define "characters" }}
+<div class="characters">
+  <button
+    hx-trigger="click"
+    hx-post="/account/characters"
+    hx-vals='{"str": "9", "int": "8", "wil": "7", "hlt": "6", "agi": "5"}'
+    hx-target=".character-container"
+    hx-swap="beforeend"
+  >
+    Add Character
+  </button>
+  <div class="character-container">
+    <div class="character-heading">
+      <span>Name</span>
+      <span>STR</span>
+      <span>INT</span>
+      <span>WIL</span>
+      <span>HLT</span>
+      <span>AGI</span>
+    </div>
+  </div>
+</div>
+{{ end }}

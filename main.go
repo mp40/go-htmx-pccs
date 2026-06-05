@@ -33,11 +33,20 @@ func main() {
 	if err != nil {
 		log.Fatalf("db create user table error: %v", err)
 	}
+	// fine for now but need to do this only if in local dev mode once deployed
+	_, err = storeDB.Exec("CREATE TABLE IF NOT EXISTS characters (id TEXT PRIMARY KEY NOT NULL, user_id TEXT NOT NULL, name TEXT NOT NULL, str INTEGER NOT NULL, int INTEGER NOT NULL, wil INTEGER NOT NULL, hlt INTEGER NOT NULL, agi INTEGER NOT NULL, created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL)")
+	if err != nil {
+		log.Fatalf("db create character table error: %v", err)
+	}
 
+	// found some gotchas with in memory - each connection gets private in mem db
+	// maybe move out of memory (store or state db)
 	sessionDB, err := sql.Open("sqlite", ":memory:")
 	if err != nil {
 		log.Fatalf("init session db error: %v", err)
 	}
+	// force one connection for now
+	sessionDB.SetMaxOpenConns(1)
 	defer sessionDB.Close()
 	// fine for now but need to do this only if in local dev mode once deployed
 	_, err = sessionDB.Exec("CREATE TABLE IF NOT EXISTS sessions (id TEXT PRIMARY KEY NOT NULL, user_id TEXT NOT NULL, created_at INTEGER NOT NULL, expires_at INTEGER NOT NULL)")

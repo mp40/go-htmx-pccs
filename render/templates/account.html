@@ -33,7 +33,7 @@
     </button>
     {{end}}
   </div>
-  {{ template "modal" . }}
+  {{if .SignedIn}} {{ template "characters" .}} {{end}} {{ template "modal" . }}
 </div>
 {{ end }} {{ define "modal" }}
 <div class="modal-container-div"></div>

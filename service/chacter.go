@@ -1,6 +1,9 @@
 package service
 
 import (
+	"fmt"
+	"math/rand"
+
 	"github.com/google/uuid"
 	"github.com/mp40/go-htmx-pccs/domain"
 	"github.com/mp40/go-htmx-pccs/store"
@@ -21,9 +24,14 @@ func NewCharacterService(store Store) *CharacterService {
 }
 
 func (cs *CharacterService) AddCharacter(userID uuid.UUID, rawCharacter domain.RawCharacter) (*store.Character, error) {
+	n := rawCharacter.Name
+	if len(n) == 0 {
+		n = getRandomName()
+	}
 	new := store.Character{
 		ID:     uuid.New(),
 		UserID: userID,
+		Name:   n,
 		Str:    rawCharacter.Str,
 		Int:    rawCharacter.Int,
 		Wil:    rawCharacter.Wil,
@@ -34,4 +42,15 @@ func (cs *CharacterService) AddCharacter(userID uuid.UUID, rawCharacter domain.R
 	character, err := cs.store.AddCharacter(new)
 
 	return character, err
+}
+
+var names = []string{"Leo", "Roy", "Sam", "Joe", "Ben", "Ray", "Avi", "Ian", "Dan", "Tom"}
+
+func generateRandomNumber(min int, max int) int {
+	return rand.Intn(max-min+1) + min
+}
+
+func getRandomName() string {
+	i := generateRandomNumber(0, len(names)-1)
+	return fmt.Sprintf("%s-%d", names[i], generateRandomNumber(100, 999))
 }
