@@ -553,6 +553,9 @@ func TestPostCharacterHandler(t *testing.T) {
 		userID := uuid.MustParse("69000000-0000-4523-90a2-4868a5bfc90a")
 		stubID := stubIdentity{userID: &userID, isSignedIn: true}
 
+		character := store.Character{}
+		characterService.character = &character
+
 		server := NewServer(&auth, &session, &stubID, &characterService, &render)
 
 		formValues := url.Values{

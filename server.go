@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"net/http"
 	"net/mail"
+	"net/url"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -318,56 +319,17 @@ func handlePostCharacter(render Render, characterService CharacterService, ident
 			return
 		}
 
-		// validate payload
-		name := strings.TrimSpace(r.FormValue("name"))
-		rawStr := strings.TrimSpace(r.FormValue("str"))
-		rawItel := strings.TrimSpace(r.FormValue("int"))
-		rawWil := strings.TrimSpace(r.FormValue("wil"))
-		rawHlt := strings.TrimSpace(r.FormValue("hlt"))
-		rawAgi := strings.TrimSpace(r.FormValue("agi"))
-
-		str, err := strconv.Atoi(rawStr)
-		if err != nil {
-			slog.Error("post character, parse to int", "err", err)
-			// do something here
+		if err := r.ParseForm(); err != nil {
+			slog.Error("post character, parse form error", "err", err)
+			// do something
 			return
 		}
 
-		intel, err := strconv.Atoi(rawItel)
-		if err != nil {
-			slog.Error("post character, parse to int", "err", err)
-			// do something here
+		c, problems := parseRawCharacter(r.PostForm)
+		if len(problems) > 0 {
+			slog.Warn("post character, invalid data submitted", "problems", problems)
+			// do something in UI
 			return
-		}
-
-		wil, err := strconv.Atoi(rawWil)
-		if err != nil {
-			slog.Error("post character, parse to int", "err", err)
-			// do something here
-			return
-		}
-
-		hlt, err := strconv.Atoi(rawHlt)
-		if err != nil {
-			slog.Error("post character, parse to int", "err", err)
-			// do something here
-			return
-		}
-
-		agi, err := strconv.Atoi(rawAgi)
-		if err != nil {
-			slog.Error("post character, parse to int", "err", err)
-			// do something here
-			return
-		}
-
-		c := domain.RawCharacter{
-			Name: name,
-			Str:  str,
-			Int:  intel,
-			Wil:  wil,
-			Hlt:  hlt,
-			Agi:  agi,
 		}
 
 		character, err := characterService.AddCharacter(*userID, c)
@@ -384,7 +346,7 @@ func handlePostCharacter(render Render, characterService CharacterService, ident
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
-		slog.Info("YAY")
+
 		w.Header().Set("Content-Type", "text/html")
 		w.WriteHeader(http.StatusCreated)
 	})
@@ -424,4 +386,51 @@ func removeSecureCookie() http.Cookie {
 	}
 
 	return cookie
+}
+
+func parseRawCharacter(form url.Values) (domain.RawCharacter, map[string]string) {
+	problems := map[string]string{}
+
+	name := strings.TrimSpace(form.Get("name"))
+	rawStr := strings.TrimSpace(form.Get("str"))
+	rawItel := strings.TrimSpace(form.Get("int"))
+	rawWil := strings.TrimSpace(form.Get("wil"))
+	rawHlt := strings.TrimSpace(form.Get("hlt"))
+	rawAgi := strings.TrimSpace(form.Get("agi"))
+
+	str, err := strconv.Atoi(rawStr)
+	if err != nil {
+		problems["str"] = "is not a number"
+	}
+
+	intel, err := strconv.Atoi(rawItel)
+	if err != nil {
+		problems["int"] = "is not a number"
+	}
+
+	wil, err := strconv.Atoi(rawWil)
+	if err != nil {
+		problems["wil"] = "is not a number"
+	}
+
+	hlt, err := strconv.Atoi(rawHlt)
+	if err != nil {
+		problems["hlt"] = "is not a number"
+	}
+
+	agi, err := strconv.Atoi(rawAgi)
+	if err != nil {
+		problems["agi"] = "is not a number"
+	}
+
+	c := domain.RawCharacter{
+		Name: name,
+		Str:  str,
+		Int:  intel,
+		Wil:  wil,
+		Hlt:  hlt,
+		Agi:  agi,
+	}
+
+	return c, problems
 }
