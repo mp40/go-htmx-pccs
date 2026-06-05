@@ -401,26 +401,36 @@ func parseRawCharacter(form url.Values) (domain.RawCharacter, map[string]string)
 	str, err := strconv.Atoi(rawStr)
 	if err != nil {
 		problems["str"] = "is not a number"
+	} else if str < 1 || str > 21 {
+		problems["str"] = "is invalid (must be between 1 and 21)"
 	}
 
 	intel, err := strconv.Atoi(rawItel)
 	if err != nil {
 		problems["int"] = "is not a number"
+	} else if intel < 1 || intel > 21 {
+		problems["int"] = "is invalid (must be between 1 and 21)"
 	}
 
 	wil, err := strconv.Atoi(rawWil)
 	if err != nil {
 		problems["wil"] = "is not a number"
+	} else if wil < 1 || wil > 21 {
+		problems["wil"] = "is invalid (must be between 1 and 21)"
 	}
 
 	hlt, err := strconv.Atoi(rawHlt)
 	if err != nil {
 		problems["hlt"] = "is not a number"
+	} else if hlt < 1 || hlt > 21 {
+		problems["hlt"] = "is invalid (must be between 1 and 21)"
 	}
 
 	agi, err := strconv.Atoi(rawAgi)
 	if err != nil {
 		problems["agi"] = "is not a number"
+	} else if agi < 1 || agi > 21 {
+		problems["agi"] = "is invalid (must be between 1 and 21)"
 	}
 
 	c := domain.RawCharacter{
