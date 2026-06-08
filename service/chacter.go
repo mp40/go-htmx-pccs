@@ -2,7 +2,6 @@ package service
 
 import (
 	"fmt"
-	"math"
 	"math/rand"
 
 	"github.com/google/uuid"
@@ -60,12 +59,7 @@ func getRandomName() string {
 }
 
 func convertLevelToLearningPoints(level int) float32 {
-	if level == 0 {
-		return 0
-	}
-
-	if level <= 5 {
-		return float32(math.Pow(2, float64(level)))
-	}
-	return 56
+	// TODO think if we want to return error if level not within map boundry, ie -1 or 21
+	lp := domain.LevelToLearningPoints[level]
+	return lp
 }

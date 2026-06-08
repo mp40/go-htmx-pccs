@@ -25,8 +25,8 @@ type Character struct {
 	Hlt                      int       `json:"hlt"`
 	Agi                      int       `json:"agi"`
 	Tch                      int       `json:"tch"`
-	GunCombatLearningPoints  float32   `json:"gun_combat_lpt"`
-	HandToHandLearningPoints float32   `json:"hand_to_hand_lpt"`
+	GunCombatLearningPoints  float32   `json:"gun_combat_learning_points"`
+	HandToHandLearningPoints float32   `json:"hand_to_hand_learning_points"`
 	CreatedAt                int64     `json:"created_at"` // unix timestamp
 	UpdatedAt                int64     `json:"updated_at"` // unix timestamp
 }
@@ -85,8 +85,8 @@ func (s *Store) AddUser(email string, hash string) (uuid.UUID, error) {
 func (s *Store) AddCharacter(character Character) (*Character, error) {
 	now := time.Now().Unix()
 	_, err := s.db.Exec(
-		"INSERT INTO characters (id, user_id, name, str, int, wil, hlt, agi, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-		character.ID, character.UserID, character.Name, character.Str, character.Int, character.Wil, character.Hlt, character.Agi, now, now,
+		"INSERT INTO characters (id, user_id, name, str, int, wil, hlt, agi, tch, gun_combat_learning_points, hand_to_hand_learning_points, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+		character.ID, character.UserID, character.Name, character.Str, character.Int, character.Wil, character.Hlt, character.Agi, character.Tch, character.GunCombatLearningPoints, character.HandToHandLearningPoints, now, now,
 	)
 	if err != nil {
 		return nil, err

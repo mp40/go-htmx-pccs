@@ -93,6 +93,20 @@ func TestConvertLevelToLearningPoints(t *testing.T) {
 		{level: 4, want: 16},
 		{level: 5, want: 32},
 		{level: 6, want: 56},
+		{level: 7, want: 88},
+		{level: 8, want: 126},
+		{level: 9, want: 170},
+		{level: 10, want: 218},
+		{level: 11, want: 274},
+		{level: 12, want: 346},
+		{level: 13, want: 434},
+		{level: 14, want: 542},
+		{level: 15, want: 674},
+		{level: 16, want: 834},
+		{level: 17, want: 1026},
+		{level: 18, want: 1254},
+		{level: 19, want: 1552},
+		{level: 20, want: 1834},
 	}
 
 	for _, test := range tc {
