@@ -397,6 +397,9 @@ func parseRawCharacter(form url.Values) (domain.RawCharacter, map[string]string)
 	rawWil := strings.TrimSpace(form.Get("wil"))
 	rawHlt := strings.TrimSpace(form.Get("hlt"))
 	rawAgi := strings.TrimSpace(form.Get("agi"))
+	rawTch := strings.TrimSpace(form.Get("tch"))
+	rawGunCombatLevel := strings.TrimSpace(form.Get("gun_combat_level"))
+	rawHandToHandLevel := strings.TrimSpace(form.Get("hand_to_hand_level"))
 
 	str, err := strconv.Atoi(rawStr)
 	if err != nil {
@@ -433,13 +436,37 @@ func parseRawCharacter(form url.Values) (domain.RawCharacter, map[string]string)
 		problems["agi"] = "is invalid (must be between 1 and 21)"
 	}
 
+	tch, err := strconv.Atoi(rawTch)
+	if err != nil {
+		problems["tch"] = "is not a number"
+	} else if tch < 1 || tch > 21 {
+		problems["tch"] = "is invalid (must be between 1 and 21)"
+	}
+
+	gunCombatLevel, err := strconv.Atoi(rawGunCombatLevel)
+	if err != nil {
+		problems["gun_combat_level"] = "is not a number"
+	} else if gunCombatLevel < 0 || gunCombatLevel > 20 {
+		problems["gun_combat_level"] = "is invalid (must be between 0 and 20)"
+	}
+
+	handToHandLevel, err := strconv.Atoi(rawHandToHandLevel)
+	if err != nil {
+		problems["hand_to_hand_level"] = "is not a number"
+	} else if handToHandLevel < 0 || handToHandLevel > 20 {
+		problems["hand_to_hand_level"] = "is invalid (must be between 0 and 20)"
+	}
+
 	c := domain.RawCharacter{
-		Name: name,
-		Str:  str,
-		Int:  intel,
-		Wil:  wil,
-		Hlt:  hlt,
-		Agi:  agi,
+		Name:            name,
+		Str:             str,
+		Int:             intel,
+		Wil:             wil,
+		Hlt:             hlt,
+		Agi:             agi,
+		Tch:             tch,
+		GunCombatLevel:  gunCombatLevel,
+		HandToHandLevel: handToHandLevel,
 	}
 
 	return c, problems
