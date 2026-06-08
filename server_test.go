@@ -559,11 +559,14 @@ func TestPostCharacterHandler(t *testing.T) {
 		server := NewServer(&auth, &session, &stubID, &characterService, &render)
 
 		formValues := url.Values{
-			"str": {"9"},
-			"int": {"8"},
-			"wil": {"7"},
-			"hlt": {"6"},
-			"agi": {"5"},
+			"str":                {"9"},
+			"int":                {"8"},
+			"wil":                {"7"},
+			"hlt":                {"6"},
+			"agi":                {"5"},
+			"tch":                {"4"},
+			"gun_combat_level":   {"1"},
+			"hand_to_hand_level": {"0"},
 		}
 
 		request := httptest.NewRequest(http.MethodPost, "/account/characters", strings.NewReader(formValues.Encode()))
