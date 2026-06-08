@@ -2,6 +2,7 @@ package service
 
 import (
 	"fmt"
+	"math"
 	"math/rand"
 
 	"github.com/google/uuid"
@@ -59,8 +60,12 @@ func getRandomName() string {
 }
 
 func convertLevelToLearningPoints(level int) float32 {
-	if level == 2 {
-		return 4
+	if level == 0 {
+		return 0
 	}
-	return 16
+
+	if level <= 5 {
+		return float32(math.Pow(2, float64(level)))
+	}
+	return 56
 }
