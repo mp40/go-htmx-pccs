@@ -1,6 +1,7 @@
 package service
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/google/uuid"
@@ -78,4 +79,30 @@ func TestAddCharacter(t *testing.T) {
 			t.Errorf("got %v, want 4", got.HandToHandLearningPoints)
 		}
 	})
+}
+
+func TestConvertLevelToLearningPoints(t *testing.T) {
+	tc := []struct {
+		level int
+		want  float32
+	}{
+		{level: 0, want: 0},
+		{level: 1, want: 2},
+		{level: 2, want: 4},
+		{level: 3, want: 8},
+		{level: 4, want: 16},
+		{level: 5, want: 32},
+		{level: 6, want: 56},
+	}
+
+	for _, test := range tc {
+		t.Run(fmt.Sprintf("it converts level %d to %v", test.level, test.want), func(t *testing.T) {
+			t.Parallel()
+
+			got := convertLevelToLearningPoints(test.level)
+			if got != test.want {
+				t.Errorf("got %v, want %v", got, test.want)
+			}
+		})
+	}
 }
