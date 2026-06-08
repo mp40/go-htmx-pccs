@@ -16,16 +16,19 @@ type User struct {
 }
 
 type Character struct {
-	ID        uuid.UUID `json:"id"`
-	UserID    uuid.UUID `json:"user_id"`
-	Name      string    `json:"name"`
-	Str       int       `json:"str"`
-	Int       int       `json:"int"`
-	Wil       int       `json:"wil"`
-	Hlt       int       `json:"hlt"`
-	Agi       int       `json:"agi"`
-	CreatedAt int64     `json:"created_at"` // unix timestamp
-	UpdatedAt int64     `json:"updated_at"` // unix timestamp
+	ID                       uuid.UUID `json:"id"`
+	UserID                   uuid.UUID `json:"user_id"`
+	Name                     string    `json:"name"`
+	Str                      int       `json:"str"`
+	Int                      int       `json:"int"`
+	Wil                      int       `json:"wil"`
+	Hlt                      int       `json:"hlt"`
+	Agi                      int       `json:"agi"`
+	Tch                      int       `json:"tch"`
+	GunCombatLearningPoints  float32   `json:"gun_combat_lpt"`
+	HandToHandLearningPoints float32   `json:"hand_to_hand_lpt"`
+	CreatedAt                int64     `json:"created_at"` // unix timestamp
+	UpdatedAt                int64     `json:"updated_at"` // unix timestamp
 }
 
 type Store struct {

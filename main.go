@@ -34,7 +34,7 @@ func main() {
 		log.Fatalf("db create user table error: %v", err)
 	}
 	// fine for now but need to do this only if in local dev mode once deployed
-	_, err = storeDB.Exec("CREATE TABLE IF NOT EXISTS characters (id TEXT PRIMARY KEY NOT NULL, user_id TEXT NOT NULL, name TEXT NOT NULL, str INTEGER NOT NULL, int INTEGER NOT NULL, wil INTEGER NOT NULL, hlt INTEGER NOT NULL, agi INTEGER NOT NULL, created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL)")
+	_, err = storeDB.Exec("CREATE TABLE IF NOT EXISTS characters (id TEXT PRIMARY KEY NOT NULL, user_id TEXT NOT NULL, name TEXT NOT NULL, str INTEGER NOT NULL, int INTEGER NOT NULL, wil INTEGER NOT NULL, hlt INTEGER NOT NULL, agi INTEGER NOT NULL, tch INTEGER NOT NULL, gun_combat_lpt REAL NOT NULL, hand_to_hand_lpt REAL NOT NULL, created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL)")
 	if err != nil {
 		log.Fatalf("db create character table error: %v", err)
 	}

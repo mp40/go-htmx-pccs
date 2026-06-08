@@ -29,14 +29,17 @@ func (cs *CharacterService) AddCharacter(userID uuid.UUID, rawCharacter domain.R
 		n = getRandomName()
 	}
 	new := store.Character{
-		ID:     uuid.New(),
-		UserID: userID,
-		Name:   n,
-		Str:    rawCharacter.Str,
-		Int:    rawCharacter.Int,
-		Wil:    rawCharacter.Wil,
-		Hlt:    rawCharacter.Hlt,
-		Agi:    rawCharacter.Agi,
+		ID:                       uuid.New(),
+		UserID:                   userID,
+		Name:                     n,
+		Str:                      rawCharacter.Str,
+		Int:                      rawCharacter.Int,
+		Wil:                      rawCharacter.Wil,
+		Hlt:                      rawCharacter.Hlt,
+		Agi:                      rawCharacter.Agi,
+		Tch:                      rawCharacter.Tch,
+		GunCombatLearningPoints:  convertLevelToLearningPoints(rawCharacter.GunCombatLevel),
+		HandToHandLearningPoints: convertLevelToLearningPoints(rawCharacter.HandToHandLevel),
 	}
 
 	character, err := cs.store.AddCharacter(new)
@@ -53,4 +56,11 @@ func generateRandomNumber(min int, max int) int {
 func getRandomName() string {
 	i := generateRandomNumber(0, len(names)-1)
 	return fmt.Sprintf("%s-%d", names[i], generateRandomNumber(100, 999))
+}
+
+func convertLevelToLearningPoints(level int) float32 {
+	if level == 2 {
+		return 4
+	}
+	return 16
 }
