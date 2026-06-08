@@ -32,6 +32,8 @@ func NewMiddlewareService(session Session, cb EnrichContextWithUserIDFunc) *Midd
 	}
 }
 
+// TODO
+// Think about when we have public and private pages
 func (m *Middleware) AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		cookie, err := r.Cookie(string(sessionCookieKey))
