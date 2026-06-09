@@ -36,6 +36,15 @@
         >
           Reference
         </a>
+        <a
+          hx-get="/tools"
+          hx-trigger="click"
+          hx-target=".page-div"
+          hx-swap="outerHTML"
+          hx-push-url="true"
+        >
+          Tools
+        </a>
       </div>
       {{ template "page" . }}
     </div>

@@ -118,6 +118,34 @@ func (r *Render) RenderReferenceFragment(w io.Writer) error {
 	return nil
 }
 
+func (r *Render) RenderToolsPage(w io.Writer) error {
+	tmpl, err := template.ParseFiles(getTemplatePath("index.html"), getTemplatePath("top-strap.html"), getTemplatePath("tools.html"))
+	if err != nil {
+		return err
+	}
+
+	err = tmpl.Execute(w, nil)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *Render) RenderToolsFragment(w io.Writer) error {
+	tmpl, err := template.New("page").ParseFiles(getTemplatePath("tools.html"))
+	if err != nil {
+		return err
+	}
+
+	err = tmpl.Execute(w, nil)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (r *Render) RenderSignInModal(w io.Writer) error {
 	tmpl, err := template.New("modal").ParseFiles(getTemplatePath("sign-in-modal.html"))
 
