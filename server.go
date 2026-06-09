@@ -21,6 +21,8 @@ type Render interface {
 	RenderHomeFragment(w io.Writer) error
 	RenderAccountPage(w io.Writer, signedIn bool) error
 	RenderAccountFragment(w io.Writer, signedIn bool) error
+	RenderReferencePage(w io.Writer) error
+	RenderReferenceFragment(w io.Writer) error
 	RenderSignInModal(w io.Writer) error
 	RenderSignUpModal(w io.Writer) error
 	RenderErrorMessageFragment(w io.Writer, msg string) error
@@ -78,6 +80,8 @@ func NewServer(auth Auth, session Session, identity Identity, characterService C
 
 	router.HandleFunc("GET /", server.getHomeHandler)
 	router.HandleFunc("GET /account", server.getAccountHandler)
+
+	router.Handle("GET /reference", getReferenceHandler(server.render))
 
 	router.HandleFunc("GET /account/sign-in", server.signInModalHandler)
 	router.HandleFunc("POST /account/sign-in", server.signInHandler)
@@ -139,6 +143,31 @@ func (s *Server) getAccountHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "text/html")
+}
+
+func getReferenceHandler(render Render) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		htmxHeader := r.Header.Get("HX-Request")
+		isHtmx, _ := strconv.ParseBool(htmxHeader)
+
+		if isHtmx {
+			err := render.RenderReferenceFragment(w)
+			if err != nil {
+				slog.Error("server error rendering", "err", err)
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+		} else {
+			err := render.RenderReferencePage(w)
+			if err != nil {
+				slog.Error("server error rendering", "err", err)
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+		}
+
+		w.Header().Set("Content-Type", "text/html")
+	})
 }
 
 func (s *Server) signInModalHandler(w http.ResponseWriter, r *http.Request) {

@@ -90,6 +90,34 @@ func (r *Render) RenderAccountFragment(w io.Writer, signedIn bool) error {
 	return nil
 }
 
+func (r *Render) RenderReferencePage(w io.Writer) error {
+	tmpl, err := template.ParseFiles(getTemplatePath("index.html"), getTemplatePath("top-strap.html"), getTemplatePath("reference.html"))
+	if err != nil {
+		return err
+	}
+
+	err = tmpl.Execute(w, nil)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *Render) RenderReferenceFragment(w io.Writer) error {
+	tmpl, err := template.New("page").ParseFiles(getTemplatePath("reference.html"))
+	if err != nil {
+		return err
+	}
+
+	err = tmpl.Execute(w, nil)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (r *Render) RenderSignInModal(w io.Writer) error {
 	tmpl, err := template.New("modal").ParseFiles(getTemplatePath("sign-in-modal.html"))
 

@@ -27,6 +27,15 @@
         >
           Account
         </a>
+        <a
+          hx-get="/reference"
+          hx-trigger="click"
+          hx-target=".page-div"
+          hx-swap="outerHTML"
+          hx-push-url="true"
+        >
+          Reference
+        </a>
       </div>
       {{ template "page" . }}
     </div>
