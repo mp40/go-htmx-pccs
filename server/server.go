@@ -81,7 +81,7 @@ func NewServer(auth Auth, session Session, identity Identity, characterService C
 	router.Handle("GET /favicon.ico", http.StripPrefix("/", staticFileServer))
 
 	router.Handle("GET /", getHomeHandler(server.render, server.identity))
-	router.HandleFunc("GET /account", server.getAccountHandler)
+	router.Handle("GET /account", getAccountHandler(server.render, server.identity))
 
 	router.Handle("GET /reference", getReferenceHandler(server.render))
 	router.Handle("GET /tools", getToolsHandler(server.render))
@@ -98,54 +98,6 @@ func NewServer(auth Auth, session Session, identity Identity, characterService C
 
 	server.Handler = router
 	return server
-}
-
-// func (s *Server) getHomeHandler(w http.ResponseWriter, r *http.Request) {
-// 	htmxHeader := r.Header.Get("HX-Request")
-// 	isHtmx, _ := strconv.ParseBool(htmxHeader)
-// 	signedIn := s.identity.IsSignedIn(r)
-
-// 	if isHtmx {
-// 		err := s.render.RenderHomeFragment(w)
-// 		if err != nil {
-// 			slog.Error("server error rendering", "err", err)
-// 			w.WriteHeader(http.StatusInternalServerError)
-// 			return
-// 		}
-// 	} else {
-// 		err := s.render.RenderHomePage(w, signedIn)
-// 		if err != nil {
-// 			slog.Error("server error rendering", "err", err)
-// 			w.WriteHeader(http.StatusInternalServerError)
-// 			return
-// 		}
-// 	}
-
-// 	w.Header().Set("Content-Type", "text/html")
-// }
-
-func (s *Server) getAccountHandler(w http.ResponseWriter, r *http.Request) {
-	htmxHeader := r.Header.Get("HX-Request")
-	isHtmx, _ := strconv.ParseBool(htmxHeader)
-	signedIn := s.identity.IsSignedIn(r)
-
-	if isHtmx {
-		err := s.render.RenderAccountFragment(w, signedIn)
-		if err != nil {
-			slog.Error("server error rendering", "err", err)
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-	} else {
-		err := s.render.RenderAccountPage(w, signedIn)
-		if err != nil {
-			slog.Error("server error rendering", "err", err)
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-	}
-
-	w.Header().Set("Content-Type", "text/html")
 }
 
 func getReferenceHandler(render Render) http.Handler {
