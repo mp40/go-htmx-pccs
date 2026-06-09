@@ -4,6 +4,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/mp40/go-htmx-pccs/identity"
@@ -43,11 +44,22 @@ func TestGetHomeHandler_Route(t *testing.T) {
 		response := httptest.NewRecorder()
 		server.Handler.ServeHTTP(response, request)
 
-		got := response.Result().StatusCode
-		want := http.StatusOK
+		got := response.Result()
 
-		if got != want {
-			t.Errorf("got %v want %v", got, want)
+		if got.StatusCode != http.StatusOK {
+			t.Errorf("got %v want %v", got.StatusCode, http.StatusOK)
+		}
+
+		body, err := io.ReadAll(got.Body)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if !strings.Contains(string(body), "<h1>Home</h1>") {
+			t.Errorf("unexpected page, got: %s", body)
+		}
+		if !strings.Contains(string(body), "<body>") {
+			t.Errorf("expected full page, got: %s", body)
 		}
 	})
 
@@ -61,11 +73,22 @@ func TestGetHomeHandler_Route(t *testing.T) {
 		response := httptest.NewRecorder()
 		server.Handler.ServeHTTP(response, request)
 
-		got := response.Result().StatusCode
-		want := http.StatusOK
+		got := response.Result()
 
-		if got != want {
-			t.Errorf("got %v want %v", got, want)
+		if got.StatusCode != http.StatusOK {
+			t.Errorf("got %v want %v", got.StatusCode, http.StatusOK)
+		}
+
+		body, err := io.ReadAll(got.Body)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if !strings.Contains(string(body), "<h1>Home</h1>") {
+			t.Errorf("unexpected body: %s", body)
+		}
+		if strings.Contains(string(body), "<body>") {
+			t.Errorf("expected fragment, got: %s", body)
 		}
 	})
 }
