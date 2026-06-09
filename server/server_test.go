@@ -76,7 +76,7 @@ func (r *stubrender) RenderAccountFragment(w io.Writer, signedIn bool) error {
 	return nil
 }
 
-func (r *stubrender) RenderReferencePage(w io.Writer) error {
+func (r *stubrender) RenderReferencePage(w io.Writer, signedIn bool) error {
 	r.renderReferencePageCalls++
 	return nil
 }

@@ -90,13 +90,19 @@ func (r *Render) RenderAccountFragment(w io.Writer, signedIn bool) error {
 	return nil
 }
 
-func (r *Render) RenderReferencePage(w io.Writer) error {
+func (r *Render) RenderReferencePage(w io.Writer, signedIn bool) error {
 	tmpl, err := template.ParseFiles(getTemplatePath("index.html"), getTemplatePath("top-strap.html"), getTemplatePath("reference.html"))
 	if err != nil {
 		return err
 	}
 
-	err = tmpl.Execute(w, nil)
+	data := struct {
+		SignedIn bool
+	}{
+		SignedIn: signedIn,
+	}
+
+	err = tmpl.Execute(w, data)
 	if err != nil {
 		return err
 	}
