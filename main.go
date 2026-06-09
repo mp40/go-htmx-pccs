@@ -11,6 +11,7 @@ import (
 	"github.com/mp40/go-htmx-pccs/identity"
 	"github.com/mp40/go-htmx-pccs/middleware"
 	"github.com/mp40/go-htmx-pccs/render"
+	"github.com/mp40/go-htmx-pccs/server"
 	"github.com/mp40/go-htmx-pccs/service"
 	"github.com/mp40/go-htmx-pccs/session"
 	"github.com/mp40/go-htmx-pccs/store"
@@ -65,11 +66,11 @@ func main() {
 	characterService := service.NewCharacterService(storeService)
 	identityPkg := &identity.Identity{}
 
-	server := NewServer(authService, sessionService, identityPkg, characterService, renderService)
+	s := server.NewServer(authService, sessionService, identityPkg, characterService, renderService)
 
 	enrichFunc := identity.EnrichContextWithUserID
 	m := middleware.NewMiddlewareService(sessionService, enrichFunc)
-	serverWithMiddleware := m.AuthMiddleware(server)
+	serverWithMiddleware := m.AuthMiddleware(s)
 
 	slog.Info("server running", "on", "http://localhost:5050")
 	log.Fatal(http.ListenAndServe(":5050", serverWithMiddleware))
