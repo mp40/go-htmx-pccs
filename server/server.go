@@ -86,7 +86,7 @@ func NewServer(auth Auth, session Session, identity Identity, characterService C
 	router.Handle("GET /reference", getReferenceHandler(server.render, server.identity))
 	router.Handle("GET /tools", getToolsHandler(server.render, server.identity))
 
-	router.HandleFunc("GET /account/sign-in", server.signInModalHandler)
+	router.Handle("GET /account/sign-in", getSignInHandler(server.render))
 	router.HandleFunc("POST /account/sign-in", server.signInHandler)
 
 	router.HandleFunc("GET /account/sign-up", server.signUpModalHandler)
@@ -98,27 +98,6 @@ func NewServer(auth Auth, session Session, identity Identity, characterService C
 
 	server.Handler = router
 	return server
-}
-
-func (s *Server) signInModalHandler(w http.ResponseWriter, r *http.Request) {
-	htmxHeader := r.Header.Get("HX-Request")
-	isHtmx, _ := strconv.ParseBool(htmxHeader)
-	if isHtmx {
-		err := s.render.RenderSignInModal(w)
-		if err != nil {
-			slog.Error("server error rendering", "err", err)
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-	} else {
-		// log err
-		// ???
-		// what to do if not htmx?
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", "text/html")
 }
 
 func (s *Server) signInHandler(w http.ResponseWriter, r *http.Request) {
