@@ -124,13 +124,19 @@ func (r *Render) RenderReferenceFragment(w io.Writer) error {
 	return nil
 }
 
-func (r *Render) RenderToolsPage(w io.Writer) error {
+func (r *Render) RenderToolsPage(w io.Writer, signedIn bool) error {
 	tmpl, err := template.ParseFiles(getTemplatePath("index.html"), getTemplatePath("top-strap.html"), getTemplatePath("tools.html"))
 	if err != nil {
 		return err
 	}
 
-	err = tmpl.Execute(w, nil)
+	data := struct {
+		SignedIn bool
+	}{
+		SignedIn: signedIn,
+	}
+
+	err = tmpl.Execute(w, data)
 	if err != nil {
 		return err
 	}

@@ -86,7 +86,7 @@ func (r *stubrender) RenderReferenceFragment(w io.Writer) error {
 	return nil
 }
 
-func (r *stubrender) RenderToolsPage(w io.Writer) error {
+func (r *stubrender) RenderToolsPage(w io.Writer, isSignedIn bool) error {
 	r.renderToolsPageCalls++
 	return nil
 }
@@ -299,7 +299,7 @@ func TestReferenceHandler(t *testing.T) {
 func TestToolsHandler(t *testing.T) {
 	t.Run("it should return 200 and full page on successful GET request", func(t *testing.T) {
 		render := stubrender{}
-		server := NewServer(nil, nil, nil, nil, &render)
+		server := NewServer(nil, nil, &stubIdentity{}, nil, &render)
 
 		request := httptest.NewRequest(http.MethodGet, "/tools", nil)
 		response := httptest.NewRecorder()
@@ -322,7 +322,7 @@ func TestToolsHandler(t *testing.T) {
 
 	t.Run("it should return 200 and partial on successful HTMX GET request", func(t *testing.T) {
 		render := stubrender{}
-		server := NewServer(nil, nil, nil, nil, &render)
+		server := NewServer(nil, nil, &stubIdentity{}, nil, &render)
 
 		request := httptest.NewRequest(http.MethodGet, "/tools", nil)
 		request.Header.Set("HX-Request", "true")
