@@ -43,6 +43,8 @@ type stubrender struct {
 	renderAccountFragmentCalls      int
 	renderReferencePageCalls        int
 	renderReferenceFragmentCalls    int
+	renderToolsPageCalls            int
+	renderToolsFragmentCalls        int
 	renderSignInModalCalls          int
 	renderSignUpModalCalls          int
 	renderCharacterCalls            int
@@ -81,6 +83,16 @@ func (r *stubrender) RenderReferencePage(w io.Writer) error {
 
 func (r *stubrender) RenderReferenceFragment(w io.Writer) error {
 	r.renderReferenceFragmentCalls++
+	return nil
+}
+
+func (r *stubrender) RenderToolsPage(w io.Writer) error {
+	r.renderToolsPageCalls++
+	return nil
+}
+
+func (r *stubrender) RenderToolsFragment(w io.Writer) error {
+	r.renderToolsFragmentCalls++
 	return nil
 }
 
@@ -280,6 +292,55 @@ func TestReferenceHandler(t *testing.T) {
 		}
 		if render.renderReferenceFragmentCalls != 1 {
 			t.Errorf("want 1 call to renderReferenceFragment, got %d", render.renderReferenceFragmentCalls)
+		}
+	})
+}
+
+func TestToolsHandler(t *testing.T) {
+	t.Run("it should return 200 and full page on successful GET request", func(t *testing.T) {
+		render := stubrender{}
+		server := NewServer(nil, nil, nil, nil, &render)
+
+		request := httptest.NewRequest(http.MethodGet, "/tools", nil)
+		response := httptest.NewRecorder()
+		server.Handler.ServeHTTP(response, request)
+
+		got := response.Result().StatusCode
+		want := http.StatusOK
+
+		if got != want {
+			t.Errorf("got %v want %v", got, want)
+		}
+
+		if render.renderToolsPageCalls != 1 {
+			t.Errorf("want 1 call to renderToolsPage, got %d", render.renderToolsPageCalls)
+		}
+		if render.renderToolsFragmentCalls != 0 {
+			t.Errorf("want 0 calls to renderToolsFragment, got %d", render.renderToolsFragmentCalls)
+		}
+	})
+
+	t.Run("it should return 200 and partial on successful HTMX GET request", func(t *testing.T) {
+		render := stubrender{}
+		server := NewServer(nil, nil, nil, nil, &render)
+
+		request := httptest.NewRequest(http.MethodGet, "/tools", nil)
+		request.Header.Set("HX-Request", "true")
+		response := httptest.NewRecorder()
+		server.Handler.ServeHTTP(response, request)
+
+		got := response.Result().StatusCode
+		want := http.StatusOK
+
+		if got != want {
+			t.Errorf("got %v want %v", got, want)
+		}
+
+		if render.renderToolsPageCalls != 0 {
+			t.Errorf("want 0 calls to renderToolsPage, got %d", render.renderToolsPageCalls)
+		}
+		if render.renderToolsFragmentCalls != 1 {
+			t.Errorf("want 1 call to renderToolsFragment, got %d", render.renderToolsFragmentCalls)
 		}
 	})
 }
