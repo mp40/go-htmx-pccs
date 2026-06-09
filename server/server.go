@@ -80,7 +80,7 @@ func NewServer(auth Auth, session Session, identity Identity, characterService C
 	router.Handle("GET /static/", http.StripPrefix("/static/", staticFileServer))
 	router.Handle("GET /favicon.ico", http.StripPrefix("/", staticFileServer))
 
-	router.HandleFunc("GET /", server.getHomeHandler)
+	router.Handle("GET /", getHomeHandler(server.render, server.identity))
 	router.HandleFunc("GET /account", server.getAccountHandler)
 
 	router.Handle("GET /reference", getReferenceHandler(server.render))
@@ -100,29 +100,29 @@ func NewServer(auth Auth, session Session, identity Identity, characterService C
 	return server
 }
 
-func (s *Server) getHomeHandler(w http.ResponseWriter, r *http.Request) {
-	htmxHeader := r.Header.Get("HX-Request")
-	isHtmx, _ := strconv.ParseBool(htmxHeader)
-	signedIn := s.identity.IsSignedIn(r)
+// func (s *Server) getHomeHandler(w http.ResponseWriter, r *http.Request) {
+// 	htmxHeader := r.Header.Get("HX-Request")
+// 	isHtmx, _ := strconv.ParseBool(htmxHeader)
+// 	signedIn := s.identity.IsSignedIn(r)
 
-	if isHtmx {
-		err := s.render.RenderHomeFragment(w)
-		if err != nil {
-			slog.Error("server error rendering", "err", err)
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-	} else {
-		err := s.render.RenderHomePage(w, signedIn)
-		if err != nil {
-			slog.Error("server error rendering", "err", err)
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-	}
+// 	if isHtmx {
+// 		err := s.render.RenderHomeFragment(w)
+// 		if err != nil {
+// 			slog.Error("server error rendering", "err", err)
+// 			w.WriteHeader(http.StatusInternalServerError)
+// 			return
+// 		}
+// 	} else {
+// 		err := s.render.RenderHomePage(w, signedIn)
+// 		if err != nil {
+// 			slog.Error("server error rendering", "err", err)
+// 			w.WriteHeader(http.StatusInternalServerError)
+// 			return
+// 		}
+// 	}
 
-	w.Header().Set("Content-Type", "text/html")
-}
+// 	w.Header().Set("Content-Type", "text/html")
+// }
 
 func (s *Server) getAccountHandler(w http.ResponseWriter, r *http.Request) {
 	htmxHeader := r.Header.Get("HX-Request")
