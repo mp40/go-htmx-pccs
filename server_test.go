@@ -41,6 +41,8 @@ type stubrender struct {
 	renderHomeFragmentCalls         int
 	renderAccountPageCalls          int
 	renderAccountFragmentCalls      int
+	renderReferencePageCalls        int
+	renderReferenceFragmentCalls    int
 	renderSignInModalCalls          int
 	renderSignUpModalCalls          int
 	renderCharacterCalls            int
@@ -69,6 +71,16 @@ func (r *stubrender) RenderAccountPage(w io.Writer, signedIn bool) error {
 
 func (r *stubrender) RenderAccountFragment(w io.Writer, signedIn bool) error {
 	r.renderAccountFragmentCalls++
+	return nil
+}
+
+func (r *stubrender) RenderReferencePage(w io.Writer) error {
+	r.renderReferencePageCalls++
+	return nil
+}
+
+func (r *stubrender) RenderReferenceFragment(w io.Writer) error {
+	r.renderReferenceFragmentCalls++
 	return nil
 }
 
@@ -219,6 +231,55 @@ func TestAccountHandler(t *testing.T) {
 		}
 		if render.renderAccountFragmentCalls != 1 {
 			t.Errorf("want 1 call to renderAccountFragmentCalls, got %d", render.renderAccountFragmentCalls)
+		}
+	})
+}
+
+func TestReferenceHandler(t *testing.T) {
+	t.Run("it should return 200 and full page on successful GET request", func(t *testing.T) {
+		render := stubrender{}
+		server := NewServer(nil, nil, &stubIdentity{}, nil, &render)
+
+		request := httptest.NewRequest(http.MethodGet, "/reference", nil)
+		response := httptest.NewRecorder()
+		server.Handler.ServeHTTP(response, request)
+
+		got := response.Result().StatusCode
+		want := http.StatusOK
+
+		if got != want {
+			t.Errorf("got %v want %v", got, want)
+		}
+
+		if render.renderReferencePageCalls != 1 {
+			t.Errorf("want 1 call to renderReferencePage, got %d", render.renderReferencePageCalls)
+		}
+		if render.renderReferenceFragmentCalls != 0 {
+			t.Errorf("want 0 calls to renderReferenceFragment, got %d", render.renderReferenceFragmentCalls)
+		}
+	})
+
+	t.Run("it should return 200 and partial on successful HTMX GET request", func(t *testing.T) {
+		render := stubrender{}
+		server := NewServer(nil, nil, &stubIdentity{}, nil, &render)
+
+		request := httptest.NewRequest(http.MethodGet, "/reference", nil)
+		request.Header.Set("HX-Request", "true")
+		response := httptest.NewRecorder()
+		server.Handler.ServeHTTP(response, request)
+
+		got := response.Result().StatusCode
+		want := http.StatusOK
+
+		if got != want {
+			t.Errorf("got %v want %v", got, want)
+		}
+
+		if render.renderReferencePageCalls != 0 {
+			t.Errorf("want 0 calls to renderReferencePage, got %d", render.renderReferencePageCalls)
+		}
+		if render.renderReferenceFragmentCalls != 1 {
+			t.Errorf("want 1 call to renderReferenceFragment, got %d", render.renderReferenceFragmentCalls)
 		}
 	})
 }
