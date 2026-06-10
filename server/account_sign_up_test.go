@@ -1,13 +1,20 @@
 package server
 
 import (
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"strings"
 	"testing"
+	"time"
 
+	"github.com/google/uuid"
+	"github.com/mp40/go-htmx-pccs/domain"
+	"github.com/mp40/go-htmx-pccs/identity"
 	"github.com/mp40/go-htmx-pccs/render"
+	"github.com/mp40/go-htmx-pccs/store"
 )
 
 func TestGetSignUpHandler(t *testing.T) {
@@ -53,6 +60,178 @@ func TestGetSignUpHandler(t *testing.T) {
 
 		if got.StatusCode != http.StatusInternalServerError {
 			t.Errorf("got %v want %v", got.StatusCode, http.StatusInternalServerError)
+		}
+	})
+}
+
+type stubPostSignUpAuth struct {
+	userID    *uuid.UUID
+	spySignUp int
+	err       error
+}
+
+type stubPostSignUpSession struct {
+	spyAddSession int
+}
+
+type stubPostSignUpCharacter struct {
+	character *store.Character
+}
+
+func (a *stubPostSignUpAuth) SignUp(email string, password string) (*uuid.UUID, error) {
+	a.spySignUp++
+	return a.userID, nil
+}
+
+func (a *stubPostSignUpAuth) SignIn(email string, password string) (*store.User, error) {
+	panic("method not used in test")
+}
+
+func (s *stubPostSignUpSession) AddSession(userID uuid.UUID, expiresAt time.Time) (uuid.UUID, error) {
+	s.spyAddSession++
+	return uuid.New(), nil
+}
+
+func (s *stubPostSignUpSession) DeleteSessionByID(ID uuid.UUID) error {
+	panic("method not used in test")
+}
+
+func (c *stubPostSignUpCharacter) AddCharacter(userID uuid.UUID, rawCharacter domain.RawCharacter) (*store.Character, error) {
+	return c.character, nil
+}
+
+func TestPostSignUpHandler(t *testing.T) {
+	t.Run("it should redirect to Home page on successful POST request", func(t *testing.T) {
+		auth := stubPostSignUpAuth{}
+		session := stubPostSignUpSession{}
+		characterService := stubPostSignUpCharacter{}
+
+		newID := uuid.MustParse("5ea69240-823c-4523-90a2-4868a5bfc90a")
+		auth.userID = &newID
+
+		render := &render.Render{}
+		identity := &identity.Identity{}
+		server := NewServer(&auth, &session, identity, &characterService, render)
+
+		formValues := url.Values{
+			"email":    {"762@valid.com"},
+			"password": {"fake-password"},
+		}
+
+		request := httptest.NewRequest(http.MethodPost, "/account/sign-up", strings.NewReader(formValues.Encode()))
+		request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+		response := httptest.NewRecorder()
+		server.Handler.ServeHTTP(response, request)
+
+		gotStatus := response.Result().StatusCode
+		gotHeaderRedirect := response.Result().Header.Get("Hx-Redirect")
+
+		wantStatus := http.StatusSeeOther
+		wantHeaderRedirect := "/"
+
+		gotCookies := response.Result().Cookies()
+
+		if len(gotCookies) != 1 {
+			t.Errorf("expected one cookie to be set, got %v", len(gotCookies))
+		}
+
+		if auth.spySignUp != 1 {
+			t.Errorf("got %v calls to SignUp want 1", auth.spySignUp)
+		}
+
+		if session.spyAddSession != 1 {
+			t.Errorf("got %v calls to AddSession want 1", session.spyAddSession)
+		}
+
+		if gotStatus != wantStatus {
+			t.Errorf("got http status %v want http status %v", gotStatus, wantStatus)
+		}
+
+		if gotHeaderRedirect != wantHeaderRedirect {
+			t.Errorf("got header Location %v, want header Location %v", gotHeaderRedirect, wantHeaderRedirect)
+		}
+	})
+
+	t.Run("it should return error message if invalid email format", func(t *testing.T) {
+		render := &render.Render{}
+		identity := &identity.Identity{}
+		server := NewServer(nil, nil, identity, nil, render)
+
+		formValues := url.Values{
+			"email":    {"invalid.com"},
+			"password": {"fake-password"},
+		}
+
+		request := httptest.NewRequest(http.MethodPost, "/account/sign-up", strings.NewReader(formValues.Encode()))
+		request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+		response := httptest.NewRecorder()
+		server.Handler.ServeHTTP(response, request)
+
+		got := response.Result()
+
+		body, err := io.ReadAll(got.Body)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if !strings.Contains(string(body), "<span>invalid sign up:") {
+			t.Errorf("expected fragment, got: %s", body)
+		}
+	})
+
+	t.Run("it should return error message if invalid password", func(t *testing.T) {
+		render := &render.Render{}
+		identity := &identity.Identity{}
+		server := NewServer(nil, nil, identity, nil, render)
+
+		formValues := url.Values{
+			"email":    {"762@valid.com"},
+			"password": {"bad"},
+		}
+
+		request := httptest.NewRequest(http.MethodPost, "/account/sign-up", strings.NewReader(formValues.Encode()))
+		request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+		response := httptest.NewRecorder()
+		server.Handler.ServeHTTP(response, request)
+
+		got := response.Result()
+
+		body, err := io.ReadAll(got.Body)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if !strings.Contains(string(body), "<span>invalid sign up:") {
+			t.Errorf("expected fragment, got: %s", body)
+		}
+	})
+
+	t.Run("it should return 400 and user feedback unsuccessful POST request", func(t *testing.T) {
+		auth := stubPostSignUpAuth{err: fmt.Errorf("fake error")}
+
+		render := &render.Render{}
+		identity := &identity.Identity{}
+		server := NewServer(&auth, nil, identity, nil, render)
+
+		formValues := url.Values{
+			"email":    {"762@valid.com"},
+			"password": {"fake-password"},
+		}
+
+		request := httptest.NewRequest(http.MethodPost, "/account/sign-up", strings.NewReader(formValues.Encode()))
+		request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+		response := httptest.NewRecorder()
+		server.Handler.ServeHTTP(response, request)
+
+		got := response.Result()
+
+		body, err := io.ReadAll(got.Body)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if !strings.Contains(string(body), "<span>internal server error</span>") {
+			t.Errorf("expected fragment, got: %s", body)
 		}
 	})
 }
