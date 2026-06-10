@@ -1,0 +1,93 @@
+package server
+
+import (
+	"context"
+	"io"
+	"net/http"
+	"net/http/httptest"
+	"net/url"
+	"strings"
+	"testing"
+
+	"github.com/google/uuid"
+	"github.com/mp40/go-htmx-pccs/domain"
+	"github.com/mp40/go-htmx-pccs/render"
+	"github.com/mp40/go-htmx-pccs/store"
+)
+
+type stubPostCharacter struct {
+	character       *store.Character
+	spyAddCharacter int
+}
+
+type stubPostCharacterIndentity struct {
+	userID *uuid.UUID
+}
+
+func (c *stubPostCharacter) AddCharacter(userID uuid.UUID, rawCharacter domain.RawCharacter) (*store.Character, error) {
+	c.spyAddCharacter++
+	return c.character, nil
+}
+
+func (i *stubPostCharacterIndentity) GetUserID(r *http.Request) *uuid.UUID {
+	return i.userID
+}
+
+func (i *stubPostCharacterIndentity) IsSignedIn(r *http.Request) bool {
+	panic("method not used in test")
+}
+
+func TestPostCharacterHandler(t *testing.T) {
+	t.Run("it should add character and return character", func(t *testing.T) {
+		identity := stubPostCharacterIndentity{}
+		userID := uuid.MustParse("69000000-0000-4523-90a2-4868a5bfc90a")
+		identity.userID = &userID
+
+		characterService := stubPostCharacter{}
+		character := store.Character{Name: "TEST-CHARACTER"}
+		characterService.character = &character
+
+		render := &render.Render{}
+		server := NewServer(nil, nil, &identity, &characterService, render)
+
+		formValues := url.Values{
+			"str":                {"9"},
+			"int":                {"8"},
+			"wil":                {"7"},
+			"hlt":                {"6"},
+			"agi":                {"5"},
+			"tch":                {"4"},
+			"gun_combat_level":   {"1"},
+			"hand_to_hand_level": {"0"},
+		}
+
+		request := httptest.NewRequest(http.MethodPost, "/account/characters", strings.NewReader(formValues.Encode()))
+		request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+		ctx := request.Context()
+		ctx = context.WithValue(ctx, "userID", "69000000-0000-4523-90a2-4868a5bfc90a")
+		request = request.WithContext(ctx)
+
+		response := httptest.NewRecorder()
+		server.Handler.ServeHTTP(response, request)
+
+		got := response.Result()
+
+		body, err := io.ReadAll(got.Body)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if got.StatusCode != http.StatusCreated {
+			t.Errorf("got %v want %v", got.StatusCode, http.StatusCreated)
+		}
+
+		if characterService.spyAddCharacter != 1 {
+			t.Errorf("got %v calls to AddCharacter want 1", characterService.spyAddCharacter)
+		}
+
+		if !strings.Contains(string(body), "<span>TEST-CHARACTER</span>") {
+			t.Errorf("expected character fragment, got: %s", body)
+		}
+	})
+}

@@ -665,7 +665,7 @@ func TestSignOutHandler(t *testing.T) {
 	})
 }
 
-func TestPostCharacterHandler(t *testing.T) {
+func TestHandlePostCharacter(t *testing.T) {
 	t.Run("it should add character and return character", func(t *testing.T) {
 		auth := stubAuth{}
 		session := stubSession{}

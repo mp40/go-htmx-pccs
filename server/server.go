@@ -2,7 +2,6 @@ package server
 
 import (
 	"io"
-	"log/slog"
 	"net/http"
 	"net/url"
 	"path/filepath"
@@ -93,52 +92,10 @@ func NewServer(auth Auth, session Session, identity Identity, characterService C
 
 	router.Handle("DELETE /account/sign-out", deleteSignOutHandler(server.session))
 
-	router.Handle("POST /account/characters", handlePostCharacter(server.render, server.characterService, server.identity))
+	router.Handle("POST /account/characters", postCharacterHandler(server.render, server.characterService, server.identity))
 
 	server.Handler = router
 	return server
-}
-
-func handlePostCharacter(render Render, characterService CharacterService, identity Identity) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		userID := identity.GetUserID(r)
-		if userID == nil {
-			slog.Error("get user id error", "err", "user id is nil")
-			// handle nil user id somehow
-			return
-		}
-
-		if err := r.ParseForm(); err != nil {
-			slog.Error("post character, parse form error", "err", err)
-			// do something
-			return
-		}
-
-		c, problems := parseRawCharacter(r.PostForm)
-		if len(problems) > 0 {
-			slog.Warn("post character, invalid data submitted", "problems", problems)
-			// do something in UI
-			return
-		}
-
-		character, err := characterService.AddCharacter(*userID, c)
-		if err != nil {
-			slog.Error("post character, add character error", "err", err)
-			// handle err some how
-			return
-		}
-
-		// return render character fragment
-		err = render.RenderCharacter(w, *character)
-		if err != nil {
-			slog.Error("server error rendering", "err", err)
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-
-		w.Header().Set("Content-Type", "text/html")
-		w.WriteHeader(http.StatusCreated)
-	})
 }
 
 func getSecureCookie(sessionID uuid.UUID) http.Cookie {
