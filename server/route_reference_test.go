@@ -11,29 +11,6 @@ import (
 	"github.com/mp40/go-htmx-pccs/render"
 )
 
-type stubReferencePageRender struct {
-	spyRenderReferencePage     int
-	spyRenderReferenceFragment int
-}
-
-type stubGetReferencePageIdentity struct {
-	isSignedIn bool
-}
-
-func (r *stubReferencePageRender) RenderReferencePage(w io.Writer, signedIn bool) error {
-	r.spyRenderReferencePage++
-	return nil
-}
-
-func (r *stubReferencePageRender) RenderReferenceFragment(w io.Writer) error {
-	r.spyRenderReferenceFragment++
-	return nil
-}
-
-func (i *stubGetReferencePageIdentity) IsSignedIn(r *http.Request) bool {
-	return i.isSignedIn
-}
-
 func TestGetReferenceHandler_Route(t *testing.T) {
 	t.Run("it should return 200 and full page on successful GET request", func(t *testing.T) {
 		render := &render.Render{}
@@ -89,59 +66,6 @@ func TestGetReferenceHandler_Route(t *testing.T) {
 		}
 		if strings.Contains(string(body), "<body>") {
 			t.Errorf("expected fragment, got: %s", body)
-		}
-	})
-}
-
-func TestReferenceHandler_Handler(t *testing.T) {
-	t.Run("it should return 200 and full page on successful GET request", func(t *testing.T) {
-		render := stubReferencePageRender{}
-		identity := stubGetReferencePageIdentity{}
-
-		request := httptest.NewRequest(http.MethodGet, "/", nil)
-		response := httptest.NewRecorder()
-
-		handler := getReferenceHandler(&render, &identity)
-		handler.ServeHTTP(response, request)
-
-		got := response.Result().StatusCode
-		want := http.StatusOK
-
-		if got != want {
-			t.Errorf("got %v want %v", got, want)
-		}
-
-		if render.spyRenderReferencePage != 1 {
-			t.Errorf("want 1 call to renderReferencePage, got %d", render.spyRenderReferencePage)
-		}
-		if render.spyRenderReferenceFragment != 0 {
-			t.Errorf("want 0 calls to renderReferenceFragment, got %d", render.spyRenderReferenceFragment)
-		}
-	})
-
-	t.Run("it should return 200 and partial on successful HTMX GET request", func(t *testing.T) {
-		render := stubReferencePageRender{}
-		identity := stubGetReferencePageIdentity{}
-
-		request := httptest.NewRequest(http.MethodGet, "/", nil)
-		request.Header.Set("HX-Request", "true")
-		response := httptest.NewRecorder()
-
-		handler := getReferenceHandler(&render, &identity)
-		handler.ServeHTTP(response, request)
-
-		got := response.Result().StatusCode
-		want := http.StatusOK
-
-		if got != want {
-			t.Errorf("got %v want %v", got, want)
-		}
-
-		if render.spyRenderReferencePage != 0 {
-			t.Errorf("want 0 calls to renderReferencePage, got %d", render.spyRenderReferencePage)
-		}
-		if render.spyRenderReferenceFragment != 1 {
-			t.Errorf("want 1 call to renderReferenceFragment, got %d", render.spyRenderReferenceFragment)
 		}
 	})
 }

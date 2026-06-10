@@ -11,29 +11,6 @@ import (
 	"github.com/mp40/go-htmx-pccs/render"
 )
 
-type stubToolsPageRender struct {
-	spyRenderToolsPage     int
-	spyRenderToolsFragment int
-}
-
-type stubGetToolsPageIdentity struct {
-	isSignedIn bool
-}
-
-func (r *stubToolsPageRender) RenderToolsPage(w io.Writer, signedIn bool) error {
-	r.spyRenderToolsPage++
-	return nil
-}
-
-func (r *stubToolsPageRender) RenderToolsFragment(w io.Writer) error {
-	r.spyRenderToolsFragment++
-	return nil
-}
-
-func (i *stubGetToolsPageIdentity) IsSignedIn(r *http.Request) bool {
-	return i.isSignedIn
-}
-
 func TestGetToolsHandler_Route(t *testing.T) {
 	t.Run("it should return 200 and full page on successful GET request", func(t *testing.T) {
 		render := &render.Render{}
@@ -89,59 +66,6 @@ func TestGetToolsHandler_Route(t *testing.T) {
 		}
 		if strings.Contains(string(body), "<body>") {
 			t.Errorf("expected fragment, got: %s", body)
-		}
-	})
-}
-
-func TestToolsHandler_Handler(t *testing.T) {
-	t.Run("it should return 200 and full page on successful GET request", func(t *testing.T) {
-		render := stubToolsPageRender{}
-		identity := stubGetToolsPageIdentity{}
-
-		request := httptest.NewRequest(http.MethodGet, "/", nil)
-		response := httptest.NewRecorder()
-
-		handler := getToolsHandler(&render, &identity)
-		handler.ServeHTTP(response, request)
-
-		got := response.Result().StatusCode
-		want := http.StatusOK
-
-		if got != want {
-			t.Errorf("got %v want %v", got, want)
-		}
-
-		if render.spyRenderToolsPage != 1 {
-			t.Errorf("want 1 call to renderToolsPage, got %d", render.spyRenderToolsPage)
-		}
-		if render.spyRenderToolsFragment != 0 {
-			t.Errorf("want 0 calls to renderToolsFragment, got %d", render.spyRenderToolsFragment)
-		}
-	})
-
-	t.Run("it should return 200 and partial on successful HTMX GET request", func(t *testing.T) {
-		render := stubToolsPageRender{}
-		identity := stubGetToolsPageIdentity{}
-
-		request := httptest.NewRequest(http.MethodGet, "/", nil)
-		request.Header.Set("HX-Request", "true")
-		response := httptest.NewRecorder()
-
-		handler := getToolsHandler(&render, &identity)
-		handler.ServeHTTP(response, request)
-
-		got := response.Result().StatusCode
-		want := http.StatusOK
-
-		if got != want {
-			t.Errorf("got %v want %v", got, want)
-		}
-
-		if render.spyRenderToolsPage != 0 {
-			t.Errorf("want 0 calls to renderToolsPage, got %d", render.spyRenderToolsPage)
-		}
-		if render.spyRenderToolsFragment != 1 {
-			t.Errorf("want 1 call to renderToolsFragment, got %d", render.spyRenderToolsFragment)
 		}
 	})
 }
