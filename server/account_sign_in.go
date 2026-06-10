@@ -1,7 +1,6 @@
 package server
 
 import (
-	"fmt"
 	"io"
 	"log/slog"
 	"net/http"
@@ -69,7 +68,6 @@ func postSignInHandler(render postSignInRender, auth postSignInAuth, session pos
 			return
 		}
 		if user == nil {
-			fmt.Println("user nil")
 			err = render.RenderErrorMessageFragment(w, "invalid sign in: check email and password")
 			if err != nil {
 				slog.Error("server error rendering", "err", err)

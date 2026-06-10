@@ -34,7 +34,7 @@ func (i *stubGetReferencePageIdentity) IsSignedIn(r *http.Request) bool {
 	return i.isSignedIn
 }
 
-func TestGetRefrenceHandler_Route(t *testing.T) {
+func TestGetReferenceHandler_Route(t *testing.T) {
 	t.Run("it should return 200 and full page on successful GET request", func(t *testing.T) {
 		render := &render.Render{}
 		identity := &identity.Identity{}

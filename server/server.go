@@ -48,11 +48,6 @@ type Identity interface {
 	IsSignedIn(r *http.Request) bool
 }
 
-type AuthRequest struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
-}
-
 type Server struct {
 	http.Handler
 	render           Render
