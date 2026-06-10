@@ -89,7 +89,7 @@ func NewServer(auth Auth, session Session, identity Identity, characterService C
 	router.Handle("GET /account/sign-in", getSignInHandler(server.render))
 	router.Handle("POST /account/sign-in", postSignInHandler(server.render, server.auth, server.session))
 
-	router.HandleFunc("GET /account/sign-up", server.signUpModalHandler)
+	router.Handle("GET /account/sign-up", getSignUpHandler(server.render))
 	router.HandleFunc("POST /account/sign-up", server.signUpHandler)
 
 	router.HandleFunc("DELETE /account/sign-out", server.signOutHandler)
@@ -98,27 +98,6 @@ func NewServer(auth Auth, session Session, identity Identity, characterService C
 
 	server.Handler = router
 	return server
-}
-
-func (s *Server) signUpModalHandler(w http.ResponseWriter, r *http.Request) {
-	htmxHeader := r.Header.Get("HX-Request")
-	isHtmx, _ := strconv.ParseBool(htmxHeader)
-	if isHtmx {
-		err := s.render.RenderSignUpModal(w)
-		if err != nil {
-			slog.Error("server error rendering", "err", err)
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-	} else {
-		// log err
-		// ???
-		// what to do if not htmx?
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", "text/html")
 }
 
 func (s *Server) signUpHandler(w http.ResponseWriter, r *http.Request) {
