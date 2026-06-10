@@ -91,35 +91,12 @@ func NewServer(auth Auth, session Session, identity Identity, characterService C
 	router.Handle("GET /account/sign-up", getSignUpHandler(server.render))
 	router.Handle("POST /account/sign-up", postSignUpHandler(server.render, server.auth, server.session))
 
-	router.HandleFunc("DELETE /account/sign-out", server.signOutHandler)
+	router.Handle("DELETE /account/sign-out", deleteSignOutHandler(server.session))
 
 	router.Handle("POST /account/characters", handlePostCharacter(server.render, server.characterService, server.identity))
 
 	server.Handler = router
 	return server
-}
-
-func (s *Server) signOutHandler(w http.ResponseWriter, r *http.Request) {
-	cookie, err := r.Cookie("sessionID")
-	if err != nil {
-		w.Header().Set("Content-Type", "text/html")
-		w.Header().Set("HX-Redirect", "/")
-		w.WriteHeader(http.StatusSeeOther)
-		return
-	}
-
-	sessionID, err := uuid.Parse(cookie.Value)
-	if err != nil {
-		redirectWithExpiredCookie(w)
-		return
-	}
-
-	err = s.session.DeleteSessionByID(sessionID)
-	if err != nil {
-		slog.Error("delete session error", "err", err)
-	}
-
-	redirectWithExpiredCookie(w)
 }
 
 func handlePostCharacter(render Render, characterService CharacterService, identity Identity) http.Handler {
@@ -164,33 +141,12 @@ func handlePostCharacter(render Render, characterService CharacterService, ident
 	})
 }
 
-func redirectWithExpiredCookie(w http.ResponseWriter) {
-	expiredCookie := removeSecureCookie()
-	http.SetCookie(w, &expiredCookie)
-	w.Header().Set("Content-Type", "text/html")
-	w.Header().Set("HX-Redirect", "/")
-	w.WriteHeader(http.StatusSeeOther)
-}
-
 func getSecureCookie(sessionID uuid.UUID) http.Cookie {
 	oneDay := 24 * time.Hour
 	cookie := http.Cookie{
 		Name:     "sessionID",
 		Value:    sessionID.String(),
 		MaxAge:   int(oneDay.Seconds()),
-		Path:     "/",
-		HttpOnly: true,
-		Secure:   true,
-		SameSite: http.SameSiteLaxMode,
-	}
-
-	return cookie
-}
-
-func removeSecureCookie() http.Cookie {
-	cookie := http.Cookie{
-		Name:     "sessionID",
-		MaxAge:   -1,
 		Path:     "/",
 		HttpOnly: true,
 		Secure:   true,
