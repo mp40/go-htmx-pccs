@@ -87,7 +87,7 @@ func NewServer(auth Auth, session Session, identity Identity, characterService C
 	router.Handle("GET /tools", getToolsHandler(server.render, server.identity))
 
 	router.Handle("GET /account/sign-in", getSignInHandler(server.render))
-	router.HandleFunc("POST /account/sign-in", server.signInHandler)
+	router.Handle("POST /account/sign-in", postSignInHandler(server.render, server.auth, server.session))
 
 	router.HandleFunc("GET /account/sign-up", server.signUpModalHandler)
 	router.HandleFunc("POST /account/sign-up", server.signUpHandler)
@@ -98,52 +98,6 @@ func NewServer(auth Auth, session Session, identity Identity, characterService C
 
 	server.Handler = router
 	return server
-}
-
-func (s *Server) signInHandler(w http.ResponseWriter, r *http.Request) {
-	email := strings.TrimSpace(r.FormValue("email"))
-	password := strings.TrimSpace(r.FormValue("password"))
-
-	user, err := s.auth.SignIn(email, password)
-	if err != nil {
-		err = s.render.RenderErrorMessageFragment(w, "internal server error")
-		if err != nil {
-			slog.Error("server error rendering", "err", err)
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-		w.Header().Set("Content-Type", "text/html")
-		return
-	}
-	if user == nil {
-		err = s.render.RenderErrorMessageFragment(w, "invalid sign in: check email and password")
-		if err != nil {
-			slog.Error("server error rendering", "err", err)
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-		w.Header().Set("Content-Type", "text/html")
-		return
-	}
-
-	// if yes
-	now := time.Now()
-	sessionID, err := s.session.AddSession(user.ID, now.Add(12*time.Hour))
-	if err != nil {
-		err = s.render.RenderErrorMessageFragment(w, "internal server error")
-		if err != nil {
-			slog.Error("server error rendering", "err", err)
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-		w.Header().Set("Content-Type", "text/html")
-		return
-	}
-	cookie := getSecureCookie(sessionID)
-	http.SetCookie(w, &cookie)
-	w.Header().Set("Content-Type", "text/html")
-	w.Header().Set("HX-Redirect", "/")
-	w.WriteHeader(http.StatusSeeOther)
 }
 
 func (s *Server) signUpModalHandler(w http.ResponseWriter, r *http.Request) {

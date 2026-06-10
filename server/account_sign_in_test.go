@@ -4,13 +4,18 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"strings"
 	"testing"
+	"time"
 
+	"github.com/google/uuid"
+	"github.com/mp40/go-htmx-pccs/identity"
 	"github.com/mp40/go-htmx-pccs/render"
+	"github.com/mp40/go-htmx-pccs/store"
 )
 
-func TestSignInModalHandler(t *testing.T) {
+func TestGetSignInHandler(t *testing.T) {
 	t.Run("it should render the sign in modal on GET /account/sign-in", func(t *testing.T) {
 		render := &render.Render{}
 		server := NewServer(nil, nil, nil, nil, render)
@@ -53,6 +58,85 @@ func TestSignInModalHandler(t *testing.T) {
 
 		if got.StatusCode != http.StatusInternalServerError {
 			t.Errorf("got %v want %v", got.StatusCode, http.StatusInternalServerError)
+		}
+	})
+}
+
+type stubPostSignInAuth struct {
+	user      *store.User
+	spySignIn int
+}
+
+type stubPostSignInSession struct {
+	spyAddSession int
+}
+
+func (a *stubPostSignInAuth) SignIn(email string, password string) (*store.User, error) {
+	a.spySignIn++
+	return a.user, nil
+}
+
+func (a *stubPostSignInAuth) SignUp(email string, password string) (*uuid.UUID, error) {
+	panic("method not used in test")
+}
+
+func (s *stubPostSignInSession) AddSession(userID uuid.UUID, expiresAt time.Time) (uuid.UUID, error) {
+	s.spyAddSession++
+	return uuid.New(), nil
+}
+
+func (s *stubPostSignInSession) DeleteSessionByID(ID uuid.UUID) error {
+	panic("method not used in test")
+}
+
+func TestPostSignInHandler(t *testing.T) {
+	t.Run("it should redirect to Home page on successful POST request", func(t *testing.T) {
+		session := stubPostSignInSession{}
+
+		auth := stubPostSignInAuth{}
+		user := store.User{}
+		auth.user = &user
+
+		render := &render.Render{}
+		identity := &identity.Identity{}
+		server := NewServer(&auth, &session, identity, nil, render)
+
+		formValues := url.Values{
+			"email":    {"762@valid.com"},
+			"password": {"fake-password"},
+		}
+
+		request := httptest.NewRequest(http.MethodPost, "/account/sign-in", strings.NewReader(formValues.Encode()))
+		request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+		response := httptest.NewRecorder()
+		server.Handler.ServeHTTP(response, request)
+
+		gotStatus := response.Result().StatusCode
+		gotHeaderRedirect := response.Result().Header.Get("Hx-Redirect")
+
+		wantStatus := http.StatusSeeOther
+		wantHeaderRedirect := "/"
+
+		gotCookies := response.Result().Cookies()
+
+		if len(gotCookies) != 1 {
+			t.Errorf("expected one cookie to be set, got %v", len(gotCookies))
+		}
+
+		if auth.spySignIn != 1 {
+			t.Errorf("got %v calls to SignIn want 1", auth.spySignIn)
+		}
+
+		if session.spyAddSession != 1 {
+			t.Errorf("got %v calls to AddSession want 1", session.spyAddSession)
+		}
+
+		if gotStatus != wantStatus {
+			t.Errorf("got http status %v want http status %v", gotStatus, wantStatus)
+		}
+
+		if gotHeaderRedirect != wantHeaderRedirect {
+			t.Errorf("got header Location %v, want header Location %v", gotHeaderRedirect, wantHeaderRedirect)
 		}
 	})
 }
