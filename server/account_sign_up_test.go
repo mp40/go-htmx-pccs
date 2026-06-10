@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/mp40/go-htmx-pccs/domain"
 	"github.com/mp40/go-htmx-pccs/identity"
 	"github.com/mp40/go-htmx-pccs/render"
 	"github.com/mp40/go-htmx-pccs/store"
@@ -74,10 +73,6 @@ type stubPostSignUpSession struct {
 	spyAddSession int
 }
 
-type stubPostSignUpCharacter struct {
-	character *store.Character
-}
-
 func (a *stubPostSignUpAuth) SignUp(email string, password string) (*uuid.UUID, error) {
 	a.spySignUp++
 	return a.userID, nil
@@ -96,22 +91,17 @@ func (s *stubPostSignUpSession) DeleteSessionByID(ID uuid.UUID) error {
 	panic("method not used in test")
 }
 
-func (c *stubPostSignUpCharacter) AddCharacter(userID uuid.UUID, rawCharacter domain.RawCharacter) (*store.Character, error) {
-	return c.character, nil
-}
-
 func TestPostSignUpHandler(t *testing.T) {
 	t.Run("it should redirect to Home page on successful POST request", func(t *testing.T) {
 		auth := stubPostSignUpAuth{}
 		session := stubPostSignUpSession{}
-		characterService := stubPostSignUpCharacter{}
 
 		newID := uuid.MustParse("5ea69240-823c-4523-90a2-4868a5bfc90a")
 		auth.userID = &newID
 
 		render := &render.Render{}
 		identity := &identity.Identity{}
-		server := NewServer(&auth, &session, identity, &characterService, render)
+		server := NewServer(&auth, &session, identity, nil, render)
 
 		formValues := url.Values{
 			"email":    {"762@valid.com"},
@@ -175,7 +165,7 @@ func TestPostSignUpHandler(t *testing.T) {
 		}
 
 		if !strings.Contains(string(body), "<span>invalid sign up:") {
-			t.Errorf("expected fragment, got: %s", body)
+			t.Errorf("expected invalid message, got: %s", body)
 		}
 	})
 
@@ -202,7 +192,7 @@ func TestPostSignUpHandler(t *testing.T) {
 		}
 
 		if !strings.Contains(string(body), "<span>invalid sign up:") {
-			t.Errorf("expected fragment, got: %s", body)
+			t.Errorf("expected invalid message, got: %s", body)
 		}
 	})
 
@@ -231,7 +221,7 @@ func TestPostSignUpHandler(t *testing.T) {
 		}
 
 		if !strings.Contains(string(body), "<span>internal server error</span>") {
-			t.Errorf("expected fragment, got: %s", body)
+			t.Errorf("expected error fragment, got: %s", body)
 		}
 	})
 }
