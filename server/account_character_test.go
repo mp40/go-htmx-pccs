@@ -69,7 +69,7 @@ func TestPostCharacterHandler(t *testing.T) {
 		request = request.WithContext(ctx)
 
 		response := httptest.NewRecorder()
-		server.Handler.ServeHTTP(response, request)
+		server.ServeHTTP(response, request)
 
 		got := response.Result()
 

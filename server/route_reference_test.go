@@ -19,7 +19,7 @@ func TestGetReferenceHandler_Route(t *testing.T) {
 
 		request := httptest.NewRequest(http.MethodGet, "/reference", nil)
 		response := httptest.NewRecorder()
-		server.Handler.ServeHTTP(response, request)
+		server.ServeHTTP(response, request)
 
 		got := response.Result()
 
@@ -48,7 +48,7 @@ func TestGetReferenceHandler_Route(t *testing.T) {
 		request := httptest.NewRequest(http.MethodGet, "/reference", nil)
 		request.Header.Set("HX-Request", "true")
 		response := httptest.NewRecorder()
-		server.Handler.ServeHTTP(response, request)
+		server.ServeHTTP(response, request)
 
 		got := response.Result()
 

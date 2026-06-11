@@ -48,24 +48,7 @@ type Identity interface {
 	IsSignedIn(r *http.Request) bool
 }
 
-type Server struct {
-	http.Handler
-	render           Render
-	auth             Auth
-	session          Session
-	characterService CharacterService
-	identity         Identity
-}
-
-func NewServer(auth Auth, session Session, identity Identity, characterService CharacterService, render Render) *Server {
-	server := &Server{
-		auth:             auth,
-		session:          session,
-		identity:         identity,
-		render:           render,
-		characterService: characterService,
-	}
-
+func NewServer(auth Auth, session Session, identity Identity, characterService CharacterService, render Render) http.Handler {
 	router := http.NewServeMux()
 
 	staticDir := http.Dir(filepath.Join("static"))
@@ -73,24 +56,23 @@ func NewServer(auth Auth, session Session, identity Identity, characterService C
 	router.Handle("GET /static/", http.StripPrefix("/static/", staticFileServer))
 	router.Handle("GET /favicon.ico", http.StripPrefix("/", staticFileServer))
 
-	router.Handle("GET /", getHomeHandler(server.render, server.identity))
-	router.Handle("GET /account", getAccountHandler(server.render, server.identity))
+	router.Handle("GET /", getHomeHandler(render, identity))
+	router.Handle("GET /account", getAccountHandler(render, identity))
 
-	router.Handle("GET /reference", getReferenceHandler(server.render, server.identity))
-	router.Handle("GET /tools", getToolsHandler(server.render, server.identity))
+	router.Handle("GET /reference", getReferenceHandler(render, identity))
+	router.Handle("GET /tools", getToolsHandler(render, identity))
 
-	router.Handle("GET /account/sign-in", getSignInHandler(server.render))
-	router.Handle("POST /account/sign-in", postSignInHandler(server.render, server.auth, server.session))
+	router.Handle("GET /account/sign-in", getSignInHandler(render))
+	router.Handle("POST /account/sign-in", postSignInHandler(render, auth, session))
 
-	router.Handle("GET /account/sign-up", getSignUpHandler(server.render))
-	router.Handle("POST /account/sign-up", postSignUpHandler(server.render, server.auth, server.session))
+	router.Handle("GET /account/sign-up", getSignUpHandler(render))
+	router.Handle("POST /account/sign-up", postSignUpHandler(render, auth, session))
 
-	router.Handle("DELETE /account/sign-out", deleteSignOutHandler(server.session))
+	router.Handle("DELETE /account/sign-out", deleteSignOutHandler(session))
 
-	router.Handle("POST /account/characters", postCharacterHandler(server.render, server.characterService, server.identity))
+	router.Handle("POST /account/characters", postCharacterHandler(render, characterService, identity))
 
-	server.Handler = router
-	return server
+	return router
 }
 
 func getSecureCookie(sessionID uuid.UUID) http.Cookie {

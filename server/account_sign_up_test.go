@@ -25,7 +25,7 @@ func TestGetSignUpHandler(t *testing.T) {
 		request.Header.Set("HX-Request", "true")
 
 		response := httptest.NewRecorder()
-		server.Handler.ServeHTTP(response, request)
+		server.ServeHTTP(response, request)
 
 		got := response.Result()
 
@@ -53,7 +53,7 @@ func TestGetSignUpHandler(t *testing.T) {
 		request := httptest.NewRequest(http.MethodGet, "/account/sign-up", nil)
 
 		response := httptest.NewRecorder()
-		server.Handler.ServeHTTP(response, request)
+		server.ServeHTTP(response, request)
 
 		got := response.Result()
 
@@ -111,7 +111,7 @@ func TestPostSignUpHandler(t *testing.T) {
 		request := httptest.NewRequest(http.MethodPost, "/account/sign-up", strings.NewReader(formValues.Encode()))
 		request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 		response := httptest.NewRecorder()
-		server.Handler.ServeHTTP(response, request)
+		server.ServeHTTP(response, request)
 
 		gotStatus := response.Result().StatusCode
 		gotHeaderRedirect := response.Result().Header.Get("Hx-Redirect")
@@ -155,7 +155,7 @@ func TestPostSignUpHandler(t *testing.T) {
 		request := httptest.NewRequest(http.MethodPost, "/account/sign-up", strings.NewReader(formValues.Encode()))
 		request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 		response := httptest.NewRecorder()
-		server.Handler.ServeHTTP(response, request)
+		server.ServeHTTP(response, request)
 
 		got := response.Result()
 
@@ -182,7 +182,7 @@ func TestPostSignUpHandler(t *testing.T) {
 		request := httptest.NewRequest(http.MethodPost, "/account/sign-up", strings.NewReader(formValues.Encode()))
 		request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 		response := httptest.NewRecorder()
-		server.Handler.ServeHTTP(response, request)
+		server.ServeHTTP(response, request)
 
 		got := response.Result()
 
@@ -211,7 +211,7 @@ func TestPostSignUpHandler(t *testing.T) {
 		request := httptest.NewRequest(http.MethodPost, "/account/sign-up", strings.NewReader(formValues.Encode()))
 		request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 		response := httptest.NewRecorder()
-		server.Handler.ServeHTTP(response, request)
+		server.ServeHTTP(response, request)
 
 		got := response.Result()
 

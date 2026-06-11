@@ -38,7 +38,7 @@ func TestDeleteSignOutHandler(t *testing.T) {
 		request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 		request.AddCookie(&cookie)
 		response := httptest.NewRecorder()
-		server.Handler.ServeHTTP(response, request)
+		server.ServeHTTP(response, request)
 
 		gotStatus := response.Result().StatusCode
 		gotHeaderRedirect := response.Result().Header.Get("Hx-Redirect")

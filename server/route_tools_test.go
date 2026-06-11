@@ -19,7 +19,7 @@ func TestGetToolsHandler_Route(t *testing.T) {
 
 		request := httptest.NewRequest(http.MethodGet, "/tools", nil)
 		response := httptest.NewRecorder()
-		server.Handler.ServeHTTP(response, request)
+		server.ServeHTTP(response, request)
 
 		got := response.Result()
 
@@ -48,7 +48,7 @@ func TestGetToolsHandler_Route(t *testing.T) {
 		request := httptest.NewRequest(http.MethodGet, "/tools", nil)
 		request.Header.Set("HX-Request", "true")
 		response := httptest.NewRecorder()
-		server.Handler.ServeHTTP(response, request)
+		server.ServeHTTP(response, request)
 
 		got := response.Result()
 

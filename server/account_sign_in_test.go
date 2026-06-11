@@ -24,7 +24,7 @@ func TestGetSignInHandler(t *testing.T) {
 		request.Header.Set("HX-Request", "true")
 
 		response := httptest.NewRecorder()
-		server.Handler.ServeHTTP(response, request)
+		server.ServeHTTP(response, request)
 
 		got := response.Result()
 
@@ -52,7 +52,7 @@ func TestGetSignInHandler(t *testing.T) {
 		request := httptest.NewRequest(http.MethodGet, "/account/sign-in", nil)
 
 		response := httptest.NewRecorder()
-		server.Handler.ServeHTTP(response, request)
+		server.ServeHTTP(response, request)
 
 		got := response.Result()
 
@@ -109,7 +109,7 @@ func TestPostSignInHandler(t *testing.T) {
 		request := httptest.NewRequest(http.MethodPost, "/account/sign-in", strings.NewReader(formValues.Encode()))
 		request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 		response := httptest.NewRecorder()
-		server.Handler.ServeHTTP(response, request)
+		server.ServeHTTP(response, request)
 
 		gotStatus := response.Result().StatusCode
 		gotHeaderRedirect := response.Result().Header.Get("Hx-Redirect")
