@@ -31,6 +31,9 @@ func TestGetSignInHandler(t *testing.T) {
 		if got.StatusCode != http.StatusOK {
 			t.Errorf("got %v want %v", got.StatusCode, http.StatusOK)
 		}
+		if got.Header.Get("Content-Type") != "text/html; charset=utf-8" {
+			t.Errorf("got Content-Type %q, want %q", got.Header.Get("Content-Type"), "text/html; charset=utf-8")
+		}
 
 		body, err := io.ReadAll(got.Body)
 		if err != nil {
@@ -111,16 +114,22 @@ func TestPostSignInHandler(t *testing.T) {
 		response := httptest.NewRecorder()
 		server.ServeHTTP(response, request)
 
-		gotStatus := response.Result().StatusCode
-		gotHeaderRedirect := response.Result().Header.Get("Hx-Redirect")
+		got := response.Result()
 
-		wantStatus := http.StatusSeeOther
-		wantHeaderRedirect := "/"
+		if got.StatusCode != http.StatusSeeOther {
+			t.Errorf("got http status %v want http status %v", got.StatusCode, http.StatusSeeOther)
+		}
 
-		gotCookies := response.Result().Cookies()
+		if got.Header.Get("Content-Type") != "text/html; charset=utf-8" {
+			t.Errorf("got Content-Type %q, want %q", got.Header.Get("Content-Type"), "text/html; charset=utf-8")
+		}
 
-		if len(gotCookies) != 1 {
-			t.Errorf("expected one cookie to be set, got %v", len(gotCookies))
+		if got.Header.Get("Hx-Redirect") != "/" {
+			t.Errorf("got header Location %v, want header Location %v", got.Header.Get("Hx-Redirect"), "/")
+		}
+
+		if len(got.Cookies()) != 1 {
+			t.Errorf("expected one cookie to be set, got %v", len(got.Cookies()))
 		}
 
 		if auth.spySignIn != 1 {
@@ -129,14 +138,6 @@ func TestPostSignInHandler(t *testing.T) {
 
 		if session.spyAddSession != 1 {
 			t.Errorf("got %v calls to AddSession want 1", session.spyAddSession)
-		}
-
-		if gotStatus != wantStatus {
-			t.Errorf("got http status %v want http status %v", gotStatus, wantStatus)
-		}
-
-		if gotHeaderRedirect != wantHeaderRedirect {
-			t.Errorf("got header Location %v, want header Location %v", gotHeaderRedirect, wantHeaderRedirect)
 		}
 	})
 }

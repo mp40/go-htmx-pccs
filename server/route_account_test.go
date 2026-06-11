@@ -26,6 +26,9 @@ func TestGetAccountHandler_Route(t *testing.T) {
 		if got.StatusCode != http.StatusOK {
 			t.Errorf("got %v want %v", got.StatusCode, http.StatusOK)
 		}
+		if got.Header.Get("Content-Type") != "text/html; charset=utf-8" {
+			t.Errorf("got Content-Type %q, want %q", got.Header.Get("Content-Type"), "text/html; charset=utf-8")
+		}
 
 		body, err := io.ReadAll(got.Body)
 		if err != nil {
@@ -54,6 +57,9 @@ func TestGetAccountHandler_Route(t *testing.T) {
 
 		if got.StatusCode != http.StatusOK {
 			t.Errorf("got %v want %v", got.StatusCode, http.StatusOK)
+		}
+		if got.Header.Get("Content-Type") != "text/html; charset=utf-8" {
+			t.Errorf("got Content-Type %q, want %q", got.Header.Get("Content-Type"), "text/html; charset=utf-8")
 		}
 
 		body, err := io.ReadAll(got.Body)

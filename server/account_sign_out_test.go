@@ -40,32 +40,30 @@ func TestDeleteSignOutHandler(t *testing.T) {
 		response := httptest.NewRecorder()
 		server.ServeHTTP(response, request)
 
-		gotStatus := response.Result().StatusCode
-		gotHeaderRedirect := response.Result().Header.Get("Hx-Redirect")
+		got := response.Result()
 
-		wantStatus := http.StatusSeeOther
-		wantHeaderRedirect := "/"
-
-		gotCookies := response.Result().Cookies()
-
-		if len(gotCookies) != 1 {
-			t.Errorf("expected cookie to be set, got %v", len(gotCookies))
+		if got.StatusCode != http.StatusSeeOther {
+			t.Errorf("got http status %v want http status %v", got.StatusCode, http.StatusSeeOther)
 		}
 
-		if gotCookies[0].MaxAge >= 0 {
-			t.Errorf("expected cookie max age to be less than 0, got %v", len(gotCookies))
+		if got.Header.Get("Content-Type") != "text/html; charset=utf-8" {
+			t.Errorf("got Content-Type %q, want %q", got.Header.Get("Content-Type"), "text/html; charset=utf-8")
+		}
+
+		if got.Header.Get("Hx-Redirect") != "/" {
+			t.Errorf("got header Location %v, want header Location %v", got.Header.Get("Hx-Redirect"), "/")
+		}
+
+		if len(got.Cookies()) != 1 {
+			t.Errorf("expected cookie to be set, got %v", len(got.Cookies()))
+		}
+
+		if got.Cookies()[0].MaxAge >= 0 {
+			t.Errorf("expected cookie max age to be less than 0, got %v", got.Cookies()[0].MaxAge)
 		}
 
 		if session.spyDeleteSession != 1 {
 			t.Errorf("got %v calls to DeleteSessionByID want 1", session.spyDeleteSession)
-		}
-
-		if gotStatus != wantStatus {
-			t.Errorf("got http status %v want http status %v", gotStatus, wantStatus)
-		}
-
-		if gotHeaderRedirect != wantHeaderRedirect {
-			t.Errorf("got header Location %v, want header Location %v", gotHeaderRedirect, wantHeaderRedirect)
 		}
 	})
 }

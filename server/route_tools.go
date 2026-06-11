@@ -22,6 +22,7 @@ func getToolsHandler(render getToolsPageRender, identity getToolsPageIdentity) h
 		isHtmx, _ := strconv.ParseBool(htmxHeader)
 		signedIn := identity.IsSignedIn(r)
 
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		if isHtmx {
 			err := render.RenderToolsFragment(w)
 			if err != nil {
@@ -37,7 +38,5 @@ func getToolsHandler(render getToolsPageRender, identity getToolsPageIdentity) h
 				return
 			}
 		}
-
-		w.Header().Set("Content-Type", "text/html")
 	})
 }

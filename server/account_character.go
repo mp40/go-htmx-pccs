@@ -52,7 +52,7 @@ func postCharacterHandler(render postCharacterRender, characterService postChara
 		}
 
 		// once response body is written to can't set header - call before otherwise 200
-		w.Header().Set("Content-Type", "text/html")
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.WriteHeader(http.StatusCreated)
 
 		// return render character fragment

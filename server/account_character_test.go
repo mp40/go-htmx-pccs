@@ -81,6 +81,9 @@ func TestPostCharacterHandler(t *testing.T) {
 		if got.StatusCode != http.StatusCreated {
 			t.Errorf("got %v want %v", got.StatusCode, http.StatusCreated)
 		}
+		if got.Header.Get("Content-Type") != "text/html; charset=utf-8" {
+			t.Errorf("got Content-Type %q, want %q", got.Header.Get("Content-Type"), "text/html; charset=utf-8")
+		}
 
 		if characterService.spyAddCharacter != 1 {
 			t.Errorf("got %v calls to AddCharacter want 1", characterService.spyAddCharacter)

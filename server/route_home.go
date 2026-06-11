@@ -22,6 +22,7 @@ func getHomeHandler(render getHomePageRender, identity getHomePageIdentity) http
 		isHtmx, _ := strconv.ParseBool(htmxHeader)
 		signedIn := identity.IsSignedIn(r)
 
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		if isHtmx {
 			err := render.RenderHomeFragment(w)
 			if err != nil {
@@ -37,7 +38,5 @@ func getHomeHandler(render getHomePageRender, identity getHomePageIdentity) http
 				return
 			}
 		}
-
-		w.Header().Set("Content-Type", "text/html")
 	})
 }

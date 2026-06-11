@@ -22,6 +22,7 @@ func getReferenceHandler(render getReferencePageRender, identity getReferencePag
 		isHtmx, _ := strconv.ParseBool(htmxHeader)
 		signedIn := identity.IsSignedIn(r)
 
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		if isHtmx {
 			err := render.RenderReferenceFragment(w)
 			if err != nil {
@@ -37,7 +38,5 @@ func getReferenceHandler(render getReferencePageRender, identity getReferencePag
 				return
 			}
 		}
-
-		w.Header().Set("Content-Type", "text/html")
 	})
 }

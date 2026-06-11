@@ -22,6 +22,7 @@ func getAccountHandler(render getAccountPageRender, identity getAccountPageIdent
 		isHtmx, _ := strconv.ParseBool(htmxHeader)
 		signedIn := identity.IsSignedIn(r)
 
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		if isHtmx {
 			err := render.RenderAccountFragment(w, signedIn)
 			if err != nil {
@@ -37,7 +38,5 @@ func getAccountHandler(render getAccountPageRender, identity getAccountPageIdent
 				return
 			}
 		}
-
-		w.Header().Set("Content-Type", "text/html")
 	})
 }

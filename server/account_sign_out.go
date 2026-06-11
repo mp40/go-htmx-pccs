@@ -13,9 +13,9 @@ type deleteSignOutSession interface {
 
 func deleteSignOutHandler(session deleteSignOutSession) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		cookie, err := r.Cookie("sessionID")
 		if err != nil {
-			w.Header().Set("Content-Type", "text/html")
 			w.Header().Set("HX-Redirect", "/")
 			w.WriteHeader(http.StatusSeeOther)
 			return
@@ -39,7 +39,6 @@ func deleteSignOutHandler(session deleteSignOutSession) http.Handler {
 func redirectWithExpiredCookie(w http.ResponseWriter) {
 	expiredCookie := removeSecureCookie()
 	http.SetCookie(w, &expiredCookie)
-	w.Header().Set("Content-Type", "text/html")
 	w.Header().Set("HX-Redirect", "/")
 	w.WriteHeader(http.StatusSeeOther)
 }

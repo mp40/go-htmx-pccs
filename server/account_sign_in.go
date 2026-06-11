@@ -20,6 +20,8 @@ func getSignInHandler(render renderSignInModal) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		htmxHeader := r.Header.Get("HX-Request")
 		isHtmx, _ := strconv.ParseBool(htmxHeader)
+
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		if isHtmx {
 			err := render.RenderSignInModal(w)
 			if err != nil {
@@ -34,8 +36,6 @@ func getSignInHandler(render renderSignInModal) http.Handler {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
-
-		w.Header().Set("Content-Type", "text/html")
 	})
 }
 
@@ -56,6 +56,7 @@ func postSignInHandler(render postSignInRender, auth postSignInAuth, session pos
 		email := strings.TrimSpace(r.FormValue("email"))
 		password := strings.TrimSpace(r.FormValue("password"))
 
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		user, err := auth.SignIn(email, password)
 		if err != nil {
 			err = render.RenderErrorMessageFragment(w, "internal server error")
@@ -64,7 +65,6 @@ func postSignInHandler(render postSignInRender, auth postSignInAuth, session pos
 				w.WriteHeader(http.StatusInternalServerError)
 				return
 			}
-			w.Header().Set("Content-Type", "text/html")
 			return
 		}
 		if user == nil {
@@ -74,7 +74,6 @@ func postSignInHandler(render postSignInRender, auth postSignInAuth, session pos
 				w.WriteHeader(http.StatusInternalServerError)
 				return
 			}
-			w.Header().Set("Content-Type", "text/html")
 			return
 		}
 
@@ -88,12 +87,10 @@ func postSignInHandler(render postSignInRender, auth postSignInAuth, session pos
 				w.WriteHeader(http.StatusInternalServerError)
 				return
 			}
-			w.Header().Set("Content-Type", "text/html")
 			return
 		}
 		cookie := getSecureCookie(sessionID)
 		http.SetCookie(w, &cookie)
-		w.Header().Set("Content-Type", "text/html")
 		w.Header().Set("HX-Redirect", "/")
 		w.WriteHeader(http.StatusSeeOther)
 	})
