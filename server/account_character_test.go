@@ -29,6 +29,10 @@ func (c *stubPostCharacter) AddCharacter(userID uuid.UUID, rawCharacter domain.R
 	return c.character, nil
 }
 
+func (c *stubPostCharacter) GetCharactersByUserID(userID uuid.UUID) ([]domain.CharacterDTO, error) {
+	panic("method not used in test")
+}
+
 func (i *stubPostCharacterIndentity) GetUserID(r *http.Request) *uuid.UUID {
 	return i.userID
 }

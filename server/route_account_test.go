@@ -8,12 +8,19 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
+	"github.com/mp40/go-htmx-pccs/domain"
 	"github.com/mp40/go-htmx-pccs/identity"
 	"github.com/mp40/go-htmx-pccs/render"
+	"github.com/mp40/go-htmx-pccs/store"
 )
 
 type stubRouteAccountIndentity struct {
 	userID *uuid.UUID
+}
+
+type stubRouteAccountCharacter struct {
+	characters []domain.CharacterDTO
+	err        error
 }
 
 func (i *stubRouteAccountIndentity) IsSignedIn(r *http.Request) bool {
@@ -21,6 +28,15 @@ func (i *stubRouteAccountIndentity) IsSignedIn(r *http.Request) bool {
 }
 
 func (i *stubRouteAccountIndentity) GetUserID(r *http.Request) *uuid.UUID {
+	id := uuid.New()
+	return &id
+}
+
+func (c *stubRouteAccountCharacter) GetCharactersByUserID(userID uuid.UUID) ([]domain.CharacterDTO, error) {
+	return c.characters, c.err
+}
+
+func (c *stubRouteAccountCharacter) AddCharacter(userID uuid.UUID, rawCharacter domain.RawCharacter) (*store.Character, error) {
 	panic("method not used in test")
 }
 
@@ -52,7 +68,9 @@ func TestGetAccountHandler_Route(t *testing.T) {
 	t.Run("it should return 200 and full page on successful GET request", func(t *testing.T) {
 		render := &render.Render{}
 		identity := &stubRouteAccountIndentity{}
-		server := NewServer(nil, nil, identity, nil, render)
+		character := &stubRouteAccountCharacter{}
+		character.characters = []domain.CharacterDTO{{RawCharacter: domain.RawCharacter{Name: "Fake Character"}}}
+		server := NewServer(nil, nil, identity, character, render)
 
 		request := httptest.NewRequest(http.MethodGet, "/account", nil)
 		response := httptest.NewRecorder()
@@ -76,14 +94,19 @@ func TestGetAccountHandler_Route(t *testing.T) {
 			t.Errorf("unexpected body: %s", body)
 		}
 		if !strings.Contains(string(body), "<body>") {
-			t.Errorf("expected fragment, got: %s", body)
+			t.Errorf("expected full page, got: %s", body)
+		}
+		if !strings.Contains(string(body), "Fake Character") {
+			t.Errorf("expected characters to be on page, got: %s", body)
 		}
 	})
 
 	t.Run("it should return 200 and partial on successful HTMX GET request", func(t *testing.T) {
 		render := &render.Render{}
 		identity := &stubRouteAccountIndentity{}
-		server := NewServer(nil, nil, identity, nil, render)
+		character := &stubRouteAccountCharacter{}
+		character.characters = []domain.CharacterDTO{{RawCharacter: domain.RawCharacter{Name: "Fake Character"}}}
+		server := NewServer(nil, nil, identity, character, render)
 
 		request := httptest.NewRequest(http.MethodGet, "/account", nil)
 		request.Header.Set("HX-Request", "true")
@@ -109,6 +132,9 @@ func TestGetAccountHandler_Route(t *testing.T) {
 		}
 		if strings.Contains(string(body), "<body>") {
 			t.Errorf("expected fragment, got: %s", body)
+		}
+		if !strings.Contains(string(body), "Fake Character") {
+			t.Errorf("expected characters to be on page, got: %s", body)
 		}
 	})
 }

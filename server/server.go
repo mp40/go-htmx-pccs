@@ -26,6 +26,7 @@ type Session interface {
 
 type CharacterService interface {
 	AddCharacter(userID uuid.UUID, rawCharacter domain.RawCharacter) (*store.Character, error)
+	GetCharactersByUserID(userID uuid.UUID) ([]domain.CharacterDTO, error)
 }
 
 type Identity interface {
@@ -42,7 +43,7 @@ func NewServer(auth Auth, session Session, identity Identity, characterService C
 	router.Handle("GET /favicon.ico", http.StripPrefix("/", staticFileServer))
 
 	router.Handle("GET /", getHomeHandler(render, identity))
-	router.Handle("GET /account", getAccountHandler(render, identity))
+	router.Handle("GET /account", getAccountHandler(render, identity, characterService))
 
 	router.Handle("GET /reference", getReferenceHandler(render, identity))
 	router.Handle("GET /tools", getToolsHandler(render, identity))

@@ -12,6 +12,12 @@ type RawCharacter struct {
 	HandToHandLevel int    `json:"hand_to_hand_level"`
 }
 
+type CharacterDTO struct {
+	RawCharacter
+	GunCombatLearningPoints  float32 `json:"gun_combat_learning_points"`
+	HandToHandLearningPoints float32 `json:"hand_to_hand_learning_points"`
+}
+
 var LevelToLearningPoints = map[int]float32{
 	0:  0,
 	1:  2,

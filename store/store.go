@@ -106,7 +106,7 @@ func (s *Store) GetCharactersByUserID(userID uuid.UUID) ([]Character, error) {
 		character := Character{}
 		var idStr string
 		var userIdStr string
-		err := rows.Scan(&idStr, &userIdStr, &character.Name, &character.Str, &character.Int, &character.Wil, &character.Hlt, &character.Agi, &character.CreatedAt, &character.UpdatedAt)
+		err := rows.Scan(&idStr, &userIdStr, &character.Name, &character.Str, &character.Int, &character.Wil, &character.Hlt, &character.Agi, &character.Tch, &character.GunCombatLearningPoints, &character.HandToHandLearningPoints, &character.CreatedAt, &character.UpdatedAt)
 		if err != nil {
 			return []Character{}, err
 		}

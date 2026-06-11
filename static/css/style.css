@@ -266,17 +266,44 @@ body {
   opacity: 0.9;
 }
 
+.characters-container {
+  position: relative;
+  width: fit-content;
+}
+
+.characters-container > .fade {
+  position: absolute;
+  bottom: 1px;
+  right: 1px;
+  left: 1px;
+  height: 2.8rem;
+  background: linear-gradient(0deg, rgba(245,245,245,1) 0%, rgba(245,245,245,0.50) 90%); 
+}
+
 .character-container {
   border: 1px solid var(--panzer-grey);
   border-radius: 3px;
   display: flex;
   flex-direction: column;
   width: fit-content;
+  overflow: scroll;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  max-height: 19.5rem;
+  padding-bottom: 3rem;
 }
+
+.character-container::-webkit-scrollbar {
+  display: none;
+}
+
+
 
 .character-heading {
   background-color: var(--panzer-grey);
   color: whitesmoke;
+  position: sticky;
+  top: 0;
 }
 
 .character-container > div {

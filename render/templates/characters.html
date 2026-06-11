@@ -19,16 +19,22 @@
   >
     Add Grunt
   </button>
-  <div class="character-container">
-    <div class="character-heading">
-      <span>Name</span>
-      <span>STR</span>
-      <span>INT</span>
-      <span>WIL</span>
-      <span>HLT</span>
-      <span>AGI</span>
-      <span>Gun</span>
-      <span>Melee</span>
+  <div class="characters-container">
+    <div class="fade"></div>
+    <div class="character-container">
+      <div class="character-heading">
+        <span>Name</span>
+        <span>STR</span>
+        <span>INT</span>
+        <span>WIL</span>
+        <span>HLT</span>
+        <span>AGI</span>
+        <span>Gun</span>
+        <span>Melee</span>
+      </div>
+      {{range .Characters}}
+      {{ template "character" .}}
+      {{end}}
     </div>
   </div>
 </div>

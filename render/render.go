@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"runtime"
 
+	"github.com/mp40/go-htmx-pccs/domain"
 	"github.com/mp40/go-htmx-pccs/store"
 )
 
@@ -50,16 +51,18 @@ func (r *Render) RenderHomeFragment(w io.Writer) error {
 	return nil
 }
 
-func (r *Render) RenderAccountPage(w io.Writer, signedIn bool) error {
-	tmpl, err := template.ParseFiles(getTemplatePath("index.html"), getTemplatePath("top-strap.html"), getTemplatePath("account.html"), getTemplatePath("characters.html"))
+func (r *Render) RenderAccountPage(w io.Writer, signedIn bool, characters []domain.CharacterDTO) error {
+	tmpl, err := template.ParseFiles(getTemplatePath("index.html"), getTemplatePath("top-strap.html"), getTemplatePath("account.html"), getTemplatePath("characters.html"), getTemplatePath("character.html"))
 	if err != nil {
 		return err
 	}
 
 	data := struct {
-		SignedIn bool
+		SignedIn   bool
+		Characters []domain.CharacterDTO
 	}{
-		SignedIn: signedIn,
+		SignedIn:   signedIn,
+		Characters: characters,
 	}
 
 	err = tmpl.Execute(w, data)
@@ -70,16 +73,16 @@ func (r *Render) RenderAccountPage(w io.Writer, signedIn bool) error {
 	return nil
 }
 
-func (r *Render) RenderAccountFragment(w io.Writer, signedIn bool) error {
-	tmpl, err := template.New("page").ParseFiles(getTemplatePath("account.html"), getTemplatePath("characters.html"))
+func (r *Render) RenderAccountFragment(w io.Writer, characters []domain.CharacterDTO) error {
+	tmpl, err := template.New("page").ParseFiles(getTemplatePath("account.html"), getTemplatePath("characters.html"), getTemplatePath("character.html"))
 	if err != nil {
 		return err
 	}
 
 	data := struct {
-		SignedIn bool
+		Characters []domain.CharacterDTO
 	}{
-		SignedIn: signedIn,
+		Characters: characters,
 	}
 
 	err = tmpl.Execute(w, data)
