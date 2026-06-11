@@ -93,7 +93,7 @@ func (s *stubPostSignInSession) DeleteSessionByID(ID uuid.UUID) error {
 }
 
 func TestPostSignInHandler(t *testing.T) {
-	t.Run("it should redirect to Home page on successful POST request", func(t *testing.T) {
+	t.Run("it should redirect to Account page on successful POST request", func(t *testing.T) {
 		session := stubPostSignInSession{}
 
 		auth := stubPostSignInAuth{}
@@ -124,8 +124,8 @@ func TestPostSignInHandler(t *testing.T) {
 			t.Errorf("got Content-Type %q, want %q", got.Header.Get("Content-Type"), "text/html; charset=utf-8")
 		}
 
-		if got.Header.Get("Hx-Redirect") != "/" {
-			t.Errorf("got header Location %v, want header Location %v", got.Header.Get("Hx-Redirect"), "/")
+		if got.Header.Get("Hx-Redirect") != "/account" {
+			t.Errorf("got header Location %v, want header Location %v", got.Header.Get("Hx-Redirect"), "/account")
 		}
 
 		if len(got.Cookies()) != 1 {

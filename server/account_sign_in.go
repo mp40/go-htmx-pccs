@@ -91,7 +91,7 @@ func postSignInHandler(render postSignInRender, auth postSignInAuth, session pos
 		}
 		cookie := getSecureCookie(sessionID)
 		http.SetCookie(w, &cookie)
-		w.Header().Set("HX-Redirect", "/")
+		w.Header().Set("HX-Redirect", "/account")
 		w.WriteHeader(http.StatusSeeOther)
 	})
 }

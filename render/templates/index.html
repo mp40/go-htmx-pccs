@@ -7,6 +7,7 @@
   </head>
   <body>
     {{ template "top-strap" . }}
+    <div class="modal-container-div"></div>
     <div class="container">
       <div class="nav-container nav-div">
         <a
@@ -17,15 +18,6 @@
           hx-push-url="true"
         >
           Home
-        </a>
-        <a
-          hx-get="/account"
-          hx-trigger="click"
-          hx-target=".page-div"
-          hx-swap="outerHTML"
-          hx-push-url="true"
-        >
-          Account
         </a>
         <a
           hx-get="/reference"
@@ -45,6 +37,17 @@
         >
           Tools
         </a>
+        {{ if .SignedIn }}
+        <a
+          hx-get="/account"
+          hx-trigger="click"
+          hx-target=".page-div"
+          hx-swap="outerHTML"
+          hx-push-url="true"
+        >
+          Account
+        </a>
+        {{ end }}
       </div>
       {{ template "page" . }}
     </div>

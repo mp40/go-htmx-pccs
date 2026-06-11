@@ -45,21 +45,35 @@ body {
   position: fixed;
   top: 0;
   height: 4rem;
-  width: 100%;
+  width: calc(100% - 2em);
+  padding: 0 1em;
   color: var(--insignia-white);
   background-color: var(--london-grey);
   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
   z-index: 5;
   display: flex;
+  justify-content: space-between;
   align-items: center;
 }
 
-.top-strap > span:nth-of-type(1) {
-  margin-left: 1em;
+.top-strap > span > button {
+  width: 5.5rem;
+  height: 2rem;
+  border-radius: 5px;
+  background-color: transparent;
+  border: none;
+  color: whitesmoke;
+  font-size: 1.125rem;
+  font-weight: 500;
 }
 
-.top-strap > span:nth-of-type(2) {
-  margin-left: 0.5em;
+.top-strap > span > button:hover {
+  border: 1.5px solid whitesmoke;
+}
+
+.top-strap > span > button:active {
+  border: 1px solid whitesmoke;
+  opacity: 0.75;
 }
 
 .container {
@@ -74,7 +88,6 @@ body {
   background-color: var(--usaf-light-grey);
   height: calc(100vh - 4rem);
   width: 15em;
-  /* margin-right: 1.5em; */
   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
 }
 

@@ -23,6 +23,12 @@ func getAccountHandler(render getAccountPageRender, identity getAccountPageIdent
 		signedIn := identity.IsSignedIn(r)
 
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
+		if !signedIn {
+			w.Header().Set("HX-Redirect", "/")
+			w.WriteHeader(http.StatusSeeOther)
+		}
+
 		if isHtmx {
 			err := render.RenderAccountFragment(w, signedIn)
 			if err != nil {
