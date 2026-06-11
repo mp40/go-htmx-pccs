@@ -1,7 +1,6 @@
 package server
 
 import (
-	"io"
 	"net/http"
 	"net/url"
 	"path/filepath"
@@ -11,23 +10,9 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/mp40/go-htmx-pccs/domain"
+	"github.com/mp40/go-htmx-pccs/render"
 	"github.com/mp40/go-htmx-pccs/store"
 )
-
-type Render interface {
-	RenderHomePage(w io.Writer, signedIn bool) error
-	RenderHomeFragment(w io.Writer) error
-	RenderAccountPage(w io.Writer, signedIn bool) error
-	RenderAccountFragment(w io.Writer, signedIn bool) error
-	RenderReferencePage(w io.Writer, signedIn bool) error
-	RenderReferenceFragment(w io.Writer) error
-	RenderToolsPage(w io.Writer, signedIn bool) error
-	RenderToolsFragment(w io.Writer) error
-	RenderSignInModal(w io.Writer) error
-	RenderSignUpModal(w io.Writer) error
-	RenderErrorMessageFragment(w io.Writer, msg string) error
-	RenderCharacter(w io.Writer, character store.Character) error
-}
 
 type Auth interface {
 	SignIn(email string, password string) (*store.User, error)
@@ -48,7 +33,7 @@ type Identity interface {
 	IsSignedIn(r *http.Request) bool
 }
 
-func NewServer(auth Auth, session Session, identity Identity, characterService CharacterService, render Render) http.Handler {
+func NewServer(auth Auth, session Session, identity Identity, characterService CharacterService, render *render.Render) http.Handler {
 	router := http.NewServeMux()
 
 	staticDir := http.Dir(filepath.Join("static"))
