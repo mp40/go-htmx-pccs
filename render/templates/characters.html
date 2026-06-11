@@ -1,5 +1,6 @@
 {{ define "characters" }}
 <div class="characters">
+  <h2>Characters</h2>
   <button
     hx-trigger="click"
     hx-post="/account/characters"
@@ -7,7 +8,16 @@
     hx-target=".character-container"
     hx-swap="beforeend"
   >
-    Add Character
+    Add Basic
+  </button>
+  <button
+    hx-trigger="click"
+    hx-post="/account/characters"
+    hx-vals='{"str": "14", "int": "10", "wil": "10", "hlt": "10", "agi": "12", "tch": "10", "gun_combat_level": "4", "hand_to_hand_level": "2"}'
+    hx-target=".character-container"
+    hx-swap="beforeend"
+  >
+    Add Grunt
   </button>
   <div class="character-container">
     <div class="character-heading">
@@ -17,6 +27,8 @@
       <span>WIL</span>
       <span>HLT</span>
       <span>AGI</span>
+      <span>Gun</span>
+      <span>Melee</span>
     </div>
   </div>
 </div>
