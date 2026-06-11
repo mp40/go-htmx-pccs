@@ -3,8 +3,6 @@ package auth
 import (
 	"fmt"
 	"log/slog"
-	"os"
-	"strconv"
 
 	"github.com/google/uuid"
 	"github.com/mp40/go-htmx-pccs/store"
@@ -19,11 +17,13 @@ type Store interface {
 
 type Auth struct {
 	store Store
+	cost  int
 }
 
-func NewAuthService(store Store) *Auth {
+func NewAuthService(store Store, cost int) *Auth {
 	return &Auth{
 		store: store,
+		cost:  cost,
 	}
 }
 
@@ -60,18 +60,7 @@ func (a *Auth) SignUp(email string, password string) (ID *uuid.UUID, err error) 
 		return nil, fmt.Errorf("409")
 	}
 
-	COST := os.Getenv("COST")
-	if len(COST) == 0 {
-		slog.Error("auth env COST not found")
-		return nil, fmt.Errorf("500")
-	}
-	parsedCost, err := strconv.Atoi(COST)
-	if err != nil {
-		slog.Error("auth env COST parsing error", "err", err)
-		return nil, fmt.Errorf("500")
-	}
-
-	hash, err := bcrypt.GenerateFromPassword([]byte(password), parsedCost)
+	hash, err := bcrypt.GenerateFromPassword([]byte(password), a.cost)
 	if err != nil {
 		slog.Error("auth error generating hash", "err", err)
 		return nil, fmt.Errorf("unexpected store error: %w", err)

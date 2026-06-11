@@ -10,9 +10,11 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 	"time"
 
+	"github.com/joho/godotenv"
 	"github.com/mp40/go-htmx-pccs/auth"
 	"github.com/mp40/go-htmx-pccs/identity"
 	"github.com/mp40/go-htmx-pccs/middleware"
@@ -27,6 +29,7 @@ import (
 func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer cancel()
+	_ = godotenv.Load()
 	if err := run(ctx, os.Getenv, os.Stderr); err != nil {
 		fmt.Fprintf(os.Stderr, "%s\n", err)
 		os.Exit(1)
@@ -36,6 +39,15 @@ func main() {
 // in future
 // args []string could be good when want to build dev versions for testing ect
 func run(ctx context.Context, getenv func(string) string, stderr io.Writer) error {
+	costStr := getenv("COST")
+	if costStr == "" {
+		return fmt.Errorf("COST env var required")
+	}
+	cost, err := strconv.Atoi(costStr)
+	if err != nil {
+		return fmt.Errorf("COST must be an integer: %w", err)
+	}
+
 	storeDB, err := sql.Open("sqlite", "./pccs_store.db")
 	if err != nil {
 		return fmt.Errorf("init store db: %w", err)
@@ -72,7 +84,7 @@ func run(ctx context.Context, getenv func(string) string, stderr io.Writer) erro
 
 	storeService := store.NewStoreService(storeDB)
 	sessionService := session.NewSessionService(sessionDB)
-	authService := auth.NewAuthService(storeService)
+	authService := auth.NewAuthService(storeService, cost)
 	renderService := render.NewRenderService()
 
 	characterService := service.NewCharacterService(storeService)

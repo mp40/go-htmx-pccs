@@ -33,12 +33,11 @@ func (d *StubStore) AddUser(email string, hash string) (userID uuid.UUID, err er
 }
 
 func TestSignUp(t *testing.T) {
-	t.Setenv("COST", "1")
 	t.Run("it should return pointer to ID when email not in use", func(t *testing.T) {
 		newID := uuid.MustParse("5ea69240-823c-4523-90a2-4868a5bfc90a")
 		stubStore := StubStore{}
 		stubStore.newID = newID
-		auth := NewAuthService(&stubStore)
+		auth := NewAuthService(&stubStore, 1)
 
 		got, err := auth.SignUp("fake@email.com", "fake-password")
 		if err != nil {
@@ -53,7 +52,7 @@ func TestSignUp(t *testing.T) {
 	t.Run("it should return conflict error when email in use", func(t *testing.T) {
 		stubStore := StubStore{}
 		stubStore.count = 1
-		auth := NewAuthService(&stubStore)
+		auth := NewAuthService(&stubStore, 1)
 
 		_, err := auth.SignUp("fake@email.com", "fake-password")
 
@@ -69,7 +68,7 @@ func TestSignUp(t *testing.T) {
 	t.Run("it should return error on store error", func(t *testing.T) {
 		stubStore := StubStore{}
 		stubStore.countErr = fmt.Errorf("fake error")
-		auth := NewAuthService(&stubStore)
+		auth := NewAuthService(&stubStore, 1)
 
 		_, err := auth.SignUp("fake@email.com", "fake-password")
 
@@ -93,7 +92,7 @@ func TestSignIn(t *testing.T) {
 		stubStore := StubStore{}
 		user := store.User{Hash: string(hash)}
 		stubStore.user = &user
-		auth := NewAuthService(&stubStore)
+		auth := NewAuthService(&stubStore, 1)
 
 		got, err := auth.SignIn("fake@email.com", "fake-password")
 		if err != nil {
@@ -111,7 +110,7 @@ func TestSignIn(t *testing.T) {
 
 	t.Run("it should return nil when user not found by email", func(t *testing.T) {
 		stubStore := StubStore{}
-		auth := NewAuthService(&stubStore)
+		auth := NewAuthService(&stubStore, 1)
 
 		got, err := auth.SignIn("fake@email.com", "fake-password")
 		if err != nil {
@@ -131,7 +130,7 @@ func TestSignIn(t *testing.T) {
 		stubStore := StubStore{}
 		user := store.User{Hash: "something-else"}
 		stubStore.user = &user
-		auth := NewAuthService(&stubStore)
+		auth := NewAuthService(&stubStore, 1)
 
 		got, err := auth.SignIn("fake@email.com", "fake-password")
 		if err != nil {
@@ -149,7 +148,7 @@ func TestSignIn(t *testing.T) {
 
 	t.Run("it should return error on store error", func(t *testing.T) {
 		stubStore := StubStore{err: fmt.Errorf("fake")}
-		auth := NewAuthService(&stubStore)
+		auth := NewAuthService(&stubStore, 1)
 
 		_, err := auth.SignIn("fake@email.com", "fake-password")
 
