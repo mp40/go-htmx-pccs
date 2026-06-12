@@ -66,7 +66,7 @@ func run(ctx context.Context, getenv func(string) string, stderr io.Writer) erro
 
 	// found some gotchas with in memory - each connection gets private in mem db
 	// maybe move out of memory (store or state db)
-	sessionDB, err := sql.Open("sqlite", ":memory:")
+	sessionDB, err := sql.Open("sqlite", "file:sessions?mode=memory&cache=shared")
 	if err != nil {
 		return fmt.Errorf("init session db: %w", err)
 	}
