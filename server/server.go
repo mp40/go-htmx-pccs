@@ -47,6 +47,7 @@ func NewServer(auth Auth, session Session, identity Identity, characterService C
 
 	router.Handle("GET /reference", getReferenceHandler(render, identity))
 	router.Handle("GET /tools", getToolsHandler(render, identity))
+	router.Handle("GET /gear", getGearHandler(render, identity))
 
 	router.Handle("GET /account/sign-in", getSignInHandler(render))
 	router.Handle("POST /account/sign-in", postSignInHandler(render, auth, session))

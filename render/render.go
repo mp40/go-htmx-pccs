@@ -160,6 +160,40 @@ func (r *Render) RenderToolsFragment(w io.Writer) error {
 	return nil
 }
 
+func (r *Render) RenderGearPage(w io.Writer, signedIn bool) error {
+	tmpl, err := template.ParseFiles(getTemplatePath("index.html"), getTemplatePath("top-strap.html"), getTemplatePath("gear.html"))
+	if err != nil {
+		return err
+	}
+
+	data := struct {
+		SignedIn bool
+	}{
+		SignedIn: signedIn,
+	}
+
+	err = tmpl.Execute(w, data)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *Render) RenderGearFragment(w io.Writer) error {
+	tmpl, err := template.New("page").ParseFiles(getTemplatePath("gear.html"))
+	if err != nil {
+		return err
+	}
+
+	err = tmpl.Execute(w, nil)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (r *Render) RenderSignInModal(w io.Writer) error {
 	tmpl, err := template.New("modal").ParseFiles(getTemplatePath("sign-in-modal.html"))
 
