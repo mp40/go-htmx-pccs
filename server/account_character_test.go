@@ -12,11 +12,10 @@ import (
 	"github.com/google/uuid"
 	"github.com/mp40/go-htmx-pccs/domain"
 	"github.com/mp40/go-htmx-pccs/render"
-	"github.com/mp40/go-htmx-pccs/store"
 )
 
 type stubPostCharacter struct {
-	character       *store.Character
+	character       *domain.CharacterDTO
 	spyAddCharacter int
 }
 
@@ -24,7 +23,7 @@ type stubPostCharacterIndentity struct {
 	userID *uuid.UUID
 }
 
-func (c *stubPostCharacter) AddCharacter(userID uuid.UUID, rawCharacter domain.RawCharacter) (*store.Character, error) {
+func (c *stubPostCharacter) AddCharacter(userID uuid.UUID, rawCharacter domain.RawCharacter) (*domain.CharacterDTO, error) {
 	c.spyAddCharacter++
 	return c.character, nil
 }
@@ -48,7 +47,7 @@ func TestPostCharacterHandler(t *testing.T) {
 		identity.userID = &userID
 
 		characterService := stubPostCharacter{}
-		character := store.Character{Name: "TEST-CHARACTER"}
+		character := domain.CharacterDTO{RawCharacter: domain.RawCharacter{Name: "TEST-CHARACTER"}}
 		characterService.character = &character
 
 		render := &render.Render{}

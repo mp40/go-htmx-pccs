@@ -38,7 +38,7 @@ func (cs *CharacterService) GetCharactersByUserID(userID uuid.UUID) ([]domain.Ch
 	return result, err
 }
 
-func (cs *CharacterService) AddCharacter(userID uuid.UUID, rawCharacter domain.RawCharacter) (*store.Character, error) {
+func (cs *CharacterService) AddCharacter(userID uuid.UUID, rawCharacter domain.RawCharacter) (*domain.CharacterDTO, error) {
 	n := rawCharacter.Name
 	if len(n) == 0 {
 		n = getRandomName()
@@ -58,8 +58,12 @@ func (cs *CharacterService) AddCharacter(userID uuid.UUID, rawCharacter domain.R
 	}
 
 	character, err := cs.store.AddCharacter(new)
+	if character == nil || err != nil {
+		return nil, err
+	}
 
-	return character, err
+	dto := mapStoreCharacterToDomainCharacter(*character)
+	return &dto, err
 }
 
 var names = []string{"Leo", "Roy", "Sam", "Joe", "Ben", "Ray", "Avi", "Ian", "Dan", "Tom"}

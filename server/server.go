@@ -25,7 +25,7 @@ type Session interface {
 }
 
 type CharacterService interface {
-	AddCharacter(userID uuid.UUID, rawCharacter domain.RawCharacter) (*store.Character, error)
+	AddCharacter(userID uuid.UUID, rawCharacter domain.RawCharacter) (*domain.CharacterDTO, error)
 	GetCharactersByUserID(userID uuid.UUID) ([]domain.CharacterDTO, error)
 }
 

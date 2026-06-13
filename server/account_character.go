@@ -7,15 +7,14 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/mp40/go-htmx-pccs/domain"
-	"github.com/mp40/go-htmx-pccs/store"
 )
 
 type postCharacterRender interface {
-	RenderCharacter(w io.Writer, character store.Character) error
+	RenderCharacter(w io.Writer, character domain.CharacterDTO) error
 }
 
 type postCharacterService interface {
-	AddCharacter(userID uuid.UUID, rawCharacter domain.RawCharacter) (*store.Character, error)
+	AddCharacter(userID uuid.UUID, rawCharacter domain.RawCharacter) (*domain.CharacterDTO, error)
 }
 
 type postCharacterIdentity interface {

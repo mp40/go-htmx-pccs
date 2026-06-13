@@ -11,7 +11,6 @@ import (
 	"github.com/mp40/go-htmx-pccs/domain"
 	"github.com/mp40/go-htmx-pccs/identity"
 	"github.com/mp40/go-htmx-pccs/render"
-	"github.com/mp40/go-htmx-pccs/store"
 )
 
 type stubRouteAccountIndentity struct {
@@ -36,7 +35,7 @@ func (c *stubRouteAccountCharacter) GetCharactersByUserID(userID uuid.UUID) ([]d
 	return c.characters, c.err
 }
 
-func (c *stubRouteAccountCharacter) AddCharacter(userID uuid.UUID, rawCharacter domain.RawCharacter) (*store.Character, error) {
+func (c *stubRouteAccountCharacter) AddCharacter(userID uuid.UUID, rawCharacter domain.RawCharacter) (*domain.CharacterDTO, error) {
 	panic("method not used in test")
 }
 

@@ -7,7 +7,6 @@ import (
 	"runtime"
 
 	"github.com/mp40/go-htmx-pccs/domain"
-	"github.com/mp40/go-htmx-pccs/store"
 )
 
 type Render struct{}
@@ -191,7 +190,7 @@ func (r *Render) RenderSignUpModal(w io.Writer) error {
 	return nil
 }
 
-func (r *Render) RenderCharacter(w io.Writer, c store.Character) error {
+func (r *Render) RenderCharacter(w io.Writer, c domain.CharacterDTO) error {
 	tmpl, err := template.New("character").ParseFiles(getTemplatePath("character.html"))
 	if err != nil {
 		return err
