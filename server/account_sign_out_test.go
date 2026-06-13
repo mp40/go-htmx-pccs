@@ -30,7 +30,7 @@ func TestDeleteSignOutHandler(t *testing.T) {
 
 		render := &render.Render{}
 		identity := &identity.Identity{}
-		server := NewServer(nil, &session, identity, nil, render)
+		server := NewServer(nil, &session, identity, nil, nil, render)
 
 		cookie := getSecureCookie(uuid.MustParse("69000000-0000-4523-90a2-4868a5bfc90a"))
 

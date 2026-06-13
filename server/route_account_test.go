@@ -43,7 +43,7 @@ func TestGetAccountHandler_Route(t *testing.T) {
 	t.Run("it should redirect to home if not signed in", func(t *testing.T) {
 		render := &render.Render{}
 		identity := &identity.Identity{}
-		server := NewServer(nil, nil, identity, nil, render)
+		server := NewServer(nil, nil, identity, nil, nil, render)
 
 		request := httptest.NewRequest(http.MethodGet, "/account", nil)
 		response := httptest.NewRecorder()
@@ -69,7 +69,7 @@ func TestGetAccountHandler_Route(t *testing.T) {
 		identity := &stubRouteAccountIndentity{}
 		character := &stubRouteAccountCharacter{}
 		character.characters = []domain.CharacterDTO{{RawCharacter: domain.RawCharacter{Name: "Fake Character"}}}
-		server := NewServer(nil, nil, identity, character, render)
+		server := NewServer(nil, nil, identity, character, nil, render)
 
 		request := httptest.NewRequest(http.MethodGet, "/account", nil)
 		response := httptest.NewRecorder()
@@ -105,7 +105,7 @@ func TestGetAccountHandler_Route(t *testing.T) {
 		identity := &stubRouteAccountIndentity{}
 		character := &stubRouteAccountCharacter{}
 		character.characters = []domain.CharacterDTO{{RawCharacter: domain.RawCharacter{Name: "Fake Character"}}}
-		server := NewServer(nil, nil, identity, character, render)
+		server := NewServer(nil, nil, identity, character, nil, render)
 
 		request := httptest.NewRequest(http.MethodGet, "/account", nil)
 		request.Header.Set("HX-Request", "true")

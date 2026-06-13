@@ -9,13 +9,28 @@ import (
 
 	"github.com/mp40/go-htmx-pccs/identity"
 	"github.com/mp40/go-htmx-pccs/render"
+	"github.com/mp40/go-htmx-pccs/state"
 )
+
+type stubGearPageGearService struct {
+	equipment []state.Equipment
+	err       error
+}
+
+func (g *stubGearPageGearService) GetEquipment() ([]state.Equipment, error) {
+	return g.equipment, g.err
+}
 
 func TestGetGearHandler_Route(t *testing.T) {
 	t.Run("it should return 200 and full page on successful GET request", func(t *testing.T) {
 		render := &render.Render{}
 		identity := &identity.Identity{}
-		server := NewServer(nil, nil, identity, nil, render)
+
+		gear := stubGearPageGearService{}
+		equipment := []state.Equipment{{ID: 1, Name: "TEST EQUIPMENT", Weight: 0.5}}
+		gear.equipment = equipment
+
+		server := NewServer(nil, nil, identity, nil, &gear, render)
 
 		request := httptest.NewRequest(http.MethodGet, "/gear", nil)
 		response := httptest.NewRecorder()
@@ -39,14 +54,23 @@ func TestGetGearHandler_Route(t *testing.T) {
 			t.Errorf("unexpected body: %s", body)
 		}
 		if !strings.Contains(string(body), "<body>") {
-			t.Errorf("expected fragment, got: %s", body)
+			t.Errorf("expected page, got: %s", body)
+		}
+
+		if !strings.Contains(string(body), "TEST EQUIPMENT") {
+			t.Errorf("want equipment render, got: %s", body)
 		}
 	})
 
 	t.Run("it should return 200 and partial on successful HTMX GET request", func(t *testing.T) {
 		render := &render.Render{}
 		identity := &identity.Identity{}
-		server := NewServer(nil, nil, identity, nil, render)
+
+		gear := stubGearPageGearService{}
+		equipment := []state.Equipment{{ID: 1, Name: "TEST EQUIPMENT", Weight: 0.5}}
+		gear.equipment = equipment
+
+		server := NewServer(nil, nil, identity, nil, &gear, render)
 
 		request := httptest.NewRequest(http.MethodGet, "/gear", nil)
 		request.Header.Set("HX-Request", "true")
@@ -72,6 +96,10 @@ func TestGetGearHandler_Route(t *testing.T) {
 		}
 		if strings.Contains(string(body), "<body>") {
 			t.Errorf("expected fragment, got: %s", body)
+		}
+
+		if !strings.Contains(string(body), "TEST EQUIPMENT") {
+			t.Errorf("want equipment render, got: %s", body)
 		}
 	})
 }

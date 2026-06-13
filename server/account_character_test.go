@@ -51,7 +51,7 @@ func TestPostCharacterHandler(t *testing.T) {
 		characterService.character = &character
 
 		render := &render.Render{}
-		server := NewServer(nil, nil, &identity, &characterService, render)
+		server := NewServer(nil, nil, &identity, &characterService, nil, render)
 
 		formValues := url.Values{
 			"str":                {"9"},

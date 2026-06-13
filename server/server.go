@@ -11,6 +11,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/mp40/go-htmx-pccs/domain"
 	"github.com/mp40/go-htmx-pccs/render"
+	"github.com/mp40/go-htmx-pccs/state"
 	"github.com/mp40/go-htmx-pccs/store"
 )
 
@@ -34,7 +35,11 @@ type Identity interface {
 	IsSignedIn(r *http.Request) bool
 }
 
-func NewServer(auth Auth, session Session, identity Identity, characterService CharacterService, render *render.Render) http.Handler {
+type GearService interface {
+	GetEquipment() ([]state.Equipment, error)
+}
+
+func NewServer(auth Auth, session Session, identity Identity, characterService CharacterService, gearService GearService, render *render.Render) http.Handler {
 	router := http.NewServeMux()
 
 	staticDir := http.Dir(filepath.Join("static"))
@@ -47,7 +52,7 @@ func NewServer(auth Auth, session Session, identity Identity, characterService C
 
 	router.Handle("GET /reference", getReferenceHandler(render, identity))
 	router.Handle("GET /tools", getToolsHandler(render, identity))
-	router.Handle("GET /gear", getGearHandler(render, identity))
+	router.Handle("GET /gear", getGearHandler(render, identity, gearService))
 
 	router.Handle("GET /account/sign-in", getSignInHandler(render))
 	router.Handle("POST /account/sign-in", postSignInHandler(render, auth, session))

@@ -19,7 +19,7 @@ import (
 func TestGetSignUpHandler(t *testing.T) {
 	t.Run("it should render the sign up modal on GET /account/sign-up", func(t *testing.T) {
 		render := &render.Render{}
-		server := NewServer(nil, nil, nil, nil, render)
+		server := NewServer(nil, nil, nil, nil, nil, render)
 
 		request := httptest.NewRequest(http.MethodGet, "/account/sign-up", nil)
 		request.Header.Set("HX-Request", "true")
@@ -51,7 +51,7 @@ func TestGetSignUpHandler(t *testing.T) {
 
 	t.Run("it returns error if not htmx request", func(t *testing.T) {
 		render := &render.Render{}
-		server := NewServer(nil, nil, nil, nil, render)
+		server := NewServer(nil, nil, nil, nil, nil, render)
 
 		request := httptest.NewRequest(http.MethodGet, "/account/sign-up", nil)
 
@@ -104,7 +104,7 @@ func TestPostSignUpHandler(t *testing.T) {
 
 		render := &render.Render{}
 		identity := &identity.Identity{}
-		server := NewServer(&auth, &session, identity, nil, render)
+		server := NewServer(&auth, &session, identity, nil, nil, render)
 
 		formValues := url.Values{
 			"email":    {"762@valid.com"},
@@ -146,7 +146,7 @@ func TestPostSignUpHandler(t *testing.T) {
 	t.Run("it should return error message if invalid email format", func(t *testing.T) {
 		render := &render.Render{}
 		identity := &identity.Identity{}
-		server := NewServer(nil, nil, identity, nil, render)
+		server := NewServer(nil, nil, identity, nil, nil, render)
 
 		formValues := url.Values{
 			"email":    {"invalid.com"},
@@ -173,7 +173,7 @@ func TestPostSignUpHandler(t *testing.T) {
 	t.Run("it should return error message if invalid password", func(t *testing.T) {
 		render := &render.Render{}
 		identity := &identity.Identity{}
-		server := NewServer(nil, nil, identity, nil, render)
+		server := NewServer(nil, nil, identity, nil, nil, render)
 
 		formValues := url.Values{
 			"email":    {"762@valid.com"},
@@ -210,7 +210,7 @@ func TestPostSignUpHandler(t *testing.T) {
 
 		render := &render.Render{}
 		identity := &identity.Identity{}
-		server := NewServer(&auth, nil, identity, nil, render)
+		server := NewServer(&auth, nil, identity, nil, nil, render)
 
 		formValues := url.Values{
 			"email":    {"762@valid.com"},

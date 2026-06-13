@@ -7,6 +7,7 @@ import (
 	"runtime"
 
 	"github.com/mp40/go-htmx-pccs/domain"
+	"github.com/mp40/go-htmx-pccs/state"
 )
 
 type Render struct{}
@@ -160,16 +161,18 @@ func (r *Render) RenderToolsFragment(w io.Writer) error {
 	return nil
 }
 
-func (r *Render) RenderGearPage(w io.Writer, signedIn bool) error {
-	tmpl, err := template.ParseFiles(getTemplatePath("index.html"), getTemplatePath("top-strap.html"), getTemplatePath("gear.html"))
+func (r *Render) RenderGearPage(w io.Writer, signedIn bool, equipment []state.Equipment) error {
+	tmpl, err := template.ParseFiles(getTemplatePath("index.html"), getTemplatePath("top-strap.html"), getTemplatePath("gear.html"), getTemplatePath("equipment.html"))
 	if err != nil {
 		return err
 	}
 
 	data := struct {
-		SignedIn bool
+		SignedIn  bool
+		Equipment []state.Equipment
 	}{
-		SignedIn: signedIn,
+		SignedIn:  signedIn,
+		Equipment: equipment,
 	}
 
 	err = tmpl.Execute(w, data)
@@ -180,13 +183,19 @@ func (r *Render) RenderGearPage(w io.Writer, signedIn bool) error {
 	return nil
 }
 
-func (r *Render) RenderGearFragment(w io.Writer) error {
-	tmpl, err := template.New("page").ParseFiles(getTemplatePath("gear.html"))
+func (r *Render) RenderGearFragment(w io.Writer, equipment []state.Equipment) error {
+	tmpl, err := template.New("page").ParseFiles(getTemplatePath("gear.html"), getTemplatePath("equipment.html"))
 	if err != nil {
 		return err
 	}
 
-	err = tmpl.Execute(w, nil)
+	data := struct {
+		Equipment []state.Equipment
+	}{
+		Equipment: equipment,
+	}
+
+	err = tmpl.Execute(w, data)
 	if err != nil {
 		return err
 	}

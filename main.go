@@ -22,6 +22,7 @@ import (
 	"github.com/mp40/go-htmx-pccs/server"
 	"github.com/mp40/go-htmx-pccs/service"
 	"github.com/mp40/go-htmx-pccs/session"
+	"github.com/mp40/go-htmx-pccs/state"
 	"github.com/mp40/go-htmx-pccs/store"
 	_ "modernc.org/sqlite"
 )
@@ -81,16 +82,36 @@ func run(ctx context.Context, getenv func(string) string, stderr io.Writer) erro
 
 	// third SQLite db to be called state
 	// a read only db ships with app for pccs game data
+	stateDB, err := sql.Open("sqlite", "./pccs_state.db")
+	if err != nil {
+		return fmt.Errorf("init state db: %w", err)
+	}
+	defer stateDB.Close()
+
+	_, err = stateDB.Exec("CREATE TABLE IF NOT EXISTS equipment (id INTEGER PRIMARY KEY NOT NULL, name TEXT NOT NULL, weight_lbs REAL NOT NULL)")
+	if err != nil {
+		return fmt.Errorf("db create character table: %w", err)
+	}
+	//temp - seed here till refactor
+	_, err = stateDB.Exec(
+		"INSERT INTO equipment (id, name, weight_lbs) VALUES (?, ?, ?)",
+		1, "Field Dressing", 0.1,
+	)
+	if err != nil {
+		return fmt.Errorf("db seed equipment table: %w", err)
+	}
 
 	storeService := store.NewStoreService(storeDB)
+	stateService := state.NewStateService(stateDB)
 	sessionService := session.NewSessionService(sessionDB)
 	authService := auth.NewAuthService(storeService, cost)
 	renderService := render.NewRenderService()
 
 	characterService := service.NewCharacterService(storeService)
+	gearService := service.NewGearService(stateService)
 	identityPkg := &identity.Identity{}
 
-	s := server.NewServer(authService, sessionService, identityPkg, characterService, renderService)
+	s := server.NewServer(authService, sessionService, identityPkg, characterService, gearService, renderService)
 
 	enrichFunc := identity.EnrichContextWithUserID
 	m := middleware.NewMiddlewareService(sessionService, enrichFunc)
