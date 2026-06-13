@@ -35,6 +35,7 @@ func getAccountHandler(render getAccountPageRender, identity getAccountPageIdent
 		if !signedIn {
 			w.Header().Set("HX-Redirect", "/")
 			w.WriteHeader(http.StatusSeeOther)
+			return
 		}
 
 		userID := identity.GetUserID(r)
