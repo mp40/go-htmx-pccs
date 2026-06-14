@@ -251,7 +251,7 @@ body {
   border-radius: 5px;
   box-shadow: 0 0 1px 1px var(--panzer-grey);
   color: var(--insignia-white);
-  padding: .25rem;
+  padding: 0.25rem;
   width: 6rem;
   margin-right: 0.2rem;
   margin-bottom: 0.5rem;
@@ -260,7 +260,7 @@ body {
 .characters > button:hover {
   box-shadow: 0px 0px 1.25px 1.25px var(--panzer-grey);
 }
-  
+
 .characters > button:active {
   box-shadow: inset 0px 0px 1px 1px var(--panzer-grey);
   opacity: 0.9;
@@ -277,7 +277,11 @@ body {
   right: 1px;
   left: 1px;
   height: 2.8rem;
-  background: linear-gradient(0deg, rgba(245,245,245,1) 0%, rgba(245,245,245,0.50) 90%); 
+  background: linear-gradient(
+    0deg,
+    rgba(245, 245, 245, 1) 0%,
+    rgba(245, 245, 245, 0.5) 90%
+  );
 }
 
 .character-container {
@@ -296,8 +300,6 @@ body {
 .character-container::-webkit-scrollbar {
   display: none;
 }
-
-
 
 .character-heading {
   background-color: var(--panzer-grey);
@@ -319,11 +321,30 @@ body {
   width: 6em;
 }
 
-.character-container > div > span:nth-of-type(n+2) {
+.character-container > div > span:nth-of-type(n + 2) {
   width: 3em;
   text-align: center;
 }
 
 .character-container > .character:nth-of-type(odd) {
   background-color: var(--light-grey);
+}
+
+.equipment-list {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.equipment-list > div {
+  width: 18rem;
+  font-size: smaller;
+  margin-right: 1rem;
+}
+
+.equipment-list > div:nth-of-type(5n) {
+  margin-right: 0;
+}
+
+.equipment-list > div > span:last-of-type {
+  float: right;
 }

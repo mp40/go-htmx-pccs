@@ -2,16 +2,14 @@
 <div class="equipment">
   <h2>Equipment</h2>
   <div>
-    <div class="equipment-heading">
-      <span>Name</span>
-      <span>Weight</span>
+    <div class="equipment-list">
+      {{range .Equipment}}
+      <div>
+        <span>{{.Name}}</span>
+        <span>{{.Weight}}</span>
+      </div>
+      {{end}}
     </div>
-    {{range .Equipment}}
-    <div>
-      <span>{{.Name}}</span>
-      <span>{{.Weight}}</span>
-    </div>
-    {{end}}
   </div>
 </div>
 {{ end }}
