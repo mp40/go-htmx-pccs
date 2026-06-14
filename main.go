@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"fmt"
 	"io"
@@ -10,7 +9,6 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"strconv"
 	"syscall"
 	"time"
 
@@ -40,71 +38,33 @@ func main() {
 // in future
 // args []string could be good when want to build dev versions for testing ect
 func run(ctx context.Context, getenv func(string) string, stderr io.Writer) error {
-	costStr := getenv("COST")
-	if costStr == "" {
-		return fmt.Errorf("COST env var required")
-	}
-	cost, err := strconv.Atoi(costStr)
+	config, err := loadConfig(getenv)
 	if err != nil {
-		return fmt.Errorf("COST must be an integer: %w", err)
+		return err
 	}
 
-	storeDB, err := sql.Open("sqlite", "./pccs_store.db")
+	storeDB, err := connectToStore(config.StoreDBPath)
 	if err != nil {
-		return fmt.Errorf("init store db: %w", err)
+		return err
 	}
 	defer storeDB.Close()
-	// fine for now but need to do this only if in local dev mode once deployed
-	_, err = storeDB.Exec("CREATE TABLE IF NOT EXISTS users (id TEXT PRIMARY KEY NOT NULL, email TEXT UNIQUE NOT NULL, hash TEXT NOT NULL, created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL)")
-	if err != nil {
-		return fmt.Errorf("db create user table: %w", err)
-	}
-	// fine for now but need to do this only if in local dev mode once deployed
-	_, err = storeDB.Exec("CREATE TABLE IF NOT EXISTS characters (id TEXT PRIMARY KEY NOT NULL, user_id TEXT NOT NULL, name TEXT NOT NULL, str INTEGER NOT NULL, int INTEGER NOT NULL, wil INTEGER NOT NULL, hlt INTEGER NOT NULL, agi INTEGER NOT NULL, tch INTEGER NOT NULL, gun_combat_learning_points REAL NOT NULL, hand_to_hand_learning_points REAL NOT NULL, created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL)")
-	if err != nil {
-		return fmt.Errorf("db create character table: %w", err)
-	}
 
-	// found some gotchas with in memory - each connection gets private in mem db
-	// maybe move out of memory (store or state db)
-	sessionDB, err := sql.Open("sqlite", "file:sessions?mode=memory&cache=shared")
+	sessionDB, err := connectToSession()
 	if err != nil {
-		return fmt.Errorf("init session db: %w", err)
+		return err
 	}
-	// force one connection for now
-	sessionDB.SetMaxOpenConns(1)
 	defer sessionDB.Close()
-	// fine for now but need to do this only if in local dev mode once deployed
-	_, err = sessionDB.Exec("CREATE TABLE IF NOT EXISTS sessions (id TEXT PRIMARY KEY NOT NULL, user_id TEXT NOT NULL, created_at INTEGER NOT NULL, expires_at INTEGER NOT NULL)")
-	if err != nil {
-		return fmt.Errorf("db create session table: %w", err)
-	}
 
-	// third SQLite db to be called state
-	// a read only db ships with app for pccs game data
-	stateDB, err := sql.Open("sqlite", "./pccs_state.db")
+	stateDB, err := connectToState(config.Env)
 	if err != nil {
-		return fmt.Errorf("init state db: %w", err)
+		return err
 	}
 	defer stateDB.Close()
-
-	_, err = stateDB.Exec("CREATE TABLE IF NOT EXISTS equipment (id INTEGER PRIMARY KEY NOT NULL, name TEXT NOT NULL, weight_lbs REAL NOT NULL)")
-	if err != nil {
-		return fmt.Errorf("db create character table: %w", err)
-	}
-	//temp - seed here till refactor
-	_, err = stateDB.Exec(
-		"INSERT INTO equipment (id, name, weight_lbs) VALUES (?, ?, ?)",
-		1, "Field Dressing", 0.1,
-	)
-	if err != nil {
-		return fmt.Errorf("db seed equipment table: %w", err)
-	}
 
 	storeService := store.NewStoreService(storeDB)
 	stateService := state.NewStateService(stateDB)
 	sessionService := session.NewSessionService(sessionDB)
-	authService := auth.NewAuthService(storeService, cost)
+	authService := auth.NewAuthService(storeService, config.BcryptCost)
 	renderService := render.NewRenderService()
 
 	characterService := service.NewCharacterService(storeService)
@@ -117,13 +77,8 @@ func run(ctx context.Context, getenv func(string) string, stderr io.Writer) erro
 	m := middleware.NewMiddlewareService(sessionService, enrichFunc)
 	serverWithMiddleware := m.AuthMiddleware(s)
 
-	port := getenv("PORT")
-	if port == "" {
-		port = "5050"
-	}
-
 	httpServer := &http.Server{
-		Addr:         ":" + port,
+		Addr:         ":" + config.Port,
 		Handler:      serverWithMiddleware,
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 10 * time.Second,
