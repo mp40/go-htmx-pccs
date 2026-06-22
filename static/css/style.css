@@ -341,10 +341,39 @@ body {
   margin-right: 1rem;
 }
 
-.equipment-list > div:nth-of-type(5n) {
-  margin-right: 0;
-}
-
 .equipment-list > div > span:last-of-type {
   float: right;
+}
+
+.action-table {
+  max-width: fit-content;
+  border: 1px solid var(--panzer-grey);
+  border-radius: 3px;
+}
+
+.action-table > div:first-of-type {
+  background-color: var(--panzer-grey);
+  color: whitesmoke;
+  text-align: center;
+}
+
+.action-table > div:nth-of-type(n + 2) {
+  padding: 0 0.25rem;
+  display: flex;
+}
+
+.action-table > div:nth-of-type(n + 2):hover {
+  background-color: white;
+}
+
+.action-table > div:nth-of-type(n + 2) > span:first-of-type {
+  width: 2rem;
+}
+
+.action-table > div:nth-of-type(4n + 1) {
+  border-bottom: 1px solid var(--panzer-grey);
+}
+
+.action-table > div:last-of-type {
+  border-bottom: none
 }
