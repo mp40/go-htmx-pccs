@@ -375,5 +375,42 @@ body {
 }
 
 .action-table > div:last-of-type {
-  border-bottom: none
+  border-bottom: none;
+}
+
+.shotgun-spread {
+  width: 15rem;
+}
+
+.shotgun-spread > form > div {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.25rem;
+}
+
+.shotgun-spread > form > div > input {
+  width: 2.5rem;
+}
+
+.pellet-hits {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.pellet-hits > span {
+  background: var(--usaf-light-grey);
+  border-radius: 2px;
+  padding: 2px;
+  display: inline-block;
+  width: 1.75rem;
+  margin-right: 2px;
+  margin-top: 0.25rem;
+  text-align: center;
+}
+
+#spread-result > .error-list {
+  font-style: italic;
+  color: var(--german-orange);
+  display: flex;
+  flex-direction: column;
 }

@@ -46,7 +46,7 @@ func convertSALMToHitLocationSpacing(salm int) int {
 	}
 }
 
-func generateRandomHitsWithinSpread(initialLocation int, salm int, hitCount int, rollRange RollRange) []int {
+func GenerateRandomHitsWithinSpread(initialLocation int, salm int, hitCount int, rollRange RollRange) []int {
 	hits := []int{}
 
 	spacingPercent := convertSALMToHitLocationSpacing(salm)

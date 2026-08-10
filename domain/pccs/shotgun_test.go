@@ -55,7 +55,7 @@ func TestConvertSALMToHitLocationSpacing(t *testing.T) {
 
 func TestGenerateRandomHitsWithinSpread(t *testing.T) {
 	t.Run("it gets 3 locations for mid location with tight spread with dice range 100", func(t *testing.T) {
-		got := generateRandomHitsWithinSpread(50, -10, 3, RollRangeBasic)
+		got := GenerateRandomHitsWithinSpread(50, -10, 3, RollRangeBasic)
 
 		wantLowest := 48
 		wantHighest := 52
@@ -74,7 +74,7 @@ func TestGenerateRandomHitsWithinSpread(t *testing.T) {
 	})
 
 	t.Run("it gets 100 locations respecting minimum location 0 for low digit location with wide spread with dice range 100", func(t *testing.T) {
-		got := generateRandomHitsWithinSpread(05, 17, 100, RollRangeBasic)
+		got := GenerateRandomHitsWithinSpread(05, 17, 100, RollRangeBasic)
 
 		wantLowest := 0
 		wantHighest := 84
@@ -93,7 +93,7 @@ func TestGenerateRandomHitsWithinSpread(t *testing.T) {
 	})
 
 	t.Run("it gets 100 locations respecting maximum location 99 for high digit location with wide spread with dice range 100", func(t *testing.T) {
-		got := generateRandomHitsWithinSpread(95, 17, 100, RollRangeBasic)
+		got := GenerateRandomHitsWithinSpread(95, 17, 100, RollRangeBasic)
 
 		wantLowest := 16
 		wantHighest := 99
@@ -112,7 +112,7 @@ func TestGenerateRandomHitsWithinSpread(t *testing.T) {
 	})
 
 	t.Run("it gets 300 locations for mid location with tight spread with dice range 1000", func(t *testing.T) {
-		got := generateRandomHitsWithinSpread(500, -10, 300, RollRangeAdvancedOpen)
+		got := GenerateRandomHitsWithinSpread(500, -10, 300, RollRangeAdvancedOpen)
 
 		wantLowest := 480
 		wantHighest := 520
@@ -131,7 +131,7 @@ func TestGenerateRandomHitsWithinSpread(t *testing.T) {
 	})
 
 	t.Run("it gets 500 locations respecting minimum location 0 for low digit location with wide spread with dice range 1000", func(t *testing.T) {
-		got := generateRandomHitsWithinSpread(05, 17, 500, RollRangeAdvancedOpen)
+		got := GenerateRandomHitsWithinSpread(05, 17, 500, RollRangeAdvancedOpen)
 
 		wantLowest := 0
 		wantHighest := 795
@@ -150,7 +150,7 @@ func TestGenerateRandomHitsWithinSpread(t *testing.T) {
 	})
 
 	t.Run("it gets 500 locations respecting maximum location 999 for high digit location with wide spread with dice range 1000", func(t *testing.T) {
-		got := generateRandomHitsWithinSpread(995, 17, 500, RollRangeAdvancedOpen)
+		got := GenerateRandomHitsWithinSpread(995, 17, 500, RollRangeAdvancedOpen)
 
 		wantLowest := 205
 		wantHighest := 999

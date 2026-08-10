@@ -128,7 +128,7 @@ func (r *Render) RenderReferenceFragment(w io.Writer) error {
 }
 
 func (r *Render) RenderToolsPage(w io.Writer, signedIn bool) error {
-	tmpl, err := template.ParseFiles(getTemplatePath("index.html"), getTemplatePath("top-strap.html"), getTemplatePath("tools.html"))
+	tmpl, err := template.ParseFiles(getTemplatePath("index.html"), getTemplatePath("top-strap.html"), getTemplatePath("tools.html"), getTemplatePath("shotgun-spread.html"))
 	if err != nil {
 		return err
 	}
@@ -148,12 +148,32 @@ func (r *Render) RenderToolsPage(w io.Writer, signedIn bool) error {
 }
 
 func (r *Render) RenderToolsFragment(w io.Writer) error {
-	tmpl, err := template.New("page").ParseFiles(getTemplatePath("tools.html"))
+	tmpl, err := template.New("page").ParseFiles(getTemplatePath("tools.html"), getTemplatePath("shotgun-spread.html"))
 	if err != nil {
 		return err
 	}
 
 	err = tmpl.Execute(w, nil)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *Render) RenderShotgunPelletHitsFragment(w io.Writer, hits []int) error {
+	tmpl, err := template.New("pellet-hits").ParseFiles(getTemplatePath("pellet-hits.html"))
+	if err != nil {
+		return err
+	}
+
+	data := struct {
+		Hits []int
+	}{
+		Hits: hits,
+	}
+
+	err = tmpl.Execute(w, data)
 	if err != nil {
 		return err
 	}
@@ -257,6 +277,26 @@ func (r *Render) RenderErrorMessageFragment(w io.Writer, msg string) error {
 		ErrorMessage string
 	}{
 		ErrorMessage: msg,
+	}
+
+	err = tmpl.Execute(w, data)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *Render) RenderErrorListFragment(w io.Writer, errors []string) error {
+	tmpl, err := template.New("error-list").ParseFiles(getTemplatePath("error-list.html"))
+	if err != nil {
+		return err
+	}
+
+	data := struct {
+		Errors []string
+	}{
+		Errors: errors,
 	}
 
 	err = tmpl.Execute(w, data)

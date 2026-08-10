@@ -51,7 +51,10 @@ func NewServer(auth Auth, session Session, identity Identity, characterService C
 	router.Handle("GET /account", getAccountHandler(render, identity, characterService))
 
 	router.Handle("GET /reference", getReferenceHandler(render, identity))
+
 	router.Handle("GET /tools", getToolsHandler(render, identity))
+	router.Handle("GET /tools/shotguns/spread", getToolsShotgunSpreadHandler(render))
+
 	router.Handle("GET /gear", getGearHandler(render, identity, gearService))
 
 	router.Handle("GET /account/sign-in", getSignInHandler(render))
