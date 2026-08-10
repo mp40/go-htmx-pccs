@@ -6,6 +6,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/mp40/go-htmx-pccs/domain"
+	"github.com/mp40/go-htmx-pccs/domain/pccs"
 	"github.com/mp40/go-htmx-pccs/store"
 )
 
@@ -79,7 +80,7 @@ func getRandomName() string {
 
 func convertLevelToLearningPoints(level int) float32 {
 	// TODO think if we want to return error if level not within map boundry, ie -1 or 21
-	lp := domain.LevelToLearningPoints[level]
+	lp := pccs.LevelToLearningPoints[level]
 	return lp
 }
 
