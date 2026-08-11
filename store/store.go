@@ -95,7 +95,7 @@ func (s *Store) AddCharacter(character Character) (*Character, error) {
 }
 
 func (s *Store) GetCharactersByUserID(userID uuid.UUID) ([]Character, error) {
-	rows, err := s.db.Query("SELECT * FROM characters")
+	rows, err := s.db.Query("SELECT * FROM characters WHERE user_id = ?", userID)
 	if err != nil {
 		return []Character{}, err
 	}
@@ -130,8 +130,8 @@ func (s *Store) GetCharacterByID(ID uuid.UUID) (*Character, error) {
 	character := Character{}
 	var idStr string
 	var userIdStr string
-	err := s.db.QueryRow("SELECT id, user_id, name, str, int, wil, hlt, agi, created_at, updated_at FROM characters WHERE id = ?", ID).
-		Scan(&idStr, &userIdStr, &character.Name, &character.Str, &character.Int, &character.Wil, &character.Hlt, &character.Agi, &character.CreatedAt, &character.UpdatedAt)
+	err := s.db.QueryRow("SELECT id, user_id, name, str, int, wil, hlt, agi, tch, gun_combat_learning_points, hand_to_hand_learning_points, created_at, updated_at FROM characters WHERE id = ?", ID).
+		Scan(&idStr, &userIdStr, &character.Name, &character.Str, &character.Int, &character.Wil, &character.Hlt, &character.Agi, &character.Tch, &character.GunCombatLearningPoints, &character.HandToHandLearningPoints, &character.CreatedAt, &character.UpdatedAt)
 	if err == sql.ErrNoRows {
 		return nil, nil
 	}
