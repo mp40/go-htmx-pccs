@@ -18,8 +18,11 @@ import (
 
 func TestGetSignUpHandler(t *testing.T) {
 	t.Run("it should render the sign up modal on GET /account/sign-up", func(t *testing.T) {
-		render := &render.Render{}
-		server := NewServer(nil, nil, nil, nil, nil, render)
+		r, err := render.NewRenderService()
+		if err != nil {
+			t.Fatalf("render service error %v", err)
+		}
+		server := NewServer(nil, nil, nil, nil, nil, r)
 
 		request := httptest.NewRequest(http.MethodGet, "/account/sign-up", nil)
 		request.Header.Set("HX-Request", "true")
@@ -50,8 +53,11 @@ func TestGetSignUpHandler(t *testing.T) {
 	})
 
 	t.Run("it returns error if not htmx request", func(t *testing.T) {
-		render := &render.Render{}
-		server := NewServer(nil, nil, nil, nil, nil, render)
+		r, err := render.NewRenderService()
+		if err != nil {
+			t.Fatalf("render service error %v", err)
+		}
+		server := NewServer(nil, nil, nil, nil, nil, r)
 
 		request := httptest.NewRequest(http.MethodGet, "/account/sign-up", nil)
 
@@ -102,9 +108,12 @@ func TestPostSignUpHandler(t *testing.T) {
 		newID := uuid.MustParse("5ea69240-823c-4523-90a2-4868a5bfc90a")
 		auth.userID = &newID
 
-		render := &render.Render{}
+		r, err := render.NewRenderService()
+		if err != nil {
+			t.Fatalf("render service error %v", err)
+		}
 		identity := &identity.Identity{}
-		server := NewServer(&auth, &session, identity, nil, nil, render)
+		server := NewServer(&auth, &session, identity, nil, nil, r)
 
 		formValues := url.Values{
 			"email":    {"762@valid.com"},
@@ -144,9 +153,12 @@ func TestPostSignUpHandler(t *testing.T) {
 	})
 
 	t.Run("it should return error message if invalid email format", func(t *testing.T) {
-		render := &render.Render{}
+		r, err := render.NewRenderService()
+		if err != nil {
+			t.Fatalf("render service error %v", err)
+		}
 		identity := &identity.Identity{}
-		server := NewServer(nil, nil, identity, nil, nil, render)
+		server := NewServer(nil, nil, identity, nil, nil, r)
 
 		formValues := url.Values{
 			"email":    {"invalid.com"},
@@ -171,9 +183,12 @@ func TestPostSignUpHandler(t *testing.T) {
 	})
 
 	t.Run("it should return error message if invalid password", func(t *testing.T) {
-		render := &render.Render{}
+		r, err := render.NewRenderService()
+		if err != nil {
+			t.Fatalf("render service error %v", err)
+		}
 		identity := &identity.Identity{}
-		server := NewServer(nil, nil, identity, nil, nil, render)
+		server := NewServer(nil, nil, identity, nil, nil, r)
 
 		formValues := url.Values{
 			"email":    {"762@valid.com"},
@@ -208,9 +223,12 @@ func TestPostSignUpHandler(t *testing.T) {
 	t.Run("it should return 400 and user feedback unsuccessful POST request", func(t *testing.T) {
 		auth := stubPostSignUpAuth{err: fmt.Errorf("fake error")}
 
-		render := &render.Render{}
+		r, err := render.NewRenderService()
+		if err != nil {
+			t.Fatalf("render service error %v", err)
+		}
 		identity := &identity.Identity{}
-		server := NewServer(&auth, nil, identity, nil, nil, render)
+		server := NewServer(&auth, nil, identity, nil, nil, r)
 
 		formValues := url.Values{
 			"email":    {"762@valid.com"},

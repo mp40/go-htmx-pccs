@@ -12,10 +12,13 @@ import (
 )
 
 func TestGetToolsShotgunSpreadHandler(t *testing.T) {
-	t.Run("it returns fragment with pelt hits", func(t *testing.T) {
-		render := &render.Render{}
+	t.Run("it returns fragment with pellet hits", func(t *testing.T) {
+		r, err := render.NewRenderService()
+		if err != nil {
+			t.Fatalf("render service error %v", err)
+		}
 		identity := &identity.Identity{}
-		server := NewServer(nil, nil, identity, nil, nil, render)
+		server := NewServer(nil, nil, identity, nil, nil, r)
 
 		request := httptest.NewRequest(http.MethodGet, "/tools/shotguns/spread?initialLocation=50&salm=10&hitCount=5", nil)
 		response := httptest.NewRecorder()
@@ -41,9 +44,12 @@ func TestGetToolsShotgunSpreadHandler(t *testing.T) {
 	})
 
 	t.Run("it returns error on missing initial location", func(t *testing.T) {
-		render := &render.Render{}
+		r, err := render.NewRenderService()
+		if err != nil {
+			t.Fatalf("render service error %v", err)
+		}
 		identity := &identity.Identity{}
-		server := NewServer(nil, nil, identity, nil, nil, render)
+		server := NewServer(nil, nil, identity, nil, nil, r)
 
 		request := httptest.NewRequest(http.MethodGet, "/tools/shotguns/spread?salm=10&hitCount=5", nil)
 		response := httptest.NewRecorder()
@@ -69,9 +75,12 @@ func TestGetToolsShotgunSpreadHandler(t *testing.T) {
 	})
 
 	t.Run("it returns error on missing salm", func(t *testing.T) {
-		render := &render.Render{}
+		r, err := render.NewRenderService()
+		if err != nil {
+			t.Fatalf("render service error %v", err)
+		}
 		identity := &identity.Identity{}
-		server := NewServer(nil, nil, identity, nil, nil, render)
+		server := NewServer(nil, nil, identity, nil, nil, r)
 
 		request := httptest.NewRequest(http.MethodGet, "/tools/shotguns/spread?initialLocation=50&hitCount=5", nil)
 		response := httptest.NewRecorder()
@@ -97,9 +106,12 @@ func TestGetToolsShotgunSpreadHandler(t *testing.T) {
 	})
 
 	t.Run("it returns error on missing additional pellet hit count", func(t *testing.T) {
-		render := &render.Render{}
+		r, err := render.NewRenderService()
+		if err != nil {
+			t.Fatalf("render service error %v", err)
+		}
 		identity := &identity.Identity{}
-		server := NewServer(nil, nil, identity, nil, nil, render)
+		server := NewServer(nil, nil, identity, nil, nil, r)
 
 		request := httptest.NewRequest(http.MethodGet, "/tools/shotguns/spread?initialLocation=50&salm=5", nil)
 		response := httptest.NewRecorder()
@@ -125,9 +137,12 @@ func TestGetToolsShotgunSpreadHandler(t *testing.T) {
 	})
 
 	t.Run("it returns error on malformed initial location", func(t *testing.T) {
-		render := &render.Render{}
+		r, err := render.NewRenderService()
+		if err != nil {
+			t.Fatalf("render service error %v", err)
+		}
 		identity := &identity.Identity{}
-		server := NewServer(nil, nil, identity, nil, nil, render)
+		server := NewServer(nil, nil, identity, nil, nil, r)
 
 		request := httptest.NewRequest(http.MethodGet, "/tools/shotguns/spread?initialLocation=5x0&salm=5&hitCount=3", nil)
 		response := httptest.NewRecorder()
@@ -153,9 +168,12 @@ func TestGetToolsShotgunSpreadHandler(t *testing.T) {
 	})
 
 	t.Run("it returns error on malformed SALM", func(t *testing.T) {
-		render := &render.Render{}
+		r, err := render.NewRenderService()
+		if err != nil {
+			t.Fatalf("render service error %v", err)
+		}
 		identity := &identity.Identity{}
-		server := NewServer(nil, nil, identity, nil, nil, render)
+		server := NewServer(nil, nil, identity, nil, nil, r)
 
 		request := httptest.NewRequest(http.MethodGet, "/tools/shotguns/spread?initialLocation=50&salm=5XX&hitCount=3", nil)
 		response := httptest.NewRecorder()
@@ -181,9 +199,12 @@ func TestGetToolsShotgunSpreadHandler(t *testing.T) {
 	})
 
 	t.Run("it returns error on malformed hit count", func(t *testing.T) {
-		render := &render.Render{}
+		r, err := render.NewRenderService()
+		if err != nil {
+			t.Fatalf("render service error %v", err)
+		}
 		identity := &identity.Identity{}
-		server := NewServer(nil, nil, identity, nil, nil, render)
+		server := NewServer(nil, nil, identity, nil, nil, r)
 
 		request := httptest.NewRequest(http.MethodGet, "/tools/shotguns/spread?initialLocation=50&salm=5&hitCount=X3X", nil)
 		response := httptest.NewRecorder()

@@ -50,8 +50,11 @@ func TestPostCharacterHandler(t *testing.T) {
 		character := domain.CharacterDTO{RawCharacter: domain.RawCharacter{Name: "TEST-CHARACTER"}}
 		characterService.character = &character
 
-		render := &render.Render{}
-		server := NewServer(nil, nil, &identity, &characterService, nil, render)
+		r, err := render.NewRenderService()
+		if err != nil {
+			t.Fatalf("render service error %v", err)
+		}
+		server := NewServer(nil, nil, &identity, &characterService, nil, r)
 
 		formValues := url.Values{
 			"str":                {"9"},

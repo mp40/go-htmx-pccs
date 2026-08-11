@@ -65,7 +65,10 @@ func run(ctx context.Context, getenv func(string) string, stderr io.Writer) erro
 	stateService := state.NewStateService(stateDB)
 	sessionService := session.NewSessionService(sessionDB)
 	authService := auth.NewAuthService(storeService, config.BcryptCost)
-	renderService := render.NewRenderService()
+	renderService, err := render.NewRenderService()
+	if err != nil {
+		return fmt.Errorf("init render service: %w", err)
+	}
 
 	characterService := service.NewCharacterService(storeService)
 	gearService := service.NewGearService(stateService)

@@ -28,9 +28,12 @@ func TestDeleteSignOutHandler(t *testing.T) {
 	t.Run("it should redirect to Home page on successful sign out", func(t *testing.T) {
 		session := stubDeleteSignOutSession{}
 
-		render := &render.Render{}
+		r, err := render.NewRenderService()
+		if err != nil {
+			t.Fatalf("render service error %v", err)
+		}
 		identity := &identity.Identity{}
-		server := NewServer(nil, &session, identity, nil, nil, render)
+		server := NewServer(nil, &session, identity, nil, nil, r)
 
 		cookie := getSecureCookie(uuid.MustParse("69000000-0000-4523-90a2-4868a5bfc90a"))
 

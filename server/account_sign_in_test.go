@@ -17,8 +17,11 @@ import (
 
 func TestGetSignInHandler(t *testing.T) {
 	t.Run("it should render the sign in modal on GET /account/sign-in", func(t *testing.T) {
-		render := &render.Render{}
-		server := NewServer(nil, nil, nil, nil, nil, render)
+		r, err := render.NewRenderService()
+		if err != nil {
+			t.Fatalf("render service error %v", err)
+		}
+		server := NewServer(nil, nil, nil, nil, nil, r)
 
 		request := httptest.NewRequest(http.MethodGet, "/account/sign-in", nil)
 		request.Header.Set("HX-Request", "true")
@@ -49,8 +52,11 @@ func TestGetSignInHandler(t *testing.T) {
 	})
 
 	t.Run("it returns error if not htmx request", func(t *testing.T) {
-		render := &render.Render{}
-		server := NewServer(nil, nil, nil, nil, nil, render)
+		r, err := render.NewRenderService()
+		if err != nil {
+			t.Fatalf("render service error %v", err)
+		}
+		server := NewServer(nil, nil, nil, nil, nil, r)
 
 		request := httptest.NewRequest(http.MethodGet, "/account/sign-in", nil)
 
@@ -100,9 +106,12 @@ func TestPostSignInHandler(t *testing.T) {
 		user := store.User{}
 		auth.user = &user
 
-		render := &render.Render{}
+		r, err := render.NewRenderService()
+		if err != nil {
+			t.Fatalf("render service error %v", err)
+		}
 		identity := &identity.Identity{}
-		server := NewServer(&auth, &session, identity, nil, nil, render)
+		server := NewServer(&auth, &session, identity, nil, nil, r)
 
 		formValues := url.Values{
 			"email":    {"762@valid.com"},

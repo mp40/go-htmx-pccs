@@ -41,9 +41,12 @@ func (c *stubRouteAccountCharacter) AddCharacter(userID uuid.UUID, rawCharacter 
 
 func TestGetAccountHandler_Route(t *testing.T) {
 	t.Run("it should redirect to home if not signed in", func(t *testing.T) {
-		render := &render.Render{}
+		r, err := render.NewRenderService()
+		if err != nil {
+			t.Fatalf("render service error %v", err)
+		}
 		identity := &identity.Identity{}
-		server := NewServer(nil, nil, identity, nil, nil, render)
+		server := NewServer(nil, nil, identity, nil, nil, r)
 
 		request := httptest.NewRequest(http.MethodGet, "/account", nil)
 		response := httptest.NewRecorder()
@@ -65,11 +68,14 @@ func TestGetAccountHandler_Route(t *testing.T) {
 	})
 
 	t.Run("it should return 200 and full page on successful GET request", func(t *testing.T) {
-		render := &render.Render{}
+		r, err := render.NewRenderService()
+		if err != nil {
+			t.Fatalf("render service error %v", err)
+		}
 		identity := &stubRouteAccountIndentity{}
 		character := &stubRouteAccountCharacter{}
 		character.characters = []domain.CharacterDTO{{RawCharacter: domain.RawCharacter{Name: "Fake Character"}}}
-		server := NewServer(nil, nil, identity, character, nil, render)
+		server := NewServer(nil, nil, identity, character, nil, r)
 
 		request := httptest.NewRequest(http.MethodGet, "/account", nil)
 		response := httptest.NewRecorder()
@@ -101,11 +107,14 @@ func TestGetAccountHandler_Route(t *testing.T) {
 	})
 
 	t.Run("it should return 200 and partial on successful HTMX GET request", func(t *testing.T) {
-		render := &render.Render{}
+		r, err := render.NewRenderService()
+		if err != nil {
+			t.Fatalf("render service error %v", err)
+		}
 		identity := &stubRouteAccountIndentity{}
 		character := &stubRouteAccountCharacter{}
 		character.characters = []domain.CharacterDTO{{RawCharacter: domain.RawCharacter{Name: "Fake Character"}}}
-		server := NewServer(nil, nil, identity, character, nil, render)
+		server := NewServer(nil, nil, identity, character, nil, r)
 
 		request := httptest.NewRequest(http.MethodGet, "/account", nil)
 		request.Header.Set("HX-Request", "true")
