@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"io"
 	"log/slog"
 	"net/http"
@@ -11,6 +12,7 @@ import (
 
 type postCharacterRender interface {
 	RenderCharacter(w io.Writer, character domain.CharacterDTO) error
+	RenderErrorListFragment(w io.Writer, errors []string) error
 }
 
 type postCharacterService interface {
@@ -26,27 +28,41 @@ func postCharacterHandler(render postCharacterRender, characterService postChara
 		userID := identity.GetUserID(r)
 		if userID == nil {
 			slog.Error("get user id error", "err", "user id is nil")
-			// handle nil user id somehow
+			http.Error(w, "", http.StatusUnauthorized)
 			return
 		}
 
 		if err := r.ParseForm(); err != nil {
 			slog.Error("post character, parse form error", "err", err)
-			// do something
+			http.Error(w, "", http.StatusBadRequest)
 			return
 		}
 
 		c, problems := parseRawCharacter(r.PostForm)
 		if len(problems) > 0 {
 			slog.Warn("post character, invalid data submitted", "problems", problems)
-			// do something in UI
+			errorList := []string{}
+			for k, v := range problems {
+				errorList = append(errorList, fmt.Sprintf("%s %s", k, v))
+			}
+			w.Header().Set("Content-Type", "text/html; charset=utf-8")
+			w.WriteHeader(http.StatusBadRequest)
+			if err := render.RenderErrorListFragment(w, errorList); err != nil {
+				slog.Error("parse character error list", "err", err)
+				http.Error(w, "internal server error", http.StatusInternalServerError)
+			}
 			return
 		}
 
 		character, err := characterService.AddCharacter(*userID, c)
 		if err != nil {
-			slog.Error("post character, add character error", "err", err)
-			// handle err some how
+			w.Header().Set("Content-Type", "text/html; charset=utf-8")
+			err = render.RenderErrorListFragment(w, []string{"internal server error"})
+			if err != nil {
+				slog.Error("render error message", "err", err)
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
 			return
 		}
 

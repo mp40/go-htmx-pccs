@@ -1,11 +1,13 @@
 {{ define "characters" }}
-<div class="characters">
+<div hx-ext="response-targets" class="characters">
   <h2>Characters</h2>
   <button
     hx-trigger="click"
     hx-post="/account/characters"
     hx-vals='{"str": "10", "int": "10", "wil": "10", "hlt": "10", "agi": "10", "tch": "10", "gun_combat_level": "0", "hand_to_hand_level": "0"}'
     hx-target=".character-container"
+    hx-target-500=".add-character-error"
+    hx-target-400=".add-character-error"
     hx-swap="beforeend"
   >
     Add Basic
@@ -15,6 +17,8 @@
     hx-post="/account/characters"
     hx-vals='{"str": "14", "int": "10", "wil": "10", "hlt": "10", "agi": "12", "tch": "10", "gun_combat_level": "4", "hand_to_hand_level": "2"}'
     hx-target=".character-container"
+    hx-target-500=".add-character-error"
+    hx-target-400=".add-character-error"
     hx-swap="beforeend"
   >
     Add Grunt
@@ -33,10 +37,9 @@
         <span>Gun</span>
         <span>Melee</span>
       </div>
-      {{range .Characters}}
-      {{ template "character" .}}
-      {{end}}
+      {{range .Characters}} {{ template "character" .}} {{end}}
     </div>
   </div>
+  <div class="add-character-error"></div>
 </div>
 {{ end }}
