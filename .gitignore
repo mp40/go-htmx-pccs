@@ -22,3 +22,13 @@ go.work
 go.work.sum
 
 go-htmx-pccs
+
+# db
+pccs_store.db
+pccs_state.db
+
+# JS related detritus
+node_modules
+
+# env
+.env

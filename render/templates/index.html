@@ -1,26 +1,20 @@
+{{ define "index" }}
 <!doctype html>
 <html>
   <head>
-    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <link rel="stylesheet" type="text/css" href="/static/css/style.css" />
-    <script src="https://unpkg.com/htmx.org@2.0.1" integrity="sha384-QWGpdj554B4ETpJJC9z+ZHJcA/i59TyjxEPXiiUgN2WmTyV5OEZWCD6gQhgkdpB/" crossorigin="anonymous"></script>
-    <script src="https://unpkg.com/hyperscript.org@0.9.12"></script>
-    <script type="module">
-      import { getHandToHandPercentageToHit } from "/static/scripts/handToHand.js";
-      import { calculateEAL } from "/static/scripts/calculateEal.js";
-      import { generateLocations } from "/static/scripts/shotguns.js"
-      window.getHandToHandPercentageToHit = getHandToHandPercentageToHit;
-      window.calculateEAL = calculateEAL;
-      window.generateLocations = generateLocations;
-    </script>
-    <script type="module" src="/static/components/shotguns.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.10/dist/htmx.min.js" integrity="sha384-H5SrcfygHmAuTDZphMHqBJLc3FhssKjG7w/CeCpFReSfwBWDTKpkzPP8c+cLsK+V" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/htmx-ext-response-targets@2.0.4" integrity="sha384-T41oglUPvXLGBVyRdZsVRxNWnOOqCynaPubjUVjxhsjFTKrFJGEMm3/0KGmNQ+Pg" crossorigin="anonymous"></script>
+</head>
   </head>
   <body>
-    <div class="top-strap"></div>
+    {{ template "top-strap" . }}
+    <div class="modal-container-div"></div>
     <div class="container">
       <div class="nav-container nav-div">
         <a
-          hx-post="/"
+          hx-get="/"
           hx-trigger="click"
           hx-target=".page-div"
           hx-swap="outerHTML"
@@ -29,16 +23,16 @@
           Home
         </a>
         <a
-          hx-post="/characters"
+          hx-get="/reference"
           hx-trigger="click"
           hx-target=".page-div"
           hx-swap="outerHTML"
           hx-push-url="true"
         >
-          Characters
+          Reference
         </a>
         <a
-          hx-post="/tools"
+          hx-get="/tools"
           hx-trigger="click"
           hx-target=".page-div"
           hx-swap="outerHTML"
@@ -46,37 +40,29 @@
         >
           Tools
         </a>
-        <div class="nav-div">
-          <a
-            data-hx-post="/tools/shooting"
-            hx-trigger="click"
-            hx-target=".page-div"
-            hx-swap="outerHTML"
-            hx-push-url="true"
-          >
-            Shooting
-          </a>
-          <a
-            data-hx-post="/tools/shotguns"
-            hx-trigger="click"
-            hx-target=".page-div"
-            hx-swap="outerHTML"
-            hx-push-url="true"
-          >
-            Shotguns
-          </a>
-          <a
-            data-hx-post="/tools/hand-to-hand"
-            hx-trigger="click"
-            hx-target=".page-div"
-            hx-swap="outerHTML"
-            hx-push-url="true"
-          >
-            Hand To Hand
-          </a>
-        </div>
+        <a
+          hx-get="/gear"
+          hx-trigger="click"
+          hx-target=".page-div"
+          hx-swap="outerHTML"
+          hx-push-url="true"
+        >
+          Gear
+        </a>
+        {{ if .SignedIn }}
+        <a
+          hx-get="/account"
+          hx-trigger="click"
+          hx-target=".page-div"
+          hx-swap="outerHTML"
+          hx-push-url="true"
+        >
+          Account
+        </a>
+        {{ end }}
       </div>
-      {{ template "page" . }}
+      {{ .Page }}
     </div>
   </body>
 </html>
+{{ end }}

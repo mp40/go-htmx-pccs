@@ -1,0 +1,8 @@
+{{ define "error-list" }}
+<div class="error-list">
+  <span>Errors</span>
+  {{ range .Errors }}
+  <span>{{ . }}</span>
+  {{ end }}
+</div>
+{{ end }}

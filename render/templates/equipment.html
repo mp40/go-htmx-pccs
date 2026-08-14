@@ -1,0 +1,15 @@
+{{ define "equipment" }}
+<div class="equipment">
+  <h2>Equipment</h2>
+  <div>
+    <div class="equipment-list">
+      {{range .Equipment}}
+      <div>
+        <span>{{.Name}}</span>
+        <span>{{.Weight}}</span>
+      </div>
+      {{end}}
+    </div>
+  </div>
+</div>
+{{ end }}

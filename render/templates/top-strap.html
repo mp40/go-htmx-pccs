@@ -1,0 +1,41 @@
+{{ define "top-strap" }}    
+<div class="top-strap">
+  {{if .SignedIn}}
+  <span class="outer-circle active">
+    <span class="inner-circle"></span>
+  </span>
+  <span>
+    <button
+      hx-delete="/account/sign-out"
+      hx-trigger="click"
+      hx-target=".modal-container-div"
+      hx-swap="innerHTML"
+    >
+      Sign Out
+    </button>
+  </span>
+  {{else}}
+  <span class="outer-circle">
+    <span class="inner-circle"></span>
+  </span>
+  <span>
+    <button
+      hx-get="/account/sign-in"
+      hx-trigger="click"
+      hx-target=".modal-container-div"
+      hx-swap="innerHTML"
+    >
+      Sign In
+    </button>
+    <button
+      hx-get="/account/sign-up"
+      hx-trigger="click"
+      hx-target=".modal-container-div"
+      hx-swap="innerHTML"
+    >
+      Sign Up
+    </button>
+  </span>
+  {{end}}
+</div>
+{{ end }}
