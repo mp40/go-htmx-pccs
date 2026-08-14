@@ -70,7 +70,7 @@ func postSignUpHandler(render postSignUpRender, auth postSignUpAuth, session pos
 
 		newID, err := auth.SignUp(email, password)
 		if err != nil {
-			err = render.RenderErrorMessageFragment(w, "nfi")
+			err = render.RenderErrorMessageFragment(w, "internal server error")
 			if err != nil {
 				slog.Error("server error rendering", "err", err)
 				w.WriteHeader(http.StatusInternalServerError)

@@ -43,6 +43,7 @@ func redirectWithExpiredCookie(w http.ResponseWriter) {
 	w.WriteHeader(http.StatusSeeOther)
 }
 
+// DUP - removeSecureCookie
 func removeSecureCookie() http.Cookie {
 	cookie := http.Cookie{
 		Name:     "sessionID",

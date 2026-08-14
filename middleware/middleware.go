@@ -32,13 +32,11 @@ func NewMiddlewareService(session Session, cb EnrichContextWithUserIDFunc) *Midd
 	}
 }
 
-// TODO
-// Think about when we have public and private pages
 func (m *Middleware) AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		cookie, err := r.Cookie(string(sessionCookieKey))
 		if err != nil {
-			// GREY - for now fall through
+			slog.Error("middleware, get cookie error", "err", err)
 			next.ServeHTTP(w, r)
 			return
 		}
@@ -46,22 +44,19 @@ func (m *Middleware) AuthMiddleware(next http.Handler) http.Handler {
 		sessionID, err := uuid.Parse(rawID)
 		if err != nil {
 			slog.Warn("middleware, unparseable session id", "rawID", rawID)
-			// GREY if we set cookie, then we expect parseable id
-			// for now fall through - latter decide other action ie redirect to sign in with err msg
+			expired := removeSecureCookie()
+			http.SetCookie(w, &expired)
 			next.ServeHTTP(w, r)
 			return
 		}
 		session, err := m.session.GetValidSessionByID(sessionID)
 		if err != nil {
 			slog.Error("middleware, session data error", "err", err)
-			// GREY data layer error
-			// for now fall through
 			next.ServeHTTP(w, r)
 			return
 		}
 		if session == nil {
 			slog.Warn("middleware, session not found")
-			// for now fall through
 			next.ServeHTTP(w, r)
 			return
 		}
@@ -73,10 +68,16 @@ func (m *Middleware) AuthMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-func GetSessionID(ctx context.Context) *uuid.UUID {
-	sessionID, ok := ctx.Value(sessionCookieKey).(uuid.UUID)
-	if !ok {
-		return nil
+// DUP - removeSecureCookie
+func removeSecureCookie() http.Cookie {
+	cookie := http.Cookie{
+		Name:     "sessionID",
+		MaxAge:   -1,
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteLaxMode,
 	}
-	return &sessionID
+
+	return cookie
 }
