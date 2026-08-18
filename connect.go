@@ -44,11 +44,14 @@ func connectToSession() (*sql.DB, error) {
 func connectToState(env string) (*sql.DB, error) {
 	switch env {
 	case "production":
-		// TODO: load embedded read-only state DB
-		//   - //go:embed pccs_state.db -> []byte
-		//   - write bytes to os.TempDir()
-		//   - sql.Open with ?mode=ro&immutable=1
-		return nil, fmt.Errorf("connectToState: production path not implemented yet")
+		stateDB, err := sql.Open("sqlite", "/tmp/pccs_state.db")
+		if err != nil {
+			return nil, fmt.Errorf("init state db: %w", err)
+		}
+		if err := state.Bootstrap(stateDB); err != nil {
+			return nil, fmt.Errorf("bootstrap state db: %w", err)
+		}
+		return stateDB, nil
 
 	case "development", "":
 		stateDB, err := sql.Open("sqlite", "./pccs_state.db")
