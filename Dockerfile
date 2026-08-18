@@ -9,5 +9,5 @@ FROM alpine:3.24
 WORKDIR /app
 COPY --from=builder /app/main .
 COPY --from=builder /app/static ./static
-EXPOSE ${PORT}
+RUN apk add --no-cache sqlite
 CMD ["/app/main"]
