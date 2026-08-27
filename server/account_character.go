@@ -87,7 +87,7 @@ type putCharacterRender interface {
 }
 
 type putCharacterService interface {
-	EditCharacter(userID uuid.UUID, characterID uuid.UUID, rawCharacter domain.RawCharacterEdit) (*domain.CharacterDTO, error)
+	EditCharacter(userID uuid.UUID, characterID uuid.UUID, rawCharacter domain.RawCharacter) (*domain.CharacterDTO, error)
 }
 
 type putCharacterIdentity interface {
@@ -118,7 +118,7 @@ func putCharacterHandler(render putCharacterRender, characterService putCharacte
 			return
 		}
 
-		c, problems := parseRawCharacterEdit(r.PostForm)
+		c, problems := parseRawCharacter(r.PostForm)
 		if len(problems) > 0 {
 			slog.Warn("put character, invalid data submitted", "problems", problems)
 			errorList := []string{}

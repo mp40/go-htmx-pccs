@@ -55,8 +55,8 @@ func (cs *CharacterService) AddCharacter(userID uuid.UUID, rawCharacter domain.R
 		Hlt:                      rawCharacter.Hlt,
 		Agi:                      rawCharacter.Agi,
 		Tch:                      rawCharacter.Tch,
-		GunCombatLearningPoints:  convertLevelToLearningPoints(rawCharacter.GunCombatLevel),
-		HandToHandLearningPoints: convertLevelToLearningPoints(rawCharacter.HandToHandLevel),
+		GunCombatLearningPoints:  rawCharacter.GunCombatLearningPoints,
+		HandToHandLearningPoints: rawCharacter.HandToHandLearningPoints,
 	}
 
 	character, err := cs.store.AddCharacter(new)
@@ -68,7 +68,7 @@ func (cs *CharacterService) AddCharacter(userID uuid.UUID, rawCharacter domain.R
 	return &dto, err
 }
 
-func (cs *CharacterService) EditCharacter(userID uuid.UUID, characterID uuid.UUID, rawCharacterEdit domain.RawCharacterEdit) (*domain.CharacterDTO, error) {
+func (cs *CharacterService) EditCharacter(userID uuid.UUID, characterID uuid.UUID, rawCharacterEdit domain.RawCharacter) (*domain.CharacterDTO, error) {
 	updated := store.Character{
 		ID:                       characterID,
 		UserID:                   userID,
@@ -111,22 +111,23 @@ func convertLevelToLearningPoints(level int) float32 {
 func mapStoreCharacterToDomainCharacter(c store.Character) domain.CharacterDTO {
 	dto := domain.CharacterDTO{
 		RawCharacter: domain.RawCharacter{
-			Name:            c.Name,
-			Str:             c.Str,
-			Int:             c.Int,
-			Wil:             c.Wil,
-			Hlt:             c.Hlt,
-			Agi:             c.Agi,
-			Tch:             c.Tch,
-			GunCombatLevel:  convertLearningPointsToLevel(c.GunCombatLearningPoints),
-			HandToHandLevel: convertLearningPointsToLevel(c.HandToHandLearningPoints),
+			Name:                     c.Name,
+			Str:                      c.Str,
+			Int:                      c.Int,
+			Wil:                      c.Wil,
+			Hlt:                      c.Hlt,
+			Agi:                      c.Agi,
+			Tch:                      c.Tch,
+			GunCombatLearningPoints:  c.GunCombatLearningPoints,
+			HandToHandLearningPoints: c.HandToHandLearningPoints,
 		},
-		GunCombatLearningPoints:  c.GunCombatLearningPoints,
-		HandToHandLearningPoints: c.HandToHandLearningPoints,
+		GunCombatLevel:  convertLearningPointsToLevel(c.GunCombatLearningPoints),
+		HandToHandLevel: convertLearningPointsToLevel(c.HandToHandLearningPoints),
 	}
 	return dto
 }
 
+// move to domain/pccs
 func convertLearningPointsToLevel(learningPoints float32) int {
 	switch {
 	case learningPoints < 2:

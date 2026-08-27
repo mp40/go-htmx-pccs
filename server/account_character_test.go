@@ -30,7 +30,7 @@ func (c *stubPostCharacter) AddCharacter(userID uuid.UUID, rawCharacter domain.R
 	return c.character, c.err
 }
 
-func (c *stubPostCharacter) EditCharacter(userID uuid.UUID, characterID uuid.UUID, rawCharacter domain.RawCharacterEdit) (*domain.CharacterDTO, error) {
+func (c *stubPostCharacter) EditCharacter(userID uuid.UUID, characterID uuid.UUID, rawCharacter domain.RawCharacter) (*domain.CharacterDTO, error) {
 	panic("method not used in test")
 }
 
@@ -63,14 +63,14 @@ func TestPostCharacterHandler(t *testing.T) {
 		server := NewServer(nil, nil, &identity, &characterService, nil, r)
 
 		formValues := url.Values{
-			"str":                {"9"},
-			"int":                {"8"},
-			"wil":                {"7"},
-			"hlt":                {"6"},
-			"agi":                {"5"},
-			"tch":                {"4"},
-			"gun_combat_level":   {"1"},
-			"hand_to_hand_level": {"0"},
+			"str":                          {"9"},
+			"int":                          {"8"},
+			"wil":                          {"7"},
+			"hlt":                          {"6"},
+			"agi":                          {"5"},
+			"tch":                          {"4"},
+			"gun_combat_learning_points":   {"2"},
+			"hand_to_hand_learning_points": {"0"},
 		}
 
 		request := httptest.NewRequest(http.MethodPost, "/account/characters", strings.NewReader(formValues.Encode()))
@@ -120,14 +120,14 @@ func TestPostCharacterHandler(t *testing.T) {
 		server := NewServer(nil, nil, &identity, &characterService, nil, r)
 
 		formValues := url.Values{
-			"str":                {"garbage"},
-			"int":                {"8"},
-			"wil":                {"7"},
-			"hlt":                {"6"},
-			"agi":                {"5"},
-			"tch":                {"4"},
-			"gun_combat_level":   {"1"},
-			"hand_to_hand_level": {"0"},
+			"str":                          {"garbage"},
+			"int":                          {"8"},
+			"wil":                          {"7"},
+			"hlt":                          {"6"},
+			"agi":                          {"5"},
+			"tch":                          {"4"},
+			"gun_combat_learning_points":   {"2"},
+			"hand_to_hand_learning_points": {"0"},
 		}
 
 		request := httptest.NewRequest(http.MethodPost, "/account/characters", strings.NewReader(formValues.Encode()))
@@ -178,14 +178,14 @@ func TestPostCharacterHandler(t *testing.T) {
 		server := NewServer(nil, nil, &identity, &characterService, nil, r)
 
 		formValues := url.Values{
-			"str":                {"9"},
-			"int":                {"8"},
-			"wil":                {"7"},
-			"hlt":                {"6"},
-			"agi":                {"5"},
-			"tch":                {"4"},
-			"gun_combat_level":   {"1"},
-			"hand_to_hand_level": {"0"},
+			"str":                          {"9"},
+			"int":                          {"8"},
+			"wil":                          {"7"},
+			"hlt":                          {"6"},
+			"agi":                          {"5"},
+			"tch":                          {"4"},
+			"gun_combat_learning_points":   {"2"},
+			"hand_to_hand_learning_points": {"0"},
 		}
 
 		request := httptest.NewRequest(http.MethodPost, "/account/characters", strings.NewReader(formValues.Encode()))
@@ -233,7 +233,7 @@ type stubPutCharacterIndentity struct {
 	userID *uuid.UUID
 }
 
-func (c *stubPutCharacter) EditCharacter(userID uuid.UUID, characterID uuid.UUID, rawCharacter domain.RawCharacterEdit) (*domain.CharacterDTO, error) {
+func (c *stubPutCharacter) EditCharacter(userID uuid.UUID, characterID uuid.UUID, rawCharacter domain.RawCharacter) (*domain.CharacterDTO, error) {
 	c.spyCharacterID = characterID
 	c.spyEditCharacter++
 	return c.character, c.err

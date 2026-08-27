@@ -45,50 +45,6 @@ func TestAddCharacter(t *testing.T) {
 			t.Errorf("expected length of name to be greater than 0")
 		}
 	})
-
-	t.Run("it converts gun combat level to learning point total", func(t *testing.T) {
-		store := &stubStore{}
-		service := NewCharacterService(store)
-
-		rawCharacter := domain.RawCharacter{
-			GunCombatLevel: 4,
-		}
-
-		got, err := service.AddCharacter(uuid.New(), rawCharacter)
-		if err != nil {
-			t.Errorf("unexpected error, got %v", err)
-		}
-
-		if got == nil {
-			t.Errorf("expected character not to be nil")
-		}
-
-		if got.GunCombatLearningPoints != 16 {
-			t.Errorf("got %v, want 16", got.GunCombatLearningPoints)
-		}
-	})
-
-	t.Run("it converts hand to hand level to learning point total", func(t *testing.T) {
-		store := &stubStore{}
-		service := NewCharacterService(store)
-
-		rawCharacter := domain.RawCharacter{
-			HandToHandLevel: 2,
-		}
-
-		got, err := service.AddCharacter(uuid.New(), rawCharacter)
-		if err != nil {
-			t.Errorf("unexpected error, got %v", err)
-		}
-
-		if got == nil {
-			t.Errorf("expected character not to be nil")
-		}
-
-		if got.HandToHandLearningPoints != 4 {
-			t.Errorf("got %v, want 4", got.HandToHandLearningPoints)
-		}
-	})
 }
 
 func TestGetCharactersByUserID(t *testing.T) {
@@ -143,7 +99,7 @@ func TestEditCharacter(t *testing.T) {
 		store := &stubStore{}
 		service := NewCharacterService(store)
 
-		rawCharacter := domain.RawCharacterEdit{}
+		rawCharacter := domain.RawCharacter{}
 
 		got, err := service.EditCharacter(uuid.New(), uuid.New(), rawCharacter)
 		if err != nil {
