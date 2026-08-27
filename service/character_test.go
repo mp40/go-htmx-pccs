@@ -17,6 +17,10 @@ func (s *stubStore) AddCharacter(character store.Character) (*store.Character, e
 	return &character, nil
 }
 
+func (s *stubStore) UpdateCharacter(character store.Character) (*store.Character, error) {
+	return &character, nil
+}
+
 func (s *stubStore) GetCharactersByUserID(userID uuid.UUID) ([]store.Character, error) {
 	return s.characters, nil
 }
@@ -130,6 +134,24 @@ func TestGetCharactersByUserID(t *testing.T) {
 
 		if got[0].HandToHandLevel != 2 {
 			t.Errorf("got level %d, want 2", got[0].HandToHandLevel)
+		}
+	})
+}
+
+func TestEditCharacter(t *testing.T) {
+	t.Run("it updates character", func(t *testing.T) {
+		store := &stubStore{}
+		service := NewCharacterService(store)
+
+		rawCharacter := domain.RawCharacterEdit{}
+
+		got, err := service.EditCharacter(uuid.New(), uuid.New(), rawCharacter)
+		if err != nil {
+			t.Errorf("unexpected error, got %v", err)
+		}
+
+		if got == nil {
+			t.Errorf("expected character not to be nil")
 		}
 	})
 }

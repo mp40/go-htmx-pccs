@@ -16,6 +16,7 @@ type CharacterService struct {
 
 type Store interface {
 	AddCharacter(character store.Character) (*store.Character, error)
+	UpdateCharacter(character store.Character) (*store.Character, error)
 	GetCharactersByUserID(userID uuid.UUID) ([]store.Character, error)
 }
 
@@ -63,6 +64,29 @@ func (cs *CharacterService) AddCharacter(userID uuid.UUID, rawCharacter domain.R
 		return nil, err
 	}
 
+	dto := mapStoreCharacterToDomainCharacter(*character)
+	return &dto, err
+}
+
+func (cs *CharacterService) EditCharacter(userID uuid.UUID, characterID uuid.UUID, rawCharacterEdit domain.RawCharacterEdit) (*domain.CharacterDTO, error) {
+	updated := store.Character{
+		ID:                       characterID,
+		UserID:                   userID,
+		Name:                     rawCharacterEdit.Name,
+		Str:                      rawCharacterEdit.Str,
+		Int:                      rawCharacterEdit.Int,
+		Wil:                      rawCharacterEdit.Wil,
+		Hlt:                      rawCharacterEdit.Hlt,
+		Agi:                      rawCharacterEdit.Agi,
+		Tch:                      rawCharacterEdit.Tch,
+		GunCombatLearningPoints:  rawCharacterEdit.GunCombatLearningPoints,
+		HandToHandLearningPoints: rawCharacterEdit.HandToHandLearningPoints,
+	}
+
+	character, err := cs.store.UpdateCharacter(updated)
+	if character == nil || err != nil {
+		return nil, err
+	}
 	dto := mapStoreCharacterToDomainCharacter(*character)
 	return &dto, err
 }

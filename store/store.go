@@ -94,6 +94,18 @@ func (s *Store) AddCharacter(character Character) (*Character, error) {
 	return &character, nil
 }
 
+func (s *Store) UpdateCharacter(character Character) (*Character, error) {
+	now := time.Now().Unix()
+	_, err := s.db.Exec(
+		"UPDATE characters SET name = ?, str = ?, int = ?, wil = ?, hlt = ?, agi = ?, tch = ?, gun_combat_learning_points = ?, hand_to_hand_learning_points = ?, updated_at = ?) WHERE id = ?",
+		character.Name, character.Str, character.Int, character.Wil, character.Hlt, character.Agi, character.Tch, character.GunCombatLearningPoints, character.HandToHandLearningPoints, now, character.ID,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return &character, nil
+}
+
 func (s *Store) GetCharactersByUserID(userID uuid.UUID) ([]Character, error) {
 	rows, err := s.db.Query("SELECT * FROM characters WHERE user_id = ?", userID)
 	if err != nil {

@@ -39,6 +39,10 @@ func (c *stubRouteAccountCharacter) AddCharacter(userID uuid.UUID, rawCharacter 
 	panic("method not used in test")
 }
 
+func (c *stubRouteAccountCharacter) EditCharacter(userID uuid.UUID, characterID uuid.UUID, rawCharacter domain.RawCharacterEdit) (*domain.CharacterDTO, error) {
+	panic("method not used in test")
+}
+
 func TestGetAccountHandler_Route(t *testing.T) {
 	t.Run("it should redirect to home if not signed in", func(t *testing.T) {
 		r, err := render.NewRenderService()
