@@ -103,6 +103,7 @@ func (s *Store) UpdateCharacter(character Character) (*Character, error) {
 	if err != nil {
 		return nil, err
 	}
+	// TODO look at this again - does not return the updated row
 	return &character, nil
 }
 
@@ -138,11 +139,11 @@ func (s *Store) GetCharactersByUserID(userID uuid.UUID) ([]Character, error) {
 	return characters, nil
 }
 
-func (s *Store) GetCharacterByID(ID uuid.UUID) (*Character, error) {
+func (s *Store) GetUserCharacterByID(userID uuid.UUID, characterID uuid.UUID) (*Character, error) {
 	character := Character{}
 	var idStr string
 	var userIdStr string
-	err := s.db.QueryRow("SELECT id, user_id, name, str, int, wil, hlt, agi, tch, gun_combat_learning_points, hand_to_hand_learning_points, created_at, updated_at FROM characters WHERE id = ?", ID).
+	err := s.db.QueryRow("SELECT id, user_id, name, str, int, wil, hlt, agi, tch, gun_combat_learning_points, hand_to_hand_learning_points, created_at, updated_at FROM characters WHERE id = ? AND user_id = ?", characterID, userID).
 		Scan(&idStr, &userIdStr, &character.Name, &character.Str, &character.Int, &character.Wil, &character.Hlt, &character.Agi, &character.Tch, &character.GunCombatLearningPoints, &character.HandToHandLearningPoints, &character.CreatedAt, &character.UpdatedAt)
 	if err == sql.ErrNoRows {
 		return nil, nil

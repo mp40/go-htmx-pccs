@@ -29,7 +29,7 @@ type CharacterService interface {
 	AddCharacter(userID uuid.UUID, rawCharacter domain.RawCharacter) (*domain.CharacterDTO, error)
 	EditCharacter(userID uuid.UUID, characterID uuid.UUID, rawCharacterEdit domain.RawCharacter) (*domain.CharacterDTO, error)
 	GetCharactersByUserID(userID uuid.UUID) ([]domain.CharacterDTO, error)
-	GetCharacterByID(ID uuid.UUID) (*domain.CharacterDTO, error)
+	GetUserCharacterByID(userID uuid.UUID, characterID uuid.UUID) (*domain.CharacterDTO, error)
 }
 
 type Identity interface {

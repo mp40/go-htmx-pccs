@@ -19,7 +19,7 @@ type getCharacterEditPageIdentity interface {
 }
 
 type getCharacterEditPageCharacters interface {
-	GetCharacterByID(ID uuid.UUID) (*domain.CharacterDTO, error)
+	GetUserCharacterByID(userID uuid.UUID, characterID uuid.UUID) (*domain.CharacterDTO, error)
 }
 
 func getCharacterEditHandler(render getCharacterEditPageRender, characters getCharacterEditPageCharacters, identity getCharacterEditPageIdentity) http.Handler {
@@ -27,6 +27,14 @@ func getCharacterEditHandler(render getCharacterEditPageRender, characters getCh
 		// TODO HTMX check full page vs fragment
 		signedIn := identity.IsSignedIn(r)
 		// TODO handle not signed in
+
+		userID := identity.GetUserID(r)
+		if userID == nil {
+			// TODO should we have error msg be specific about navigation route? what do other route code do
+			slog.Error("edit character error", "err", "user id is nil")
+			http.Error(w, "", http.StatusUnauthorized)
+			return
+		}
 
 		rawCharacterID := r.PathValue("id")
 		characterID, err := uuid.Parse(rawCharacterID)
@@ -36,7 +44,7 @@ func getCharacterEditHandler(render getCharacterEditPageRender, characters getCh
 			return
 		}
 
-		c, err := characters.GetCharacterByID(characterID)
+		c, err := characters.GetUserCharacterByID(*userID, characterID)
 		if err != nil {
 			slog.Error("get character by id", "err", err)
 			// TODOD handle error

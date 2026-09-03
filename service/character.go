@@ -18,7 +18,7 @@ type Store interface {
 	AddCharacter(character store.Character) (*store.Character, error)
 	UpdateCharacter(character store.Character) (*store.Character, error)
 	GetCharactersByUserID(userID uuid.UUID) ([]store.Character, error)
-	GetCharacterByID(ID uuid.UUID) (*store.Character, error)
+	GetUserCharacterByID(userID uuid.UUID, characterID uuid.UUID) (*store.Character, error)
 }
 
 func NewCharacterService(store Store) *CharacterService {
@@ -93,7 +93,7 @@ func (cs *CharacterService) EditCharacter(userID uuid.UUID, characterID uuid.UUI
 }
 
 // TODO - better to get by UserID and CharacterID, otherwise once signed in can get any chacter if know it's uuid
-func (cs *CharacterService) GetCharacterByID(ID uuid.UUID) (*domain.CharacterDTO, error) {
+func (cs *CharacterService) GetUserCharacterByID(userID uuid.UUID, characterID uuid.UUID) (*domain.CharacterDTO, error) {
 	return nil, nil
 }
 

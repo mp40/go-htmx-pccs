@@ -9,7 +9,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/mp40/go-htmx-pccs/domain"
-	"github.com/mp40/go-htmx-pccs/identity"
 	"github.com/mp40/go-htmx-pccs/render"
 )
 
@@ -19,8 +18,8 @@ type stubRouteCharacterEditCharacter struct {
 	spyGetCharacterID uuid.UUID
 }
 
-func (c *stubRouteCharacterEditCharacter) GetCharacterByID(ID uuid.UUID) (*domain.CharacterDTO, error) {
-	c.spyGetCharacterID = ID
+func (c *stubRouteCharacterEditCharacter) GetUserCharacterByID(userID uuid.UUID, characterID uuid.UUID) (*domain.CharacterDTO, error) {
+	c.spyGetCharacterID = characterID
 	return c.character, c.err
 }
 
@@ -36,16 +35,31 @@ func (c *stubRouteCharacterEditCharacter) GetCharactersByUserID(userID uuid.UUID
 	panic("method not used in test")
 }
 
+type stubRouteCharacterEditIndentity struct {
+	userID     *uuid.UUID
+	isSignedIn bool
+}
+
+func (i *stubRouteCharacterEditIndentity) GetUserID(r *http.Request) *uuid.UUID {
+	return i.userID
+}
+
+func (i *stubRouteCharacterEditIndentity) IsSignedIn(r *http.Request) bool {
+	return i.isSignedIn
+}
+
 func TestGetCharacterEditHandler_Route(t *testing.T) {
 	t.Run("it should render edit character page", func(t *testing.T) {
 		r, err := render.NewRenderService()
 		if err != nil {
 			t.Fatalf("render service error %v", err)
 		}
-		identity := &identity.Identity{}
+
+		userID := uuid.MustParse("55600000-0000-4523-90a2-4868a5bfc90a")
+		identity := stubRouteCharacterEditIndentity{userID: &userID, isSignedIn: true}
 		character := domain.CharacterDTO{RawCharacter: domain.RawCharacter{Name: "TEST-CHARACTER"}}
 		stubCharacterService := &stubRouteCharacterEditCharacter{character: &character}
-		server := NewServer(nil, nil, identity, stubCharacterService, nil, r)
+		server := NewServer(nil, nil, &identity, stubCharacterService, nil, r)
 
 		request := httptest.NewRequest(http.MethodGet, "/account/characters/69000000-0000-4523-90a2-4868a5bfc90a/edit", nil)
 		response := httptest.NewRecorder()

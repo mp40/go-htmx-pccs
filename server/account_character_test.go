@@ -38,7 +38,7 @@ func (c *stubPostCharacter) GetCharactersByUserID(userID uuid.UUID) ([]domain.Ch
 	panic("method not used in test")
 }
 
-func (c *stubPostCharacter) GetCharacterByID(ID uuid.UUID) (*domain.CharacterDTO, error) {
+func (c *stubPostCharacter) GetUserCharacterByID(userID uuid.UUID, characterID uuid.UUID) (*domain.CharacterDTO, error) {
 	panic("method not used in test")
 }
 
@@ -251,7 +251,7 @@ func (c *stubPutCharacter) GetCharactersByUserID(userID uuid.UUID) ([]domain.Cha
 	panic("method not used in test")
 }
 
-func (c *stubPutCharacter) GetCharacterByID(ID uuid.UUID) (*domain.CharacterDTO, error) {
+func (c *stubPutCharacter) GetUserCharacterByID(userID uuid.UUID, characterID uuid.UUID) (*domain.CharacterDTO, error) {
 	panic("method not used in test")
 }
 
