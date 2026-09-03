@@ -24,6 +24,10 @@ func (s *stubStore) GetCharactersByUserID(userID uuid.UUID) ([]store.Character, 
 	return s.characters, nil
 }
 
+func (s *stubStore) GetCharacterByID(ID uuid.UUID) (*store.Character, error) {
+	return nil, nil
+}
+
 func TestAddCharacter(t *testing.T) {
 	t.Run("it generates random name if none provided", func(t *testing.T) {
 		store := &stubStore{}

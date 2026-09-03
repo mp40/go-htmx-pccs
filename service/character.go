@@ -18,6 +18,7 @@ type Store interface {
 	AddCharacter(character store.Character) (*store.Character, error)
 	UpdateCharacter(character store.Character) (*store.Character, error)
 	GetCharactersByUserID(userID uuid.UUID) ([]store.Character, error)
+	GetCharacterByID(ID uuid.UUID) (*store.Character, error)
 }
 
 func NewCharacterService(store Store) *CharacterService {
@@ -91,6 +92,11 @@ func (cs *CharacterService) EditCharacter(userID uuid.UUID, characterID uuid.UUI
 	return &dto, err
 }
 
+// TODO - better to get by UserID and CharacterID, otherwise once signed in can get any chacter if know it's uuid
+func (cs *CharacterService) GetCharacterByID(ID uuid.UUID) (*domain.CharacterDTO, error) {
+	return nil, nil
+}
+
 var names = []string{"Leo", "Roy", "Sam", "Joe", "Ben", "Ray", "Avi", "Ian", "Dan", "Tom"}
 
 func generateRandomNumber(min int, max int) int {
@@ -105,6 +111,7 @@ func getRandomName() string {
 func mapStoreCharacterToDomainCharacter(c store.Character) domain.CharacterDTO {
 	dto := domain.CharacterDTO{
 		RawCharacter: domain.RawCharacter{
+			ID:                       c.ID,
 			Name:                     c.Name,
 			Str:                      c.Str,
 			Int:                      c.Int,

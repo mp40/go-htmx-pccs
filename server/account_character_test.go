@@ -38,6 +38,10 @@ func (c *stubPostCharacter) GetCharactersByUserID(userID uuid.UUID) ([]domain.Ch
 	panic("method not used in test")
 }
 
+func (c *stubPostCharacter) GetCharacterByID(ID uuid.UUID) (*domain.CharacterDTO, error) {
+	panic("method not used in test")
+}
+
 func (i *stubPostCharacterIndentity) GetUserID(r *http.Request) *uuid.UUID {
 	return i.userID
 }
@@ -244,6 +248,10 @@ func (c *stubPutCharacter) AddCharacter(userID uuid.UUID, rawCharacter domain.Ra
 }
 
 func (c *stubPutCharacter) GetCharactersByUserID(userID uuid.UUID) ([]domain.CharacterDTO, error) {
+	panic("method not used in test")
+}
+
+func (c *stubPutCharacter) GetCharacterByID(ID uuid.UUID) (*domain.CharacterDTO, error) {
 	panic("method not used in test")
 }
 

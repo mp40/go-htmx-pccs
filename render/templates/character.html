@@ -9,5 +9,10 @@
   <span>{{ .Tch }}</span>
   <span>{{ .GunCombatLevel }}</span>
   <span>{{ .HandToHandLevel }}</span>
+  <span
+    ><button hx-trigger="click" hx-put="/account/characters/{{ .ID }}/edit">
+      Edit
+    </button>
+  </span>
 </div>
 {{ end }}
