@@ -4,6 +4,7 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
+	"strconv"
 
 	"github.com/google/uuid"
 	"github.com/mp40/go-htmx-pccs/domain"
@@ -11,6 +12,7 @@ import (
 
 type getCharacterEditPageRender interface {
 	RenderCharacterEditPage(w io.Writer, signedIn bool, character domain.CharacterDTO) error
+	RenderCharacterEditFragment(w io.Writer, character domain.CharacterDTO) error
 }
 
 type getCharacterEditPageIdentity interface {
@@ -24,9 +26,10 @@ type getCharacterEditPageCharacters interface {
 
 func getCharacterEditHandler(render getCharacterEditPageRender, characters getCharacterEditPageCharacters, identity getCharacterEditPageIdentity) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// TODO HTMX check full page vs fragment
+		htmxHeader := r.Header.Get("HX-Request")
+		isHtmx, _ := strconv.ParseBool(htmxHeader)
 		signedIn := identity.IsSignedIn(r)
-		// TODO handle not signed in
+		// TODO handle not signed in ? is it handled by userid check?
 
 		userID := identity.GetUserID(r)
 		if userID == nil {
@@ -58,11 +61,21 @@ func getCharacterEditHandler(render getCharacterEditPageRender, characters getCh
 		}
 
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-		err = render.RenderCharacterEditPage(w, signedIn, *c)
-		if err != nil {
-			slog.Error("server error rendering", "err", err)
-			w.WriteHeader(http.StatusInternalServerError)
-			return
+		if isHtmx {
+			err := render.RenderCharacterEditFragment(w, *c)
+			if err != nil {
+				slog.Error("server error rendering", "err", err)
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+		} else {
+			err = render.RenderCharacterEditPage(w, signedIn, *c)
+			if err != nil {
+				slog.Error("server error rendering", "err", err)
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
 		}
+
 	})
 }

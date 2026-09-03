@@ -49,7 +49,7 @@ func (i *stubRouteCharacterEditIndentity) IsSignedIn(r *http.Request) bool {
 }
 
 func TestGetCharacterEditHandler_Route(t *testing.T) {
-	t.Run("it should render edit character page", func(t *testing.T) {
+	t.Run("it should render edit character page on successful GET request", func(t *testing.T) {
 		r, err := render.NewRenderService()
 		if err != nil {
 			t.Fatalf("render service error %v", err)
@@ -81,7 +81,52 @@ func TestGetCharacterEditHandler_Route(t *testing.T) {
 		}
 
 		if !strings.Contains(string(body), "<span>Edit TEST-CHARACTER</span>") {
-			t.Errorf("expected edit character fragment, got: %s", body)
+			t.Errorf("expected edit character page, got: %s", body)
+		}
+
+		if !strings.Contains(string(body), "<body>") {
+			t.Errorf("expected page, got: %s", body)
+		}
+	})
+
+	t.Run("it should render edit character fragment on HTMX GET request", func(t *testing.T) {
+		r, err := render.NewRenderService()
+		if err != nil {
+			t.Fatalf("render service error %v", err)
+		}
+
+		userID := uuid.MustParse("55600000-0000-4523-90a2-4868a5bfc90a")
+		identity := stubRouteCharacterEditIndentity{userID: &userID, isSignedIn: true}
+		character := domain.CharacterDTO{RawCharacter: domain.RawCharacter{Name: "TEST-CHARACTER"}}
+		stubCharacterService := &stubRouteCharacterEditCharacter{character: &character}
+		server := NewServer(nil, nil, &identity, stubCharacterService, nil, r)
+
+		request := httptest.NewRequest(http.MethodGet, "/account/characters/69000000-0000-4523-90a2-4868a5bfc90a/edit", nil)
+		request.Header.Set("HX-Request", "true")
+		response := httptest.NewRecorder()
+		server.ServeHTTP(response, request)
+
+		got := response.Result()
+
+		body, err := io.ReadAll(got.Body)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if got.StatusCode != http.StatusOK {
+			t.Errorf("got http status %v want http status %v", got.StatusCode, http.StatusOK)
+		}
+
+		if stubCharacterService.spyGetCharacterID.String() != "69000000-0000-4523-90a2-4868a5bfc90a" {
+			t.Errorf("got character id %s want character id %s", stubCharacterService.spyGetCharacterID.String(), "69000000-0000-4523-90a2-4868a5bfc90a")
+		}
+
+		if !strings.Contains(string(body), "<span>Edit TEST-CHARACTER</span>") {
+			t.Errorf("expected edit character page, got: %s", body)
+		}
+
+		if strings.Contains(string(body), "<body>") {
+			t.Errorf("expected fragment, got: %s", body)
 		}
 	})
 }
