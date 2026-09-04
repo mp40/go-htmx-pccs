@@ -92,9 +92,13 @@ func (cs *CharacterService) EditCharacter(userID uuid.UUID, characterID uuid.UUI
 	return &dto, err
 }
 
-// TODO - better to get by UserID and CharacterID, otherwise once signed in can get any chacter if know it's uuid
 func (cs *CharacterService) GetUserCharacterByID(userID uuid.UUID, characterID uuid.UUID) (*domain.CharacterDTO, error) {
-	return nil, nil
+	character, err := cs.store.GetUserCharacterByID(userID, characterID)
+	if character == nil || err != nil {
+		return nil, err
+	}
+	dto := mapStoreCharacterToDomainCharacter(*character)
+	return &dto, err
 }
 
 var names = []string{"Leo", "Roy", "Sam", "Joe", "Ben", "Ray", "Avi", "Ian", "Dan", "Tom"}

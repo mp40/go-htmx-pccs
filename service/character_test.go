@@ -10,6 +10,8 @@ import (
 
 type stubStore struct {
 	characters []store.Character
+	character  *store.Character
+	err        error
 }
 
 func (s *stubStore) AddCharacter(character store.Character) (*store.Character, error) {
@@ -25,7 +27,7 @@ func (s *stubStore) GetCharactersByUserID(userID uuid.UUID) ([]store.Character, 
 }
 
 func (s *stubStore) GetUserCharacterByID(userID uuid.UUID, characterID uuid.UUID) (*store.Character, error) {
-	return nil, nil
+	return s.character, s.err
 }
 
 func TestAddCharacter(t *testing.T) {
@@ -111,6 +113,36 @@ func TestEditCharacter(t *testing.T) {
 
 		if got == nil {
 			t.Errorf("expected character not to be nil")
+		}
+	})
+}
+
+func TestGetUserCharacterByID(t *testing.T) {
+	t.Run("it gets character by character id and user id", func(t *testing.T) {
+		store := &stubStore{character: &store.Character{Name: "TEST-CHARACTER"}}
+		service := NewCharacterService(store)
+
+		got, err := service.GetUserCharacterByID(uuid.New(), uuid.New())
+		if err != nil {
+			t.Errorf("unexpected error, got %v", err)
+		}
+
+		if got == nil {
+			t.Errorf("expected character not to be nil")
+		}
+	})
+
+	t.Run("it returns nil character when not found", func(t *testing.T) {
+		store := &stubStore{}
+		service := NewCharacterService(store)
+
+		got, err := service.GetUserCharacterByID(uuid.New(), uuid.New())
+		if err != nil {
+			t.Errorf("unexpected error, got %v", err)
+		}
+
+		if got != nil {
+			t.Errorf("expected character to be nil")
 		}
 	})
 }
