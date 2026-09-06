@@ -243,11 +243,11 @@ func (c *stubPutCharacter) EditCharacter(userID uuid.UUID, characterID uuid.UUID
 	return c.character, c.err
 }
 
-func (c *stubPutCharacter) AddCharacter(userID uuid.UUID, rawCharacter domain.RawCharacter) (*domain.CharacterDTO, error) {
-	panic("method not used in test")
+func (c *stubPutCharacter) GetCharactersByUserID(userID uuid.UUID) ([]domain.CharacterDTO, error) {
+	return []domain.CharacterDTO{*c.character}, c.err
 }
 
-func (c *stubPutCharacter) GetCharactersByUserID(userID uuid.UUID) ([]domain.CharacterDTO, error) {
+func (c *stubPutCharacter) AddCharacter(userID uuid.UUID, rawCharacter domain.RawCharacter) (*domain.CharacterDTO, error) {
 	panic("method not used in test")
 }
 

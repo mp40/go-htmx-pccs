@@ -82,12 +82,13 @@ func postCharacterHandler(render postCharacterRender, characterService postChara
 }
 
 type putCharacterRender interface {
-	RenderCharacter(w io.Writer, character domain.CharacterDTO) error
+	RenderAccountFragment(w io.Writer, characters []domain.CharacterDTO) error
 	RenderErrorListFragment(w io.Writer, errors []string) error
 }
 
 type putCharacterService interface {
 	EditCharacter(userID uuid.UUID, characterID uuid.UUID, rawCharacter domain.RawCharacter) (*domain.CharacterDTO, error)
+	GetCharactersByUserID(userID uuid.UUID) ([]domain.CharacterDTO, error)
 }
 
 type putCharacterIdentity interface {
@@ -134,7 +135,7 @@ func putCharacterHandler(render putCharacterRender, characterService putCharacte
 			return
 		}
 
-		character, err := characterService.EditCharacter(*userID, characterID, c)
+		_, err = characterService.EditCharacter(*userID, characterID, c)
 		if err != nil {
 			slog.Error("edit character error", "err", err)
 			w.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -147,11 +148,23 @@ func putCharacterHandler(render putCharacterRender, characterService putCharacte
 			return
 		}
 
+		characters, err := characterService.GetCharactersByUserID(*userID)
+		if err != nil {
+			slog.Error("get characters error", "err", err)
+			w.Header().Set("Content-Type", "text/html; charset=utf-8")
+			w.WriteHeader(http.StatusInternalServerError)
+			err = render.RenderErrorListFragment(w, []string{"internal server error"})
+			if err != nil {
+				slog.Error("render error message", "err", err)
+				return
+			}
+			return
+		}
+
+		w.Header().Set("HX-Push-Url", "/account")
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
-		// TODO return render character fragment
-		// change placeholder? as that one is just for one line summary of character
-		err = render.RenderCharacter(w, *character)
+		err = render.RenderAccountFragment(w, characters)
 		if err != nil {
 			slog.Error("server error rendering", "err", err)
 			w.WriteHeader(http.StatusInternalServerError)

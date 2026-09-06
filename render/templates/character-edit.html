@@ -1,5 +1,112 @@
 {{ define "character-edit" }}
 <div class="character-edit">
   <h2>Edit {{ .Character.Name }}</h2>
+  <form
+    hx-put="/account/characters/{{ .Character.ID }}"
+    hx-target="#account-content"
+    hx-swap="innerHTML"
+  >
+    <label>
+      Name
+      <input
+        type="text"
+        name="name"
+        value="{{ .Character.Name}}"
+        required
+        minlength="3"
+      />
+    </label>
+    <label>
+      Str
+      <input
+        type="number"
+        name="str"
+        value="{{ .Character.Str }}"
+        required
+        min="1"
+        max="21"
+      />
+    </label>
+    <label>
+      Int
+      <input
+        type="number"
+        name="int"
+        value="{{ .Character.Int }}"
+        required
+        min="1"
+        max="21"
+      />
+    </label>
+    <label>
+      Wil
+      <input
+        type="number"
+        name="wil"
+        value="{{ .Character.Wil }}"
+        required
+        min="1"
+        max="21"
+      />
+    </label>
+    <label>
+      Hlt
+      <input
+        type="number"
+        name="hlt"
+        value="{{ .Character.Hlt }}"
+        required
+        min="1"
+        max="21"
+      />
+    </label>
+    <label>
+      Agi
+      <input
+        type="number"
+        name="agi"
+        value="{{ .Character.Agi }}"
+        required
+        min="1"
+        max="21"
+      />
+    </label>
+    <label>
+      Tch
+      <input
+        type="number"
+        name="tch"
+        value="{{ .Character.Tch }}"
+        required
+        min="1"
+        max="21"
+      />
+    </label>
+    <label>
+      Gun Combat Learning Points
+      <input
+        type="number"
+        step="0.01"
+        name="gun_combat_learning_points"
+        value="{{ .Character.GunCombatLearningPoints }}"
+        required
+        min="0"
+        max="1834"
+      />
+    </label>
+    <label>
+      Hand To Hand Learning Points
+      <input
+        type="number"
+        step="0.01"
+        name="hand_to_hand_learning_points"
+        value="{{ .Character.HandToHandLearningPoints }}"
+        required
+        min="0"
+        max="1834"
+      />
+    </label>
+    <input class="page-button-grey" type="submit" />
+  </form>
 </div>
 {{ end }}
