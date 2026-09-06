@@ -318,7 +318,10 @@ body {
 }
 
 .character-container > div > span:nth-of-type(1) {
-  width: 6em;
+  width: 7em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .character-container > div > span:nth-of-type(n + 2) {
