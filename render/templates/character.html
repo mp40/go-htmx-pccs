@@ -10,7 +10,12 @@
   <span>{{ .GunCombatLevel }}</span>
   <span>{{ .HandToHandLevel }}</span>
   <span
-    ><button hx-trigger="click" hx-put="/account/characters/{{ .ID }}/edit">
+    ><button
+      hx-trigger="click"
+      hx-target="#account-content"
+      hx-swap="innerHTML"
+      hx-get="/account/characters/{{ .ID }}/edit"
+    >
       Edit
     </button>
   </span>

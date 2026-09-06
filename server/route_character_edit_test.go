@@ -89,7 +89,7 @@ func TestGetCharacterEditHandler_Route(t *testing.T) {
 			t.Errorf("got character id %v want character id %v", stubCharacterService.spyUserID, userID)
 		}
 
-		if !strings.Contains(string(body), "<span>Edit TEST-CHARACTER</span>") {
+		if !strings.Contains(string(body), "<h2>Edit TEST-CHARACTER</h2>") {
 			t.Errorf("expected edit character page, got: %s", body)
 		}
 
@@ -134,7 +134,7 @@ func TestGetCharacterEditHandler_Route(t *testing.T) {
 			t.Errorf("got character id %v want character id %v", stubCharacterService.spyUserID, userID)
 		}
 
-		if !strings.Contains(string(body), "<span>Edit TEST-CHARACTER</span>") {
+		if !strings.Contains(string(body), "<h2>Edit TEST-CHARACTER</h2") {
 			t.Errorf("expected edit character page, got: %s", body)
 		}
 
