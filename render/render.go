@@ -92,16 +92,13 @@ func (r *Render) renderAccountShell(w io.Writer, fragment template.HTML) error {
 }
 
 func (r *Render) RenderAccountFragment(w io.Writer, characters []domain.CharacterDTO) error {
-	var inner bytes.Buffer
 	data := struct {
 		Characters []domain.CharacterDTO
 	}{
 		Characters: characters,
 	}
-	if err := r.execute(&inner, "characters", data); err != nil {
-		return err
-	}
-	return r.renderAccountShell(w, template.HTML(inner.String()))
+
+	return r.execute(w, "characters", data)
 }
 
 func (r *Render) RenderCharacterEditPage(w io.Writer, signedIn bool, character domain.CharacterDTO) error {
