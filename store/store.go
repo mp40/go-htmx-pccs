@@ -97,8 +97,8 @@ func (s *Store) AddCharacter(character Character) (*Character, error) {
 func (s *Store) UpdateCharacter(character Character) (*Character, error) {
 	now := time.Now().Unix()
 	_, err := s.db.Exec(
-		"UPDATE characters SET name = ?, str = ?, int = ?, wil = ?, hlt = ?, agi = ?, tch = ?, gun_combat_learning_points = ?, hand_to_hand_learning_points = ?, updated_at = ? WHERE id = ?",
-		character.Name, character.Str, character.Int, character.Wil, character.Hlt, character.Agi, character.Tch, character.GunCombatLearningPoints, character.HandToHandLearningPoints, now, character.ID,
+		"UPDATE characters SET name = ?, str = ?, int = ?, wil = ?, hlt = ?, agi = ?, tch = ?, gun_combat_learning_points = ?, hand_to_hand_learning_points = ?, updated_at = ? WHERE id = ? AND user_id = ?",
+		character.Name, character.Str, character.Int, character.Wil, character.Hlt, character.Agi, character.Tch, character.GunCombatLearningPoints, character.HandToHandLearningPoints, now, character.ID, character.UserID,
 	)
 	if err != nil {
 		return nil, err
