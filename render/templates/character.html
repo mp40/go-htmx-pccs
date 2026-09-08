@@ -9,11 +9,11 @@
   <span>{{ .Tch }}</span>
   <span>{{ .GunCombatLevel }}</span>
   <span>{{ .HandToHandLevel }}</span>
-  <span
-    ><button
+  <span>
+    <button
       hx-trigger="click"
-      hx-target="#account-content"
-      hx-swap="innerHTML"
+      hx-target=".account-page"
+      hx-swap="outerHTML"
       hx-get="/account/characters/{{ .ID }}/edit"
       hx-push-url="true"
       hx-target-5*=".characters-error"
@@ -21,6 +21,17 @@
     >
       Edit
     </button>
+  </span>
+  <span>
+    <button
+      hx-trigger="click"
+      hx-target="closest .character"
+      hx-swap="outerHTML"
+      hx-delete="/account/characters/{{ .ID }}"
+      hx-target-5*=".characters-error"
+    >
+    🗑
+  </button>
   </span>
 </div>
 {{ end }}

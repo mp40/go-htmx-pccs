@@ -47,7 +47,7 @@ func TestGetSignUpHandler(t *testing.T) {
 		if !strings.Contains(string(body), `hx-post="/account/sign-up"`) {
 			t.Errorf("unexpected modal, got: %s", body)
 		}
-		if strings.Contains(string(body), "<body>") {
+		if strings.Contains(string(body), "<!doctype html>") {
 			t.Errorf("expected fragment, got: %s", body)
 		}
 	})

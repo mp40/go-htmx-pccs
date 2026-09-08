@@ -30,6 +30,7 @@ type CharacterService interface {
 	EditCharacter(userID uuid.UUID, characterID uuid.UUID, rawCharacterEdit domain.RawCharacter) (*domain.CharacterDTO, error)
 	GetCharactersByUserID(userID uuid.UUID) ([]domain.CharacterDTO, error)
 	GetUserCharacterByID(userID uuid.UUID, characterID uuid.UUID) (*domain.CharacterDTO, error)
+	DeleteUserCharacterByID(userID uuid.UUID, charcaterID uuid.UUID) error
 }
 
 type Identity interface {
@@ -69,6 +70,7 @@ func NewServer(auth Auth, session Session, identity Identity, characterService C
 
 	router.Handle("POST /account/characters", postCharacterHandler(render, characterService, identity))
 	router.Handle("PUT /account/characters/{id}", putCharacterHandler(render, characterService, identity))
+	router.Handle("DELETE /account/characters/{id}", deleteCharacterHandler(render, characterService, identity))
 	router.Handle("GET /account/characters/{id}/edit", getCharacterEditHandler(render, characterService, identity))
 
 	return router

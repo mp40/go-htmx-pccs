@@ -14,6 +14,7 @@ import (
 )
 
 type stubRouteCharacterEditCharacter struct {
+	stubCharacterService
 	character      *domain.CharacterDTO
 	err            error
 	spyCalls       int
@@ -26,18 +27,6 @@ func (c *stubRouteCharacterEditCharacter) GetUserCharacterByID(userID uuid.UUID,
 	c.spyUserID = userID
 	c.spyCalls++
 	return c.character, c.err
-}
-
-func (c *stubRouteCharacterEditCharacter) AddCharacter(userID uuid.UUID, rawCharacter domain.RawCharacter) (*domain.CharacterDTO, error) {
-	panic("method not used in test")
-}
-
-func (c *stubRouteCharacterEditCharacter) EditCharacter(userID uuid.UUID, characterID uuid.UUID, rawCharacter domain.RawCharacter) (*domain.CharacterDTO, error) {
-	panic("method not used in test")
-}
-
-func (c *stubRouteCharacterEditCharacter) GetCharactersByUserID(userID uuid.UUID) ([]domain.CharacterDTO, error) {
-	panic("method not used in test")
 }
 
 type stubRouteCharacterEditIndentity struct {
@@ -93,7 +82,7 @@ func TestGetCharacterEditHandler_Route(t *testing.T) {
 			t.Errorf("expected edit character page, got: %s", body)
 		}
 
-		if !strings.Contains(string(body), "<body>") {
+		if !strings.Contains(string(body), "<!doctype html>") {
 			t.Errorf("expected page, got: %s", body)
 		}
 	})
@@ -138,7 +127,7 @@ func TestGetCharacterEditHandler_Route(t *testing.T) {
 			t.Errorf("expected edit character page, got: %s", body)
 		}
 
-		if strings.Contains(string(body), "<body>") {
+		if strings.Contains(string(body), "<!doctype html>") {
 			t.Errorf("expected fragment, got: %s", body)
 		}
 	})

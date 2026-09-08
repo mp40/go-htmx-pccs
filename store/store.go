@@ -161,3 +161,12 @@ func (s *Store) GetUserCharacterByID(userID uuid.UUID, characterID uuid.UUID) (*
 	}
 	return &character, nil
 }
+
+func (s *Store) DeleteUserCharacterByID(userID uuid.UUID, characterID uuid.UUID) error {
+	_, err := s.db.Exec(
+		"DELETE FROM characters WHERE user_id = ? AND id = ?",
+		userID, characterID,
+	)
+
+	return err
+}

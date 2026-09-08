@@ -56,7 +56,7 @@ func TestGetGearHandler_Route(t *testing.T) {
 		if !strings.Contains(string(body), "<h1>Gear</h1>") {
 			t.Errorf("unexpected body: %s", body)
 		}
-		if !strings.Contains(string(body), "<body>") {
+		if !strings.Contains(string(body), "<!doctype html>") {
 			t.Errorf("expected page, got: %s", body)
 		}
 
@@ -100,7 +100,7 @@ func TestGetGearHandler_Route(t *testing.T) {
 		if !strings.Contains(string(body), "<h1>Gear</h1>") {
 			t.Errorf("unexpected body: %s", body)
 		}
-		if strings.Contains(string(body), "<body>") {
+		if strings.Contains(string(body), "<!doctype html>") {
 			t.Errorf("expected fragment, got: %s", body)
 		}
 
