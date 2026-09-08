@@ -18,6 +18,7 @@ type stubRouteAccountIndentity struct {
 }
 
 type stubRouteAccountCharacter struct {
+	stubCharacterService
 	characters []domain.CharacterDTO
 	err        error
 }
@@ -33,18 +34,6 @@ func (i *stubRouteAccountIndentity) GetUserID(r *http.Request) *uuid.UUID {
 
 func (c *stubRouteAccountCharacter) GetCharactersByUserID(userID uuid.UUID) ([]domain.CharacterDTO, error) {
 	return c.characters, c.err
-}
-
-func (c *stubRouteAccountCharacter) AddCharacter(userID uuid.UUID, rawCharacter domain.RawCharacter) (*domain.CharacterDTO, error) {
-	panic("method not used in test")
-}
-
-func (c *stubRouteAccountCharacter) EditCharacter(userID uuid.UUID, characterID uuid.UUID, rawCharacter domain.RawCharacter) (*domain.CharacterDTO, error) {
-	panic("method not used in test")
-}
-
-func (c *stubRouteAccountCharacter) GetUserCharacterByID(userID uuid.UUID, characterID uuid.UUID) (*domain.CharacterDTO, error) {
-	panic("method not used in test")
 }
 
 func TestGetAccountHandler_Route(t *testing.T) {

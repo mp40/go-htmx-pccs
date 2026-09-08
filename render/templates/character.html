@@ -9,8 +9,8 @@
   <span>{{ .Tch }}</span>
   <span>{{ .GunCombatLevel }}</span>
   <span>{{ .HandToHandLevel }}</span>
-  <span
-    ><button
+  <span>
+    <button
       hx-trigger="click"
       hx-target="#account-content"
       hx-swap="innerHTML"
@@ -21,6 +21,17 @@
     >
       Edit
     </button>
+  </span>
+  <span>
+    <button
+      hx-trigger="click"
+      hx-target="closest .character"
+      hx-swap="outerHTML"
+      hx-delete="/account/characters/{{ .ID }}"
+      hx-target-5*=".characters-error"
+    >
+    🗑
+  </button>
   </span>
 </div>
 {{ end }}

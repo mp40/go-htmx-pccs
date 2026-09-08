@@ -14,6 +14,7 @@ import (
 )
 
 type stubRouteCharacterEditCharacter struct {
+	stubCharacterService
 	character      *domain.CharacterDTO
 	err            error
 	spyCalls       int
@@ -26,18 +27,6 @@ func (c *stubRouteCharacterEditCharacter) GetUserCharacterByID(userID uuid.UUID,
 	c.spyUserID = userID
 	c.spyCalls++
 	return c.character, c.err
-}
-
-func (c *stubRouteCharacterEditCharacter) AddCharacter(userID uuid.UUID, rawCharacter domain.RawCharacter) (*domain.CharacterDTO, error) {
-	panic("method not used in test")
-}
-
-func (c *stubRouteCharacterEditCharacter) EditCharacter(userID uuid.UUID, characterID uuid.UUID, rawCharacter domain.RawCharacter) (*domain.CharacterDTO, error) {
-	panic("method not used in test")
-}
-
-func (c *stubRouteCharacterEditCharacter) GetCharactersByUserID(userID uuid.UUID) ([]domain.CharacterDTO, error) {
-	panic("method not used in test")
 }
 
 type stubRouteCharacterEditIndentity struct {

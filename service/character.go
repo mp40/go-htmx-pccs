@@ -19,6 +19,7 @@ type Store interface {
 	UpdateCharacter(character store.Character) (*store.Character, error)
 	GetCharactersByUserID(userID uuid.UUID) ([]store.Character, error)
 	GetUserCharacterByID(userID uuid.UUID, characterID uuid.UUID) (*store.Character, error)
+	DeleteUserCharacterByID(userID uuid.UUID, characterID uuid.UUID) error
 }
 
 func NewCharacterService(store Store) *CharacterService {
@@ -99,6 +100,10 @@ func (cs *CharacterService) GetUserCharacterByID(userID uuid.UUID, characterID u
 	}
 	dto := mapStoreCharacterToDomainCharacter(*character)
 	return &dto, err
+}
+
+func (cs *CharacterService) DeleteUserCharacterByID(userID uuid.UUID, characterID uuid.UUID) error {
+	return cs.store.DeleteUserCharacterByID(userID, characterID)
 }
 
 var names = []string{"Leo", "Roy", "Sam", "Joe", "Ben", "Ray", "Avi", "Ian", "Dan", "Tom"}

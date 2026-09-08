@@ -16,6 +16,7 @@ import (
 )
 
 type stubPostCharacter struct {
+	stubCharacterService
 	character       *domain.CharacterDTO
 	err             error
 	spyAddCharacter int
@@ -28,18 +29,6 @@ type stubPostCharacterIndentity struct {
 func (c *stubPostCharacter) AddCharacter(userID uuid.UUID, rawCharacter domain.RawCharacter) (*domain.CharacterDTO, error) {
 	c.spyAddCharacter++
 	return c.character, c.err
-}
-
-func (c *stubPostCharacter) EditCharacter(userID uuid.UUID, characterID uuid.UUID, rawCharacter domain.RawCharacter) (*domain.CharacterDTO, error) {
-	panic("method not used in test")
-}
-
-func (c *stubPostCharacter) GetCharactersByUserID(userID uuid.UUID) ([]domain.CharacterDTO, error) {
-	panic("method not used in test")
-}
-
-func (c *stubPostCharacter) GetUserCharacterByID(userID uuid.UUID, characterID uuid.UUID) (*domain.CharacterDTO, error) {
-	panic("method not used in test")
 }
 
 func (i *stubPostCharacterIndentity) GetUserID(r *http.Request) *uuid.UUID {
@@ -227,6 +216,7 @@ func TestPostCharacterHandler(t *testing.T) {
 }
 
 type stubPutCharacter struct {
+	stubCharacterService
 	character        *domain.CharacterDTO
 	err              error
 	spyEditCharacter int
@@ -245,14 +235,6 @@ func (c *stubPutCharacter) EditCharacter(userID uuid.UUID, characterID uuid.UUID
 
 func (c *stubPutCharacter) GetCharactersByUserID(userID uuid.UUID) ([]domain.CharacterDTO, error) {
 	return []domain.CharacterDTO{*c.character}, c.err
-}
-
-func (c *stubPutCharacter) AddCharacter(userID uuid.UUID, rawCharacter domain.RawCharacter) (*domain.CharacterDTO, error) {
-	panic("method not used in test")
-}
-
-func (c *stubPutCharacter) GetUserCharacterByID(userID uuid.UUID, characterID uuid.UUID) (*domain.CharacterDTO, error) {
-	panic("method not used in test")
 }
 
 func (i *stubPutCharacterIndentity) GetUserID(r *http.Request) *uuid.UUID {

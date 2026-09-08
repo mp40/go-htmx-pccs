@@ -1,6 +1,7 @@
 package service
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/google/uuid"
@@ -28,6 +29,10 @@ func (s *stubStore) GetCharactersByUserID(userID uuid.UUID) ([]store.Character, 
 
 func (s *stubStore) GetUserCharacterByID(userID uuid.UUID, characterID uuid.UUID) (*store.Character, error) {
 	return s.character, s.err
+}
+
+func (s *stubStore) DeleteUserCharacterByID(userID uuid.UUID, characterID uuid.UUID) error {
+	return s.err
 }
 
 func TestAddCharacter(t *testing.T) {
@@ -143,6 +148,18 @@ func TestGetUserCharacterByID(t *testing.T) {
 
 		if got != nil {
 			t.Errorf("expected character to be nil")
+		}
+	})
+}
+
+func TestDeleteUserCharacterByID(t *testing.T) {
+	t.Run("it handles errors", func(t *testing.T) {
+		store := &stubStore{err: fmt.Errorf("sadness")}
+		service := NewCharacterService(store)
+
+		err := service.DeleteUserCharacterByID(uuid.New(), uuid.New())
+		if err == nil {
+			t.Errorf("expected error, got <nil>")
 		}
 	})
 }
