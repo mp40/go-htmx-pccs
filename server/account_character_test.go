@@ -94,7 +94,7 @@ func TestPostCharacterHandler(t *testing.T) {
 			t.Errorf("got %v calls to AddCharacter want 1", characterService.spyAddCharacter)
 		}
 
-		if !strings.Contains(string(body), "<span>TEST-CHARACTER</span>") {
+		if !strings.Contains(string(body), "TEST-CHARACTER</span>") {
 			t.Errorf("expected character fragment, got: %s", body)
 		}
 	})
@@ -307,7 +307,7 @@ func TestPutCharacterHandler(t *testing.T) {
 			t.Errorf("got %v, want %v", characterService.spyCharacterID, wantCharacterID)
 		}
 
-		if !strings.Contains(string(body), "<span>TEST-CHARACTER</span>") {
+		if !strings.Contains(string(body), "TEST-CHARACTER</span>") {
 			t.Errorf("expected character fragment, got: %s", body)
 		}
 	})

@@ -95,7 +95,7 @@ func TestGetAccountHandler_Route(t *testing.T) {
 		if !strings.Contains(string(body), "<h1>Account</h1>") {
 			t.Errorf("unexpected body: %s", body)
 		}
-		if !strings.Contains(string(body), "<body>") {
+		if !strings.Contains(string(body), "<!doctype html>") {
 			t.Errorf("expected full page, got: %s", body)
 		}
 		if !strings.Contains(string(body), "Fake Character") {
@@ -135,7 +135,7 @@ func TestGetAccountHandler_Route(t *testing.T) {
 		if !strings.Contains(string(body), "<h1>Account</h1>") {
 			t.Errorf("unexpected body: %s", body)
 		}
-		if strings.Contains(string(body), "<body>") {
+		if strings.Contains(string(body), "<!doctype html>") {
 			t.Errorf("expected fragment, got: %s", body)
 		}
 		if !strings.Contains(string(body), "Fake Character") {

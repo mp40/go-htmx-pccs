@@ -82,7 +82,7 @@ func TestGetCharacterEditHandler_Route(t *testing.T) {
 			t.Errorf("expected edit character page, got: %s", body)
 		}
 
-		if !strings.Contains(string(body), "<body>") {
+		if !strings.Contains(string(body), "<!doctype html>") {
 			t.Errorf("expected page, got: %s", body)
 		}
 	})
@@ -127,7 +127,7 @@ func TestGetCharacterEditHandler_Route(t *testing.T) {
 			t.Errorf("expected edit character page, got: %s", body)
 		}
 
-		if strings.Contains(string(body), "<body>") {
+		if strings.Contains(string(body), "<!doctype html>") {
 			t.Errorf("expected fragment, got: %s", body)
 		}
 	})
