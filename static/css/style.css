@@ -475,7 +475,7 @@ body {
   text-align: center;
 }
 
-#spread-result > .error-list {
+.error-list {
   font-style: italic;
   color: var(--german-orange);
   display: flex;

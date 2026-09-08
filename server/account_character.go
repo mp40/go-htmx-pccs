@@ -13,6 +13,7 @@ import (
 type postCharacterRender interface {
 	RenderCharacter(w io.Writer, character domain.CharacterDTO) error
 	RenderErrorListFragment(w io.Writer, errors []string) error
+	RenderErrorMessageFragment(w io.Writer, msg string) error
 }
 
 type postCharacterService interface {
@@ -47,7 +48,8 @@ func postCharacterHandler(render postCharacterRender, characterService postChara
 			}
 			w.Header().Set("Content-Type", "text/html; charset=utf-8")
 			w.WriteHeader(http.StatusBadRequest)
-			if err := render.RenderErrorListFragment(w, errorList); err != nil {
+			err := render.RenderErrorListFragment(w, errorList)
+			if err != nil {
 				slog.Error("parse character error list", "err", err)
 				http.Error(w, "internal server error", http.StatusInternalServerError)
 			}
@@ -58,7 +60,7 @@ func postCharacterHandler(render postCharacterRender, characterService postChara
 		if err != nil {
 			slog.Error("add character error", "err", err)
 			w.Header().Set("Content-Type", "text/html; charset=utf-8")
-			err = render.RenderErrorListFragment(w, []string{"internal server error"})
+			err = render.RenderErrorMessageFragment(w, "internal server error")
 			if err != nil {
 				slog.Error("render error message", "err", err)
 				w.WriteHeader(http.StatusInternalServerError)
@@ -84,6 +86,7 @@ func postCharacterHandler(render postCharacterRender, characterService postChara
 type putCharacterRender interface {
 	RenderAccountFragment(w io.Writer, characters []domain.CharacterDTO) error
 	RenderErrorListFragment(w io.Writer, errors []string) error
+	RenderErrorMessageFragment(w io.Writer, msg string) error
 }
 
 type putCharacterService interface {
@@ -128,19 +131,21 @@ func putCharacterHandler(render putCharacterRender, characterService putCharacte
 			}
 			w.Header().Set("Content-Type", "text/html; charset=utf-8")
 			w.WriteHeader(http.StatusBadRequest)
-			if err := render.RenderErrorListFragment(w, errorList); err != nil {
+			err := render.RenderErrorListFragment(w, errorList)
+			if err != nil {
 				slog.Error("parse character error list", "err", err)
 				http.Error(w, "internal server error", http.StatusInternalServerError)
 			}
 			return
 		}
 
+		// TODO character nil check
 		_, err = characterService.EditCharacter(*userID, characterID, c)
 		if err != nil {
 			slog.Error("edit character error", "err", err)
 			w.Header().Set("Content-Type", "text/html; charset=utf-8")
 			w.WriteHeader(http.StatusInternalServerError)
-			err = render.RenderErrorListFragment(w, []string{"internal server error"})
+			err = render.RenderErrorMessageFragment(w, "internal server error")
 			if err != nil {
 				slog.Error("render error message", "err", err)
 				return
@@ -153,7 +158,7 @@ func putCharacterHandler(render putCharacterRender, characterService putCharacte
 			slog.Error("get characters error", "err", err)
 			w.Header().Set("Content-Type", "text/html; charset=utf-8")
 			w.WriteHeader(http.StatusInternalServerError)
-			err = render.RenderErrorListFragment(w, []string{"internal server error"})
+			err = render.RenderErrorMessageFragment(w, "internal server error")
 			if err != nil {
 				slog.Error("render error message", "err", err)
 				return

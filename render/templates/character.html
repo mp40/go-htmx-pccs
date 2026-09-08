@@ -16,6 +16,8 @@
       hx-swap="innerHTML"
       hx-get="/account/characters/{{ .ID }}/edit"
       hx-push-url="true"
+      hx-target-5*=".characters-error"
+      hx-target-4*=".characters-error"
     >
       Edit
     </button>

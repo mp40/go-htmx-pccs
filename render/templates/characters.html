@@ -6,8 +6,8 @@
     hx-post="/account/characters"
     hx-vals='{"str": "10", "int": "10", "wil": "10", "hlt": "10", "agi": "10", "tch": "10", "gun_combat_learning_points": "0", "hand_to_hand_learning_points": "0"}'
     hx-target=".character-container"
-    hx-target-500=".add-character-error"
-    hx-target-400=".add-character-error"
+    hx-target-5*=".characters-error"
+    hx-target-4*=".characters-error"
     hx-swap="beforeend"
   >
     Add Basic
@@ -17,8 +17,8 @@
     hx-post="/account/characters"
     hx-vals='{"str": "14", "int": "10", "wil": "10", "hlt": "10", "agi": "12", "tch": "10", "gun_combat_learning_points": "16", "hand_to_hand_learning_points": "4"}'
     hx-target=".character-container"
-    hx-target-500=".add-character-error"
-    hx-target-400=".add-character-error"
+    hx-target-5*=".characters-error"
+    hx-target-4*=".characters-error"
     hx-swap="beforeend"
   >
     Add Grunt
@@ -40,6 +40,6 @@
       {{range .Characters}} {{ template "character" .}} {{end}}
     </div>
   </div>
-  <div class="add-character-error"></div>
+  <div class="characters-error"></div>
 </div>
 {{ end }}
