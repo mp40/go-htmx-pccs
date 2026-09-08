@@ -58,8 +58,14 @@ func (r *Render) RenderHomeFragment(w io.Writer) error {
 }
 
 func (r *Render) RenderAccountPage(w io.Writer, signedIn bool, characters []domain.CharacterDTO) error {
+	var fragment bytes.Buffer
+	err := r.RenderAccountFragment(&fragment, characters)
+	if err != nil {
+		return err
+	}
+
 	var page bytes.Buffer
-	err := r.RenderAccountFragment(&page, characters)
+	err = r.renderAccountShell(&page, template.HTML(fragment.String()))
 	if err != nil {
 		return err
 	}
@@ -75,13 +81,61 @@ func (r *Render) RenderAccountPage(w io.Writer, signedIn bool, characters []doma
 	return r.execute(w, "index", data)
 }
 
+func (r *Render) renderAccountShell(w io.Writer, fragment template.HTML) error {
+	data := struct {
+		Fragment template.HTML
+	}{
+		Fragment: fragment,
+	}
+
+	return r.execute(w, "account", data)
+}
+
 func (r *Render) RenderAccountFragment(w io.Writer, characters []domain.CharacterDTO) error {
+	var inner bytes.Buffer
 	data := struct {
 		Characters []domain.CharacterDTO
 	}{
 		Characters: characters,
 	}
-	return r.execute(w, "account", data)
+	if err := r.execute(&inner, "characters", data); err != nil {
+		return err
+	}
+	return r.renderAccountShell(w, template.HTML(inner.String()))
+}
+
+func (r *Render) RenderCharacterEditPage(w io.Writer, signedIn bool, character domain.CharacterDTO) error {
+	var fragment bytes.Buffer
+	err := r.RenderCharacterEditFragment(&fragment, character)
+	if err != nil {
+		return err
+	}
+
+	var page bytes.Buffer
+	err = r.renderAccountShell(&page, template.HTML(fragment.String()))
+	if err != nil {
+		return err
+	}
+
+	data := struct {
+		SignedIn bool
+		Page     template.HTML
+	}{
+		SignedIn: signedIn,
+		Page:     template.HTML(page.String()),
+	}
+
+	return r.execute(w, "index", data)
+}
+
+func (r *Render) RenderCharacterEditFragment(w io.Writer, character domain.CharacterDTO) error {
+	data := struct {
+		Character domain.CharacterDTO
+	}{
+		Character: character,
+	}
+
+	return r.execute(w, "character-edit", data)
 }
 
 func (r *Render) RenderReferencePage(w io.Writer, signedIn bool) error {

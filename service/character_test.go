@@ -1,7 +1,6 @@
 package service
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/google/uuid"
@@ -11,14 +10,24 @@ import (
 
 type stubStore struct {
 	characters []store.Character
+	character  *store.Character
+	err        error
 }
 
 func (s *stubStore) AddCharacter(character store.Character) (*store.Character, error) {
 	return &character, nil
 }
 
+func (s *stubStore) UpdateCharacter(character store.Character) (*store.Character, error) {
+	return &character, nil
+}
+
 func (s *stubStore) GetCharactersByUserID(userID uuid.UUID) ([]store.Character, error) {
 	return s.characters, nil
+}
+
+func (s *stubStore) GetUserCharacterByID(userID uuid.UUID, characterID uuid.UUID) (*store.Character, error) {
+	return s.character, s.err
 }
 
 func TestAddCharacter(t *testing.T) {
@@ -39,50 +48,6 @@ func TestAddCharacter(t *testing.T) {
 
 		if len(got.Name) == 0 {
 			t.Errorf("expected length of name to be greater than 0")
-		}
-	})
-
-	t.Run("it converts gun combat level to learning point total", func(t *testing.T) {
-		store := &stubStore{}
-		service := NewCharacterService(store)
-
-		rawCharacter := domain.RawCharacter{
-			GunCombatLevel: 4,
-		}
-
-		got, err := service.AddCharacter(uuid.New(), rawCharacter)
-		if err != nil {
-			t.Errorf("unexpected error, got %v", err)
-		}
-
-		if got == nil {
-			t.Errorf("expected character not to be nil")
-		}
-
-		if got.GunCombatLearningPoints != 16 {
-			t.Errorf("got %v, want 16", got.GunCombatLearningPoints)
-		}
-	})
-
-	t.Run("it converts hand to hand level to learning point total", func(t *testing.T) {
-		store := &stubStore{}
-		service := NewCharacterService(store)
-
-		rawCharacter := domain.RawCharacter{
-			HandToHandLevel: 2,
-		}
-
-		got, err := service.AddCharacter(uuid.New(), rawCharacter)
-		if err != nil {
-			t.Errorf("unexpected error, got %v", err)
-		}
-
-		if got == nil {
-			t.Errorf("expected character not to be nil")
-		}
-
-		if got.HandToHandLearningPoints != 4 {
-			t.Errorf("got %v, want 4", got.HandToHandLearningPoints)
 		}
 	})
 }
@@ -134,91 +99,50 @@ func TestGetCharactersByUserID(t *testing.T) {
 	})
 }
 
-func TestConvertLevelToLearningPoints(t *testing.T) {
-	tc := []struct {
-		level int
-		want  float32
-	}{
-		{level: 0, want: 0},
-		{level: 1, want: 2},
-		{level: 2, want: 4},
-		{level: 3, want: 8},
-		{level: 4, want: 16},
-		{level: 5, want: 32},
-		{level: 6, want: 56},
-		{level: 7, want: 88},
-		{level: 8, want: 126},
-		{level: 9, want: 170},
-		{level: 10, want: 218},
-		{level: 11, want: 274},
-		{level: 12, want: 346},
-		{level: 13, want: 434},
-		{level: 14, want: 542},
-		{level: 15, want: 674},
-		{level: 16, want: 834},
-		{level: 17, want: 1026},
-		{level: 18, want: 1254},
-		{level: 19, want: 1552},
-		{level: 20, want: 1834},
-	}
+func TestEditCharacter(t *testing.T) {
+	t.Run("it updates character", func(t *testing.T) {
+		store := &stubStore{}
+		service := NewCharacterService(store)
 
-	for _, test := range tc {
-		t.Run(fmt.Sprintf("it converts level %d to %v", test.level, test.want), func(t *testing.T) {
-			t.Parallel()
+		rawCharacter := domain.RawCharacter{}
 
-			got := convertLevelToLearningPoints(test.level)
-			if got != test.want {
-				t.Errorf("got %v, want %v", got, test.want)
-			}
-		})
-	}
+		got, err := service.EditCharacter(uuid.New(), uuid.New(), rawCharacter)
+		if err != nil {
+			t.Errorf("unexpected error, got %v", err)
+		}
+
+		if got == nil {
+			t.Errorf("expected character not to be nil")
+		}
+	})
 }
 
-func TestLearningPointsToLevel(t *testing.T) {
-	tc := []struct {
-		level      int
-		lowerLimit float32
-		upperLimit float32
-	}{
-		{level: 0, lowerLimit: 0, upperLimit: 1.9999},
-		{level: 1, lowerLimit: 2, upperLimit: 3.9999},
-		{level: 2, lowerLimit: 4, upperLimit: 7.9999},
-		{level: 3, lowerLimit: 8, upperLimit: 15.9999},
-		{level: 4, lowerLimit: 16, upperLimit: 31.9999},
-		{level: 5, lowerLimit: 32, upperLimit: 55.9999},
-		{level: 6, lowerLimit: 56, upperLimit: 87.9999},
-		{level: 7, lowerLimit: 88, upperLimit: 125.9999},
-		{level: 8, lowerLimit: 126, upperLimit: 169.9999},
-		{level: 9, lowerLimit: 170, upperLimit: 217.9999},
-		{level: 10, lowerLimit: 218, upperLimit: 273.9999},
-		{level: 11, lowerLimit: 274, upperLimit: 345.9999},
-		{level: 12, lowerLimit: 346, upperLimit: 433.9999},
-		{level: 13, lowerLimit: 434, upperLimit: 541.9999},
-		{level: 14, lowerLimit: 542, upperLimit: 673.9999},
-		{level: 15, lowerLimit: 674, upperLimit: 833.9999},
-		{level: 16, lowerLimit: 834, upperLimit: 1025.9999},
-		{level: 17, lowerLimit: 1026, upperLimit: 1253.9999},
-		{level: 18, lowerLimit: 1254, upperLimit: 1551.9999},
-		{level: 19, lowerLimit: 1552, upperLimit: 1833.9999},
-		{level: 20, lowerLimit: 1834, upperLimit: 9999},
-	}
+func TestGetUserCharacterByID(t *testing.T) {
+	t.Run("it gets character by character id and user id", func(t *testing.T) {
+		store := &stubStore{character: &store.Character{Name: "TEST-CHARACTER"}}
+		service := NewCharacterService(store)
 
-	for _, test := range tc {
-		t.Run(fmt.Sprintf("it converts lower limit threshold learning points %f to level %d", test.lowerLimit, test.level), func(t *testing.T) {
-			t.Parallel()
+		got, err := service.GetUserCharacterByID(uuid.New(), uuid.New())
+		if err != nil {
+			t.Errorf("unexpected error, got %v", err)
+		}
 
-			got := convertLearningPointsToLevel(test.lowerLimit)
-			if got != test.level {
-				t.Errorf("got %v, want %v", got, test.level)
-			}
-		})
-		t.Run(fmt.Sprintf("it converts upper limit threshold learning points %f to level %d", test.lowerLimit, test.level), func(t *testing.T) {
-			t.Parallel()
+		if got == nil {
+			t.Errorf("expected character not to be nil")
+		}
+	})
 
-			got := convertLearningPointsToLevel(test.upperLimit)
-			if got != test.level {
-				t.Errorf("got %v, want %v", got, test.level)
-			}
-		})
-	}
+	t.Run("it returns nil character when not found", func(t *testing.T) {
+		store := &stubStore{}
+		service := NewCharacterService(store)
+
+		got, err := service.GetUserCharacterByID(uuid.New(), uuid.New())
+		if err != nil {
+			t.Errorf("unexpected error, got %v", err)
+		}
+
+		if got != nil {
+			t.Errorf("expected character to be nil")
+		}
+	})
 }

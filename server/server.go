@@ -27,7 +27,9 @@ type Session interface {
 
 type CharacterService interface {
 	AddCharacter(userID uuid.UUID, rawCharacter domain.RawCharacter) (*domain.CharacterDTO, error)
+	EditCharacter(userID uuid.UUID, characterID uuid.UUID, rawCharacterEdit domain.RawCharacter) (*domain.CharacterDTO, error)
 	GetCharactersByUserID(userID uuid.UUID) ([]domain.CharacterDTO, error)
+	GetUserCharacterByID(userID uuid.UUID, characterID uuid.UUID) (*domain.CharacterDTO, error)
 }
 
 type Identity interface {
@@ -66,6 +68,8 @@ func NewServer(auth Auth, session Session, identity Identity, characterService C
 	router.Handle("DELETE /account/sign-out", deleteSignOutHandler(session))
 
 	router.Handle("POST /account/characters", postCharacterHandler(render, characterService, identity))
+	router.Handle("PUT /account/characters/{id}", putCharacterHandler(render, characterService, identity))
+	router.Handle("GET /account/characters/{id}/edit", getCharacterEditHandler(render, characterService, identity))
 
 	return router
 }
@@ -95,8 +99,8 @@ func parseRawCharacter(form url.Values) (domain.RawCharacter, map[string]string)
 	rawHlt := strings.TrimSpace(form.Get("hlt"))
 	rawAgi := strings.TrimSpace(form.Get("agi"))
 	rawTch := strings.TrimSpace(form.Get("tch"))
-	rawGunCombatLevel := strings.TrimSpace(form.Get("gun_combat_level"))
-	rawHandToHandLevel := strings.TrimSpace(form.Get("hand_to_hand_level"))
+	rawGunCombatLearningPoints := strings.TrimSpace(form.Get("gun_combat_learning_points"))
+	rawHandToHandLearningPoints := strings.TrimSpace(form.Get("hand_to_hand_learning_points"))
 
 	str, err := strconv.Atoi(rawStr)
 	if err != nil {
@@ -140,30 +144,30 @@ func parseRawCharacter(form url.Values) (domain.RawCharacter, map[string]string)
 		problems["tch"] = "is invalid (must be between 1 and 21)"
 	}
 
-	gunCombatLevel, err := strconv.Atoi(rawGunCombatLevel)
+	gunCombatLearningPoints, err := strconv.ParseFloat(rawGunCombatLearningPoints, 32)
 	if err != nil {
-		problems["gun_combat_level"] = "is not a number"
-	} else if gunCombatLevel < 0 || gunCombatLevel > 20 {
-		problems["gun_combat_level"] = "is invalid (must be between 0 and 20)"
+		problems["gun_combat_learning_points"] = "is not a number"
+	} else if gunCombatLearningPoints < 0 || gunCombatLearningPoints > 1834 {
+		problems["gun_combat_learning_points"] = "is invalid (must be between 0 and 1834)"
 	}
 
-	handToHandLevel, err := strconv.Atoi(rawHandToHandLevel)
+	handToHandLearningPoints, err := strconv.ParseFloat(rawHandToHandLearningPoints, 32)
 	if err != nil {
-		problems["hand_to_hand_level"] = "is not a number"
-	} else if handToHandLevel < 0 || handToHandLevel > 20 {
-		problems["hand_to_hand_level"] = "is invalid (must be between 0 and 20)"
+		problems["hand_to_hand_learning_points"] = "is not a number"
+	} else if handToHandLearningPoints < 0 || handToHandLearningPoints > 1834 {
+		problems["hand_to_hand_learning_points"] = "is invalid (must be between 0 and 1834)"
 	}
 
 	c := domain.RawCharacter{
-		Name:            name,
-		Str:             str,
-		Int:             intel,
-		Wil:             wil,
-		Hlt:             hlt,
-		Agi:             agi,
-		Tch:             tch,
-		GunCombatLevel:  gunCombatLevel,
-		HandToHandLevel: handToHandLevel,
+		Name:                     name,
+		Str:                      str,
+		Int:                      intel,
+		Wil:                      wil,
+		Hlt:                      hlt,
+		Agi:                      agi,
+		Tch:                      tch,
+		GunCombatLearningPoints:  float32(gunCombatLearningPoints),
+		HandToHandLearningPoints: float32(handToHandLearningPoints),
 	}
 
 	return c, problems

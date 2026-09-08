@@ -23,3 +23,14 @@ var LevelToLearningPoints = map[int]float32{
 	19: 1552,
 	20: 1834,
 }
+
+func ConvertLearningPointsToLevel(learningPoints float32) int {
+	level := 0
+	for l := 1; l <= 20; l++ {
+		if learningPoints < LevelToLearningPoints[l] {
+			return level
+		}
+		level = l
+	}
+	return level
+}

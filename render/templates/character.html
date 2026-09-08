@@ -1,6 +1,6 @@
 {{ define "character" }}
 <div class="character">
-  <span>{{ .Name }}</span>
+  <span title="{{ .Name }}">{{ .Name }}</span>
   <span>{{ .Str }}</span>
   <span>{{ .Int }}</span>
   <span>{{ .Wil }}</span>
@@ -9,5 +9,18 @@
   <span>{{ .Tch }}</span>
   <span>{{ .GunCombatLevel }}</span>
   <span>{{ .HandToHandLevel }}</span>
+  <span
+    ><button
+      hx-trigger="click"
+      hx-target="#account-content"
+      hx-swap="innerHTML"
+      hx-get="/account/characters/{{ .ID }}/edit"
+      hx-push-url="true"
+      hx-target-5*=".characters-error"
+      hx-target-4*=".characters-error"
+    >
+      Edit
+    </button>
+  </span>
 </div>
 {{ end }}
