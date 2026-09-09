@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -28,6 +29,19 @@ func (c *stubCharacterPageCharacterService) GetUserCharacterByID(userID uuid.UUI
 	return c.character, c.err
 }
 
+type stubCharacterPageIndentity struct {
+	userID     *uuid.UUID
+	isSignedIn bool
+}
+
+func (i *stubCharacterPageIndentity) GetUserID(r *http.Request) *uuid.UUID {
+	return i.userID
+}
+
+func (i *stubCharacterPageIndentity) IsSignedIn(r *http.Request) bool {
+	return i.isSignedIn
+}
+
 func TestGetCharacterHandler(t *testing.T) {
 	r, err := render.NewRenderService()
 	if err != nil {
@@ -36,7 +50,7 @@ func TestGetCharacterHandler(t *testing.T) {
 
 	t.Run("it renders full character page on successful GET request", func(t *testing.T) {
 		userID := uuid.MustParse("55600000-0000-4523-90a2-4868a5bfc90a")
-		identity := stubRouteCharacterEditIndentity{userID: &userID, isSignedIn: true}
+		identity := stubCharacterPageIndentity{userID: &userID, isSignedIn: true}
 		character := domain.CharacterDTO{RawCharacter: domain.RawCharacter{Name: "TEST-CHARACTER"}}
 		stubCharacterService := &stubCharacterPageCharacterService{character: &character}
 		server := NewServer(nil, nil, &identity, stubCharacterService, nil, r)
@@ -70,6 +84,174 @@ func TestGetCharacterHandler(t *testing.T) {
 
 		if !strings.Contains(string(body), "<!doctype html>") {
 			t.Errorf("expected page, got: %s", body)
+		}
+	})
+
+	t.Run("it renders full character page fragment on HTMX GET request", func(t *testing.T) {
+		userID := uuid.MustParse("55600000-0000-4523-90a2-4868a5bfc90a")
+		identity := stubCharacterPageIndentity{userID: &userID, isSignedIn: true}
+		character := domain.CharacterDTO{RawCharacter: domain.RawCharacter{Name: "TEST-CHARACTER"}}
+		stubCharacterService := &stubCharacterPageCharacterService{character: &character}
+		server := NewServer(nil, nil, &identity, stubCharacterService, nil, r)
+
+		request := httptest.NewRequest(http.MethodGet, "/character/69000000-0000-4523-90a2-4868a5bfc90a", nil)
+		request.Header.Set("HX-Request", "true")
+		response := httptest.NewRecorder()
+		server.ServeHTTP(response, request)
+
+		got := response.Result()
+
+		body, err := io.ReadAll(got.Body)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if got.StatusCode != http.StatusOK {
+			t.Errorf("got http status %v want http status %v", got.StatusCode, http.StatusOK)
+		}
+
+		if stubCharacterService.spyCharacterID.String() != "69000000-0000-4523-90a2-4868a5bfc90a" {
+			t.Errorf("got character id %s want character id %s", stubCharacterService.spyCharacterID.String(), "69000000-0000-4523-90a2-4868a5bfc90a")
+		}
+
+		if stubCharacterService.spyUserID != userID {
+			t.Errorf("got user id %v want user id %v", stubCharacterService.spyUserID, userID)
+		}
+
+		if !strings.Contains(string(body), "<h1>TEST-CHARACTER</h1>") {
+			t.Errorf("expected character page, got: %s", body)
+		}
+
+		if strings.Contains(string(body), "<!doctype html>") {
+			t.Errorf("expected fragment, got: %s", body)
+		}
+	})
+
+	t.Run("it returns bad request message on malformed character id", func(t *testing.T) {
+		userID := uuid.MustParse("55600000-0000-4523-90a2-4868a5bfc90a")
+		identity := stubCharacterPageIndentity{userID: &userID, isSignedIn: true}
+		stubCharacterService := &stubCharacterPageCharacterService{}
+		server := NewServer(nil, nil, &identity, stubCharacterService, nil, r)
+
+		request := httptest.NewRequest(http.MethodGet, "/character/bad-id", nil)
+		request.Header.Set("HX-Request", "true")
+		response := httptest.NewRecorder()
+		server.ServeHTTP(response, request)
+
+		got := response.Result()
+
+		body, err := io.ReadAll(got.Body)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if got.StatusCode != http.StatusBadRequest {
+			t.Errorf("got http status %v want http status %v", got.StatusCode, http.StatusBadRequest)
+		}
+
+		if stubCharacterService.spyCalls != 0 {
+			t.Errorf("got %d calls to character service want 0", stubCharacterService.spyCalls)
+		}
+
+		if !strings.Contains(string(body), "<span>bad request: malformed character id</span>") {
+			t.Errorf("expected bad request error message, got: %s", body)
+		}
+	})
+
+	t.Run("it returns unauthorized message on nil user id", func(t *testing.T) {
+		identity := stubCharacterPageIndentity{isSignedIn: true}
+		stubCharacterService := &stubCharacterPageCharacterService{}
+		server := NewServer(nil, nil, &identity, stubCharacterService, nil, r)
+
+		request := httptest.NewRequest(http.MethodGet, "/character/69000000-0000-4523-90a2-4868a5bfc90a", nil)
+		request.Header.Set("HX-Request", "true")
+		response := httptest.NewRecorder()
+		server.ServeHTTP(response, request)
+
+		got := response.Result()
+
+		body, err := io.ReadAll(got.Body)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if got.StatusCode != http.StatusUnauthorized {
+			t.Errorf("got http status %v want http status %v", got.StatusCode, http.StatusUnauthorized)
+		}
+
+		if stubCharacterService.spyCalls != 0 {
+			t.Errorf("got %d calls to character service want 0", stubCharacterService.spyCalls)
+		}
+
+		if !strings.Contains(string(body), "<span>unauthorised: sign in to edit character</span>") {
+			t.Errorf("expected unauthorised error message, got: %s", body)
+		}
+	})
+
+	t.Run("it should return internal server error message on get character error", func(t *testing.T) {
+		userID := uuid.MustParse("55600000-0000-4523-90a2-4868a5bfc90a")
+		identity := stubCharacterPageIndentity{userID: &userID, isSignedIn: true}
+		stubCharacterService := &stubCharacterPageCharacterService{err: fmt.Errorf("sadness")}
+		server := NewServer(nil, nil, &identity, stubCharacterService, nil, r)
+
+		request := httptest.NewRequest(http.MethodGet, "/character/69000000-0000-4523-90a2-4868a5bfc90a", nil)
+		request.Header.Set("HX-Request", "true")
+		response := httptest.NewRecorder()
+		server.ServeHTTP(response, request)
+
+		got := response.Result()
+
+		body, err := io.ReadAll(got.Body)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if got.StatusCode != http.StatusInternalServerError {
+			t.Errorf("got http status %v want http status %v", got.StatusCode, http.StatusInternalServerError)
+		}
+
+		if stubCharacterService.spyCalls != 1 {
+			t.Errorf("got %d calls to character service want 1", stubCharacterService.spyCalls)
+		}
+
+		if !strings.Contains(string(body), "<span>internal server error</span>") {
+			t.Errorf("expected internal server error message, got: %s", body)
+		}
+	})
+
+	t.Run("it should return not found message on nil character", func(t *testing.T) {
+		r, err := render.NewRenderService()
+		if err != nil {
+			t.Fatalf("render service error %v", err)
+		}
+
+		userID := uuid.MustParse("55600000-0000-4523-90a2-4868a5bfc90a")
+		identity := stubCharacterPageIndentity{userID: &userID, isSignedIn: true}
+		stubCharacterService := &stubCharacterPageCharacterService{}
+		server := NewServer(nil, nil, &identity, stubCharacterService, nil, r)
+
+		request := httptest.NewRequest(http.MethodGet, "/character/69000000-0000-4523-90a2-4868a5bfc90a", nil)
+		request.Header.Set("HX-Request", "true")
+		response := httptest.NewRecorder()
+		server.ServeHTTP(response, request)
+
+		got := response.Result()
+
+		body, err := io.ReadAll(got.Body)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if got.StatusCode != http.StatusNotFound {
+			t.Errorf("got http status %v want http status %v", got.StatusCode, http.StatusNotFound)
+		}
+
+		if stubCharacterService.spyCalls != 1 {
+			t.Errorf("got %d calls to character service want 1", stubCharacterService.spyCalls)
+		}
+
+		if !strings.Contains(string(body), "<span>character not found</span>") {
+			t.Errorf("expected not found message, got: %s", body)
 		}
 	})
 }
