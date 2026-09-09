@@ -49,7 +49,7 @@ func putCharacterHandler(render putCharacterRender, characterService putCharacte
 			return
 		}
 
-		c, problems := parseRawCharacter(r.PostForm)
+		c, problems := domain.ParseRawCharacter(r.PostForm)
 		if len(problems) > 0 {
 			slog.Warn("put character, invalid data submitted", "problems", problems)
 			errorList := []string{}

@@ -1,4 +1,4 @@
-package server
+package domain
 
 import (
 	"fmt"
@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/mp40/go-htmx-pccs/domain"
 )
 
 func TestParseRawCharacter(t *testing.T) {
@@ -23,12 +22,12 @@ func TestParseRawCharacter(t *testing.T) {
 			"gun_combat_learning_points":   {"  2"},
 			"hand_to_hand_learning_points": {"0 "},
 		}
-		got, problems := parseRawCharacter(formValues)
+		got, problems := ParseRawCharacter(formValues)
 		if len(problems) != 0 {
 			t.Errorf("got %d parsing problems, want 0", len(problems))
 		}
 
-		want := domain.RawCharacter{
+		want := RawCharacter{
 			Name:                     "Test-Man",
 			Str:                      9,
 			Int:                      8,
@@ -55,7 +54,7 @@ func TestParseRawCharacter(t *testing.T) {
 			"gun_combat_learning_points":   {"2"},
 			"hand_to_hand_learning_points": {"0 "},
 		}
-		_, problems := parseRawCharacter(formValues)
+		_, problems := ParseRawCharacter(formValues)
 		if len(problems) != 1 {
 			t.Errorf("got %d parsing problems, want 1", len(problems))
 		}
@@ -72,7 +71,7 @@ func TestParseRawCharacter(t *testing.T) {
 			"gun_combat_learning_points":   {"R"},
 			"hand_to_hand_learning_points": {"G"},
 		}
-		_, problems := parseRawCharacter(formValues)
+		_, problems := ParseRawCharacter(formValues)
 		if len(problems) != 8 {
 			t.Errorf("got %d parsing problems, want 8", len(problems))
 		}
@@ -103,7 +102,7 @@ func TestParseRawCharacter(t *testing.T) {
 				}
 				formValues.Set(test.characteristic, "0")
 
-				_, problems := parseRawCharacter(formValues)
+				_, problems := ParseRawCharacter(formValues)
 				if !strings.Contains(problems[test.characteristic], "invalid") {
 					t.Errorf("expected %s problem key to contain validation message", test.characteristic)
 				}
@@ -136,7 +135,7 @@ func TestParseRawCharacter(t *testing.T) {
 				}
 				formValues.Set(test.characteristic, "22")
 
-				_, problems := parseRawCharacter(formValues)
+				_, problems := ParseRawCharacter(formValues)
 				if !strings.Contains(problems[test.characteristic], "invalid") {
 					t.Errorf("expected %s problem key to contain validation message", test.characteristic)
 				}
@@ -165,7 +164,7 @@ func TestParseRawCharacter(t *testing.T) {
 				}
 				formValues.Set(test.level, "-1")
 
-				_, problems := parseRawCharacter(formValues)
+				_, problems := ParseRawCharacter(formValues)
 				if !strings.Contains(problems[test.level], "invalid") {
 					t.Errorf("expected %s problem key to contain validation message", test.level)
 				}
@@ -194,7 +193,7 @@ func TestParseRawCharacter(t *testing.T) {
 				}
 				formValues.Set(test.level, "1835")
 
-				_, problems := parseRawCharacter(formValues)
+				_, problems := ParseRawCharacter(formValues)
 				if !strings.Contains(problems[test.level], "invalid") {
 					t.Errorf("expected %s problem key to contain validation message", test.level)
 				}
