@@ -14,6 +14,19 @@
       hx-trigger="click"
       hx-target=".account-page"
       hx-swap="outerHTML"
+      hx-get="/character/{{ .ID }}"
+      hx-push-url="true"
+      hx-target-5*=".characters-error"
+      hx-target-4*=".characters-error"
+    >
+      View
+    </button>
+  </span>
+  <span>
+    <button
+      hx-trigger="click"
+      hx-target=".account-page"
+      hx-swap="outerHTML"
       hx-get="/account/characters/{{ .ID }}/edit"
       hx-push-url="true"
       hx-target-5*=".characters-error"
