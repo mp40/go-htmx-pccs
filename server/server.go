@@ -73,6 +73,8 @@ func NewServer(auth Auth, session Session, identity Identity, characterService C
 	router.Handle("DELETE /account/characters/{id}", deleteCharacterHandler(render, characterService, identity))
 	router.Handle("GET /account/characters/{id}/edit", getCharacterEditHandler(render, characterService, identity))
 
+	router.Handle("GET /character/{id}", getCharacterHandler(render, characterService, identity))
+
 	return router
 }
 

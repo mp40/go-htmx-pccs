@@ -75,7 +75,7 @@ func TestGetCharacterEditHandler_Route(t *testing.T) {
 		}
 
 		if stubCharacterService.spyUserID != userID {
-			t.Errorf("got character id %v want character id %v", stubCharacterService.spyUserID, userID)
+			t.Errorf("got user id %v want user id %v", stubCharacterService.spyUserID, userID)
 		}
 
 		if !strings.Contains(string(body), "<h2>Edit TEST-CHARACTER</h2>") {

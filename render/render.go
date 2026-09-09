@@ -145,6 +145,34 @@ func (r *Render) renderCharacterEditContentFragment(w io.Writer, character domai
 	return r.execute(w, "character-edit", data)
 }
 
+func (r *Render) RenderCharacterPage(w io.Writer, signedIn bool, character domain.CharacterDTO) error {
+	var page bytes.Buffer
+	err := r.RenderCharacterFragment(&page, character)
+	if err != nil {
+		return err
+	}
+
+	data := struct {
+		SignedIn bool
+		Page     template.HTML
+	}{
+		SignedIn: signedIn,
+		Page:     template.HTML(page.String()),
+	}
+
+	return r.execute(w, "index", data)
+}
+
+func (r *Render) RenderCharacterFragment(w io.Writer, character domain.CharacterDTO) error {
+	data := struct {
+		Character domain.CharacterDTO
+	}{
+		Character: character,
+	}
+
+	return r.execute(w, "character-view", data)
+}
+
 func (r *Render) RenderReferencePage(w io.Writer, signedIn bool) error {
 	var page bytes.Buffer
 	err := r.RenderReferenceFragment(&page)
