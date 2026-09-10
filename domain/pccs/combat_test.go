@@ -186,26 +186,139 @@ func TestCalculateMaxSpeed(t *testing.T) {
 
 func TestCalculateActions(t *testing.T) {
 	t.Run("it should return 0 actions if max speed is 0", func(t *testing.T) {
-		//
+		got := calculateActions(0, 50)
+		want := 0
+
+		if got != want {
+			t.Errorf("got %d, want %d", got, want)
+		}
 	})
 
 	t.Run("it should return 1 for max speed 1 and skill factor 7", func(t *testing.T) {
-		//
+		got := calculateActions(1, 7)
+		want := 1
+
+		if got != want {
+			t.Errorf("got %d, want %d", got, want)
+		}
 	})
 
 	t.Run("it should return 24 for max speed 13 and skill factor 39", func(t *testing.T) {
-		//
+		got := calculateActions(13, 39)
+		want := 24
+
+		if got != want {
+			t.Errorf("got %d, want %d", got, want)
+		}
 	})
 
 	t.Run("it should return 8 for max speed 7 and skill factor 21", func(t *testing.T) {
-		//
+		got := calculateActions(7, 21)
+		want := 8
+
+		if got != want {
+			t.Errorf("got %d, want %d", got, want)
+		}
 	})
 
 	t.Run("it should round down skill factor 10 to 9 and return 3 for max speed 6", func(t *testing.T) {
-		//
+		got := calculateActions(6, 10)
+		want := 3
+
+		if got != want {
+			t.Errorf("got %d, want %d", got, want)
+		}
 	})
 
-	t.Run("it ", func(t *testing.T) {
-		//
+	t.Run("it should round down skill factor 14 to 13 and return 2 for max speed 2", func(t *testing.T) {
+		got := calculateActions(2, 14)
+		want := 2
+
+		if got != want {
+			t.Errorf("got %d, want %d", got, want)
+		}
+	})
+
+	t.Run("it should treat skill factors less than 7 as 7", func(t *testing.T) {
+		got := calculateActions(1, 6)
+		want := 1
+
+		if got != want {
+			t.Errorf("got %d, want %d", got, want)
+		}
+	})
+
+	t.Run("it returns correct action count", func(t *testing.T) {
+		cases := []struct {
+			ms   int
+			isf  int
+			want int
+		}{
+			{ms: 1, isf: 29, want: 1},
+			{ms: 1, isf: 31, want: 2},
+			{ms: 3, isf: 13, want: 2},
+			{ms: 3, isf: 15, want: 3},
+			{ms: 5, isf: 23, want: 6},
+			{ms: 5, isf: 25, want: 7},
+			{ms: 10, isf: 29, want: 15},
+			{ms: 10, isf: 31, want: 16},
+			{ms: 10, isf: 35, want: 17},
+			{ms: 10, isf: 37, want: 18},
+			{ms: 11, isf: 33, want: 18},
+			{ms: 11, isf: 37, want: 19},
+		}
+
+		for _, tc := range cases {
+			got := calculateActions(tc.ms, tc.isf)
+
+			if got != tc.want {
+				t.Errorf("when ms is %v and isf is %v want %v, got %v", tc.ms, tc.isf, tc.want, got)
+			}
+
+		}
+	})
+}
+
+func TestCalculateDamageBonus(t *testing.T) {
+	t.Run("it should return 0 for max speed 0", func(t *testing.T) {
+		got := calculateDamageBonus(0, 27)
+		want := float32(0)
+
+		if got != want {
+			t.Errorf("got %g, want %g", got, want)
+		}
+	})
+
+	t.Run("it should return 0.5 for max speed 1 and skill factor 7", func(t *testing.T) {
+		got := calculateDamageBonus(1, 7)
+		want := float32(0.5)
+
+		if got != want {
+			t.Errorf("got %g, want %g", got, want)
+		}
+	})
+	t.Run("it should return 12 for max speed 11 and skill factor 39", func(t *testing.T) {
+		got := calculateDamageBonus(11, 39)
+		want := float32(12)
+
+		if got != want {
+			t.Errorf("got %g, want %g", got, want)
+		}
+	})
+	t.Run("it should return 2.5 for max speed 7 and skill factor 21", func(t *testing.T) {
+		got := calculateDamageBonus(7, 21)
+		want := float32(2.5)
+
+		if got != want {
+			t.Errorf("got %g, want %g", got, want)
+		}
+	})
+	t.Run("it should round down skill factor 12 to 11 and return 1 for max speed 6", func(t *testing.T) {
+		got := calculateDamageBonus(6, 11)
+		want := float32(1)
+
+		if got != want {
+			t.Errorf("got %g, want %g", got, want)
+		}
 	})
 }
