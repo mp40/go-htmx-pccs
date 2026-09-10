@@ -51,12 +51,13 @@ type CharacterEncumberance struct {
 	Encumberance   float32
 }
 
-func (ce *CharacterEncumberance) CalculateTotalEncumberance() {
+func (ce *CharacterEncumberance) calculateTotalEncumberance() {
 	ce.Encumberance = ce.ClothingWeight
 }
 
 func (e *EnchrichedCharacterDTO) enrichWithCombatData() {
-	e.BaseSpeed = pccs.CalculateBaseSpeed(e.Str, 5.0)
+	e.CharacterEncumberance.calculateTotalEncumberance()
+	e.BaseSpeed = pccs.CalculateBaseSpeed(e.Str, e.Encumberance)
 	e.MaxSpeed = pccs.CalculateMaxSpeed(e.Agi, e.BaseSpeed)
 	e.SAL = pccs.ParseSkillLevelToSkillFactor(e.GunCombatLevel)
 	e.CE = pccs.ParseSkillLevelToSkillFactor(e.HandToHandLevel)
