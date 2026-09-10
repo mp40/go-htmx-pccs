@@ -201,3 +201,51 @@ func TestParseRawCharacter(t *testing.T) {
 		}
 	})
 }
+
+func TestCalculateCharacterCombatData(t *testing.T) {
+	t.Run("it calculates combat data of average grune in uniform", func(t *testing.T) {
+		raw := RawCharacter{
+			Str:                      14,
+			Int:                      10,
+			Wil:                      10,
+			Hlt:                      10,
+			Agi:                      12,
+			Tch:                      10,
+			GunCombatLearningPoints:  8,
+			HandToHandLearningPoints: 4,
+		}
+
+		dto := CharacterDTO{
+			RawCharacter:    raw,
+			GunCombatLevel:  4,
+			HandToHandLevel: 2,
+		}
+
+		enc := CharacterEncumberance{
+			Uniform:        "Normal",
+			ClothingWeight: 5,
+		}
+
+		character := EnchrichedCharacterDTO{
+			CharacterDTO:          dto,
+			CharacterEncumberance: enc,
+		}
+
+		character.enrichWithCombatData()
+
+		wantCombatStats := CharacterCombatStats{
+			BaseSpeed:               3,
+			MaxSpeed:                7,
+			SAL:                     10,
+			CE:                      7,
+			KnockoutValue:           20,
+			HandToHandDamageBonus:   2.5,
+			GunCombatActions:        []int{2, 1, 2, 2},
+			HandToHandCombatActions: []int{2, 1, 2, 2},
+		}
+
+		if !cmp.Equal(character.CharacterCombatStats, wantCombatStats) {
+			t.Errorf("got %+v, want %+v", character.CharacterCombatStats, wantCombatStats)
+		}
+	})
+}

@@ -6,7 +6,7 @@ import (
 
 func TestCalculateBaseSpeed(t *testing.T) {
 	t.Run("it should return 4.5 for str 21 and lbs 10", func(t *testing.T) {
-		got := calculateBaseSpeed(21, 10)
+		got := CalculateBaseSpeed(21, 10)
 		want := float32(4.5)
 
 		if got != want {
@@ -15,7 +15,7 @@ func TestCalculateBaseSpeed(t *testing.T) {
 	})
 
 	t.Run("it should return 1.5 for str 1 and lbs 10", func(t *testing.T) {
-		got := calculateBaseSpeed(1, 10)
+		got := CalculateBaseSpeed(1, 10)
 		want := float32(1.5)
 
 		if got != want {
@@ -24,7 +24,7 @@ func TestCalculateBaseSpeed(t *testing.T) {
 	})
 
 	t.Run("it should return 2 for str 21 and lbs 200", func(t *testing.T) {
-		got := calculateBaseSpeed(21, 200)
+		got := CalculateBaseSpeed(21, 200)
 		want := float32(2)
 
 		if got != want {
@@ -33,7 +33,7 @@ func TestCalculateBaseSpeed(t *testing.T) {
 	})
 
 	t.Run("it should return 0 for str 1 and lbs 200", func(t *testing.T) {
-		got := calculateBaseSpeed(1, 200)
+		got := CalculateBaseSpeed(1, 200)
 		want := float32(0)
 
 		if got != want {
@@ -42,7 +42,7 @@ func TestCalculateBaseSpeed(t *testing.T) {
 	})
 
 	t.Run("it should round up 15.1 lbs to 20 and return 2 when str is 10", func(t *testing.T) {
-		got := calculateBaseSpeed(10, 15.1)
+		got := CalculateBaseSpeed(10, 15.1)
 		want := float32(2)
 
 		if got != want {
@@ -51,7 +51,7 @@ func TestCalculateBaseSpeed(t *testing.T) {
 	})
 
 	t.Run("it should round up 100.1 lbs to 125 and return 0 when str is 12", func(t *testing.T) {
-		got := calculateBaseSpeed(12, 100.1)
+		got := CalculateBaseSpeed(12, 100.1)
 		want := float32(0)
 
 		if got != want {
@@ -60,7 +60,7 @@ func TestCalculateBaseSpeed(t *testing.T) {
 	})
 
 	t.Run("it should return 1 for str 10 and lbs 100", func(t *testing.T) {
-		got := calculateBaseSpeed(10, 100)
+		got := CalculateBaseSpeed(10, 100)
 		want := float32(1)
 
 		if got != want {
@@ -69,7 +69,7 @@ func TestCalculateBaseSpeed(t *testing.T) {
 	})
 
 	t.Run("it should return 2 for str 15 and lbs 50", func(t *testing.T) {
-		got := calculateBaseSpeed(15, 50)
+		got := CalculateBaseSpeed(15, 50)
 		want := float32(2)
 
 		if got != want {
@@ -78,7 +78,7 @@ func TestCalculateBaseSpeed(t *testing.T) {
 	})
 
 	t.Run("it should return 2 for str 13 and lbs 24.5", func(t *testing.T) {
-		got := calculateBaseSpeed(13, 24.5)
+		got := CalculateBaseSpeed(13, 24.5)
 		want := float32(2)
 
 		if got != want {
@@ -136,7 +136,7 @@ func TestCalculateBaseSpeed(t *testing.T) {
 		}
 
 		for _, tc := range cases {
-			got := calculateBaseSpeed(tc.str, tc.enc)
+			got := CalculateBaseSpeed(tc.str, tc.enc)
 
 			if got != tc.want {
 				t.Errorf("when str is %v and lbs is %v want %v, got %v", tc.str, tc.enc, tc.want, got)
@@ -148,7 +148,7 @@ func TestCalculateBaseSpeed(t *testing.T) {
 
 func TestCalculateMaxSpeed(t *testing.T) {
 	t.Run("it should return 0 if base speed is 0", func(t *testing.T) {
-		got := calculateMaxSpeed(21, 0)
+		got := CalculateMaxSpeed(21, 0)
 		want := 0
 
 		if got != want {
@@ -157,7 +157,7 @@ func TestCalculateMaxSpeed(t *testing.T) {
 	})
 
 	t.Run("it should return 2 if agi is 21 and base speed is 1", func(t *testing.T) {
-		got := calculateMaxSpeed(21, 1)
+		got := CalculateMaxSpeed(21, 1)
 		want := 2
 
 		if got != want {
@@ -166,7 +166,7 @@ func TestCalculateMaxSpeed(t *testing.T) {
 	})
 
 	t.Run("it should return 5 if agi is 10 and base speed is 2.5", func(t *testing.T) {
-		got := calculateMaxSpeed(10, 2.5)
+		got := CalculateMaxSpeed(10, 2.5)
 		want := 5
 
 		if got != want {
@@ -175,7 +175,7 @@ func TestCalculateMaxSpeed(t *testing.T) {
 	})
 
 	t.Run("it should return 3 if agi is 1 and base speed is 4.5", func(t *testing.T) {
-		got := calculateMaxSpeed(1, 4.5)
+		got := CalculateMaxSpeed(1, 4.5)
 		want := 3
 
 		if got != want {
@@ -281,7 +281,7 @@ func TestCalculateActions(t *testing.T) {
 
 func TestCalculateDamageBonus(t *testing.T) {
 	t.Run("it should return 0 for max speed 0", func(t *testing.T) {
-		got := calculateDamageBonus(0, 27)
+		got := CalculateDamageBonus(0, 27)
 		want := float32(0)
 
 		if got != want {
@@ -290,7 +290,7 @@ func TestCalculateDamageBonus(t *testing.T) {
 	})
 
 	t.Run("it should return 0.5 for max speed 1 and skill factor 7", func(t *testing.T) {
-		got := calculateDamageBonus(1, 7)
+		got := CalculateDamageBonus(1, 7)
 		want := float32(0.5)
 
 		if got != want {
@@ -298,7 +298,7 @@ func TestCalculateDamageBonus(t *testing.T) {
 		}
 	})
 	t.Run("it should return 12 for max speed 11 and skill factor 39", func(t *testing.T) {
-		got := calculateDamageBonus(11, 39)
+		got := CalculateDamageBonus(11, 39)
 		want := float32(12)
 
 		if got != want {
@@ -306,7 +306,7 @@ func TestCalculateDamageBonus(t *testing.T) {
 		}
 	})
 	t.Run("it should return 2.5 for max speed 7 and skill factor 21", func(t *testing.T) {
-		got := calculateDamageBonus(7, 21)
+		got := CalculateDamageBonus(7, 21)
 		want := float32(2.5)
 
 		if got != want {
@@ -314,7 +314,7 @@ func TestCalculateDamageBonus(t *testing.T) {
 		}
 	})
 	t.Run("it should round down skill factor 12 to 11 and return 1 for max speed 6", func(t *testing.T) {
-		got := calculateDamageBonus(6, 11)
+		got := CalculateDamageBonus(6, 11)
 		want := float32(1)
 
 		if got != want {

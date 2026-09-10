@@ -6,7 +6,14 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
+	"github.com/mp40/go-htmx-pccs/domain/pccs"
 )
+
+type EnchrichedCharacterDTO struct {
+	CharacterDTO
+	CharacterCombatStats
+	CharacterEncumberance
+}
 
 type CharacterDTO struct {
 	RawCharacter
@@ -36,6 +43,27 @@ type CharacterCombatStats struct {
 	KnockoutValue           int
 	GunCombatActions        []int
 	HandToHandCombatActions []int
+}
+
+type CharacterEncumberance struct {
+	Uniform        string
+	ClothingWeight float32
+	Encumberance   float32
+}
+
+func (ce *CharacterEncumberance) CalculateTotalEncumberance() {
+	ce.Encumberance = ce.ClothingWeight
+}
+
+func (e *EnchrichedCharacterDTO) enrichWithCombatData() {
+	e.BaseSpeed = pccs.CalculateBaseSpeed(e.Str, 5.0)
+	e.MaxSpeed = pccs.CalculateMaxSpeed(e.Agi, e.BaseSpeed)
+	e.SAL = pccs.ParseSkillLevelToSkillFactor(e.GunCombatLevel)
+	e.CE = pccs.ParseSkillLevelToSkillFactor(e.HandToHandLevel)
+	e.HandToHandDamageBonus = pccs.CalculateDamageBonus(e.MaxSpeed, (e.Agi + e.CE))
+	e.KnockoutValue = int((0.5 * float32(e.Wil))) * e.GunCombatLevel
+	e.GunCombatActions = pccs.GetActionsPerImpulse(e.MaxSpeed, (e.Int + e.SAL))
+	e.HandToHandCombatActions = pccs.GetActionsPerImpulse(e.MaxSpeed, (e.Agi + e.CE))
 }
 
 func ParseRawCharacter(form url.Values) (RawCharacter, map[string]string) {
