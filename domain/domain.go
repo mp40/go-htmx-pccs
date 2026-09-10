@@ -62,7 +62,7 @@ func (e *EnchrichedCharacterDTO) enrichWithCombatData() {
 	e.SAL = pccs.ParseSkillLevelToSkillFactor(e.GunCombatLevel)
 	e.CE = pccs.ParseSkillLevelToSkillFactor(e.HandToHandLevel)
 	e.HandToHandDamageBonus = pccs.CalculateDamageBonus(e.MaxSpeed, (e.Agi + e.CE))
-	e.KnockoutValue = int((0.5 * float32(e.Wil))) * e.GunCombatLevel
+	e.KnockoutValue = int((0.5 * float32(e.Wil)) * float32(e.GunCombatLevel))
 	e.GunCombatActions = pccs.GetActionsPerImpulse(e.MaxSpeed, (e.Int + e.SAL))
 	e.HandToHandCombatActions = pccs.GetActionsPerImpulse(e.MaxSpeed, (e.Agi + e.CE))
 }

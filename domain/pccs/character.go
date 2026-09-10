@@ -34,17 +34,3 @@ func ConvertLearningPointsToLevel(learningPoints float32) int {
 	}
 	return level
 }
-
-// TODO calculate Base Speed
-// TODO calculate Max Speed
-// TODO calculate SAL
-// TODO calculate DB
-// Calculate KV
-// Calculate Gun Combat Actions
-// Calculate hand to hand Actions
-
-// Base Speed = STR to Weight Reference
-// Max Speed = AGI to Base Speed Reference
-// SAL = Skill level reference
-// ISF = INT + SAL
-// Gun Combat actions = MS to ISF reference
