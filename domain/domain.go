@@ -27,6 +27,17 @@ type RawCharacter struct {
 	HandToHandLearningPoints float32   `json:"hand_to_hand_learning_points"`
 }
 
+type CharacterCombatStats struct {
+	BaseSpeed               float32
+	MaxSpeed                int
+	SAL                     int
+	CE                      int
+	HandToHandDamageBonus   float32
+	KnockoutValue           int
+	GunCombatActions        []int
+	HandToHandCombatActions []int
+}
+
 func ParseRawCharacter(form url.Values) (RawCharacter, map[string]string) {
 	problems := map[string]string{}
 
