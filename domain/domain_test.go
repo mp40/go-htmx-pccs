@@ -221,14 +221,14 @@ func TestCalculateCharacterCombatData(t *testing.T) {
 			HandToHandLevel: 2,
 		}
 
-		enc := CharacterEncumberance{
+		enc := CharacterEncumbrance{
 			Uniform:        "Normal",
 			ClothingWeight: 5,
 		}
 
-		character := EnchrichedCharacterDTO{
-			CharacterDTO:          dto,
-			CharacterEncumberance: enc,
+		character := EnrichedCharacterDTO{
+			CharacterDTO:         dto,
+			CharacterEncumbrance: enc,
 		}
 
 		character.enrichWithCombatData()
@@ -267,14 +267,14 @@ func TestCalculateCharacterCombatData(t *testing.T) {
 			HandToHandLevel: 1,
 		}
 
-		enc := CharacterEncumberance{
+		enc := CharacterEncumbrance{
 			Uniform:        "Normal",
 			ClothingWeight: 5,
 		}
 
-		character := EnchrichedCharacterDTO{
-			CharacterDTO:          dto,
-			CharacterEncumberance: enc,
+		character := EnrichedCharacterDTO{
+			CharacterDTO:         dto,
+			CharacterEncumbrance: enc,
 		}
 
 		character.enrichWithCombatData()
@@ -313,14 +313,14 @@ func TestCalculateCharacterCombatData(t *testing.T) {
 			HandToHandLevel: 5,
 		}
 
-		enc := CharacterEncumberance{
+		enc := CharacterEncumbrance{
 			Uniform:        "Normal",
 			ClothingWeight: 5,
 		}
 
-		character := EnchrichedCharacterDTO{
-			CharacterDTO:          dto,
-			CharacterEncumberance: enc,
+		character := EnrichedCharacterDTO{
+			CharacterDTO:         dto,
+			CharacterEncumbrance: enc,
 		}
 
 		character.enrichWithCombatData()
@@ -359,14 +359,14 @@ func TestCalculateCharacterCombatData(t *testing.T) {
 			HandToHandLevel: 7,
 		}
 
-		enc := CharacterEncumberance{
+		enc := CharacterEncumbrance{
 			Uniform:        "Normal",
 			ClothingWeight: 5,
 		}
 
-		character := EnchrichedCharacterDTO{
-			CharacterDTO:          dto,
-			CharacterEncumberance: enc,
+		character := EnrichedCharacterDTO{
+			CharacterDTO:         dto,
+			CharacterEncumbrance: enc,
 		}
 
 		character.enrichWithCombatData()

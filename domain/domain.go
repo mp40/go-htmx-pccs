@@ -9,10 +9,10 @@ import (
 	"github.com/mp40/go-htmx-pccs/domain/pccs"
 )
 
-type EnchrichedCharacterDTO struct {
+type EnrichedCharacterDTO struct {
 	CharacterDTO
 	CharacterCombatStats
-	CharacterEncumberance
+	CharacterEncumbrance
 }
 
 type CharacterDTO struct {
@@ -45,25 +45,25 @@ type CharacterCombatStats struct {
 	HandToHandCombatActions []int
 }
 
-type CharacterEncumberance struct {
+type CharacterEncumbrance struct {
 	Uniform        string
 	ClothingWeight float32
-	Encumberance   float32
+	Encumbrance    float32
 }
 
-func (ce *CharacterEncumberance) calculateTotalEncumberance() {
-	ce.Encumberance = ce.ClothingWeight
+func (ce *CharacterEncumbrance) calculateTotalEncumbrance() {
+	ce.Encumbrance = ce.ClothingWeight
 }
 
-func (e *EnchrichedCharacterDTO) enrichWithCombatData() {
+func (e *EnrichedCharacterDTO) enrichWithCombatData() {
 	var dominantCombatLevel int
 	if e.GunCombatLevel > e.HandToHandLevel {
 		dominantCombatLevel = e.GunCombatLevel
 	} else {
 		dominantCombatLevel = e.HandToHandLevel
 	}
-	e.calculateTotalEncumberance()
-	e.BaseSpeed = pccs.CalculateBaseSpeed(e.Str, e.Encumberance)
+	e.calculateTotalEncumbrance()
+	e.BaseSpeed = pccs.CalculateBaseSpeed(e.Str, e.Encumbrance)
 	e.MaxSpeed = pccs.CalculateMaxSpeed(e.Agi, e.BaseSpeed)
 	e.SAL = pccs.ParseSkillLevelToSkillFactor(e.GunCombatLevel)
 	e.CE = pccs.ParseSkillLevelToSkillFactor(e.HandToHandLevel)
@@ -78,7 +78,7 @@ func ParseRawCharacter(form url.Values) (RawCharacter, map[string]string) {
 
 	name := strings.TrimSpace(form.Get("name"))
 	rawStr := strings.TrimSpace(form.Get("str"))
-	rawItel := strings.TrimSpace(form.Get("int"))
+	rawIntel := strings.TrimSpace(form.Get("int"))
 	rawWil := strings.TrimSpace(form.Get("wil"))
 	rawHlt := strings.TrimSpace(form.Get("hlt"))
 	rawAgi := strings.TrimSpace(form.Get("agi"))
@@ -93,7 +93,7 @@ func ParseRawCharacter(form url.Values) (RawCharacter, map[string]string) {
 		problems["str"] = "is invalid (must be between 1 and 21)"
 	}
 
-	intel, err := strconv.Atoi(rawItel)
+	intel, err := strconv.Atoi(rawIntel)
 	if err != nil {
 		problems["int"] = "is not a number"
 	} else if intel < 1 || intel > 21 {
