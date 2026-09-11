@@ -56,7 +56,7 @@ var maxSpeedTable = map[int][]int{
 
 var skillFactorTable = []int{0, 5, 7, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26}
 
-var skillThresholds = []int{7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 22, 35, 37, 39}
+var skillThresholds = []int{7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35, 37, 39}
 
 var combatActionsTable = map[int][]int{
 	1:  {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2},

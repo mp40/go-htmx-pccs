@@ -56,13 +56,19 @@ func (ce *CharacterEncumberance) calculateTotalEncumberance() {
 }
 
 func (e *EnchrichedCharacterDTO) enrichWithCombatData() {
-	e.CharacterEncumberance.calculateTotalEncumberance()
+	var dominantCombatLevel int
+	if e.GunCombatLevel > e.HandToHandLevel {
+		dominantCombatLevel = e.GunCombatLevel
+	} else {
+		dominantCombatLevel = e.HandToHandLevel
+	}
+	e.calculateTotalEncumberance()
 	e.BaseSpeed = pccs.CalculateBaseSpeed(e.Str, e.Encumberance)
 	e.MaxSpeed = pccs.CalculateMaxSpeed(e.Agi, e.BaseSpeed)
 	e.SAL = pccs.ParseSkillLevelToSkillFactor(e.GunCombatLevel)
 	e.CE = pccs.ParseSkillLevelToSkillFactor(e.HandToHandLevel)
 	e.HandToHandDamageBonus = pccs.CalculateDamageBonus(e.MaxSpeed, (e.Agi + e.CE))
-	e.KnockoutValue = int((0.5 * float32(e.Wil)) * float32(e.GunCombatLevel))
+	e.KnockoutValue = int((0.5 * float32(e.Wil)) * float32(dominantCombatLevel))
 	e.GunCombatActions = pccs.GetActionsPerImpulse(e.MaxSpeed, (e.Int + e.SAL))
 	e.HandToHandCombatActions = pccs.GetActionsPerImpulse(e.MaxSpeed, (e.Agi + e.CE))
 }

@@ -340,4 +340,50 @@ func TestCalculateCharacterCombatData(t *testing.T) {
 			t.Errorf("got %+v, want %+v", character.CharacterCombatStats, wantCombatStats)
 		}
 	})
+
+	t.Run("it calculates combat data of hand to hand specialist in uniform", func(t *testing.T) {
+		raw := RawCharacter{
+			Str:                      10,
+			Int:                      10,
+			Wil:                      10,
+			Hlt:                      10,
+			Agi:                      19,
+			Tch:                      10,
+			GunCombatLearningPoints:  0,
+			HandToHandLearningPoints: 88,
+		}
+
+		dto := CharacterDTO{
+			RawCharacter:    raw,
+			GunCombatLevel:  0,
+			HandToHandLevel: 7,
+		}
+
+		enc := CharacterEncumberance{
+			Uniform:        "Normal",
+			ClothingWeight: 5,
+		}
+
+		character := EnchrichedCharacterDTO{
+			CharacterDTO:          dto,
+			CharacterEncumberance: enc,
+		}
+
+		character.enrichWithCombatData()
+
+		wantCombatStats := CharacterCombatStats{
+			BaseSpeed:               3,
+			MaxSpeed:                8,
+			SAL:                     0,
+			CE:                      13,
+			KnockoutValue:           35,
+			HandToHandDamageBonus:   5,
+			GunCombatActions:        []int{1, 1, 1, 1},
+			HandToHandCombatActions: []int{3, 3, 3, 3},
+		}
+
+		if !cmp.Equal(character.CharacterCombatStats, wantCombatStats) {
+			t.Errorf("got %+v, want %+v", character.CharacterCombatStats, wantCombatStats)
+		}
+	})
 }
