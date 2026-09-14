@@ -481,3 +481,52 @@ body {
   display: flex;
   flex-direction: column;
 }
+
+.character-page > .container {
+  display: grid;
+  grid-template-columns: 2em 2em 2em 2em 2em 2em 2em 2em 2em 2em 2em;
+  grid-gap: 0.5em;
+}
+
+.character-page > .container > table {
+  height: fit-content;
+  white-space: nowrap;
+  border-collapse: collapse;
+}
+
+.character-page > .container > table > tbody > tr > td:nth-of-type(n+2) {
+  text-align: center;
+}
+
+.character-page > .container > table > tbody > tr > td:first-of-type {
+  padding: 0 2px;
+}
+
+
+.character-page > .container > .attributes {
+  grid-column: 1 / 2;
+}
+
+.character-page > .container > .stats {
+  grid-column: 3 / 7;
+}
+
+.character-page > .container > .actions {
+  border: 1px solid var(--panzer-grey);
+  grid-column: 8 / 10;
+}
+
+.character-page > .container > .actions > tbody > tr > th {
+  background-color: var(--panzer-grey);
+  color: var(--insignia-white);
+}
+
+.character-page > .container > .actions > tbody > tr > th:first-of-type {
+  text-align: left;
+  padding: 0 2px;
+}
+
+.character-page > .container > .actions > tbody > tr > th:nth-of-type(n+2) {
+  text-align: center;
+  padding: 0 6px;
+}

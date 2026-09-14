@@ -1,5 +1,44 @@
 {{ define "character-view" }}
 <div class="page-div character-page">
   <h1>{{ .Character.Name }}</h1>
+  <div class="container">
+    <table class="attributes">
+      <tr><td>Str:</td><td>{{ .Character.Str }}</td></tr>
+      <tr><td>Int:</td><td>{{ .Character.Int }}</td></tr>
+      <tr><td>Wil:</td><td>{{ .Character.Wil }}</td></tr>
+      <tr><td>Hlt:</td><td>{{ .Character.Hlt }}</td></tr>
+      <tr><td>Agi:</td><td>{{ .Character.Agi }}</td></tr>
+      <tr><td>Tch:</td><td>{{ .Character.Tch }}</td></tr>
+    </table>
+    <table class="stats">
+      <tr><td>Gun Combat Lvl:</td><td>{{ .Character.GunCombatLevel}}</td></tr>
+      <tr><td>Hand to Hand Lvl:</td><td>{{ .Character.HandToHandLevel}}</td></tr>
+      <tr><td>Hand to Hand DB:</td><td>{{ .Character.HandToHandDamageBonus}}</td></tr>
+      <tr><td>Knockout Value:</td><td>{{ .Character.KnockoutValue}}</td></tr>
+    </table>
+    <table class="actions">
+      <tr>
+        <th>Impulse</th>
+        <th>1</th>
+        <th>2</th>
+        <th>3</th>
+        <th>4</th>
+      </tr>
+      <tr>
+        <td>Gun Combat</td>
+        <td>{{ index .Character.GunCombatActions 0 }}</td>
+        <td>{{ index .Character.GunCombatActions 1 }}</td>
+        <td>{{ index .Character.GunCombatActions 2 }}</td>
+        <td>{{ index .Character.GunCombatActions 3 }}</td>
+      </tr>
+      <tr>
+        <td>Hand to Hand</td>
+        <td>{{ index .Character.HandToHandCombatActions 0 }}</td>
+        <td>{{ index .Character.HandToHandCombatActions 1 }}</td>
+        <td>{{ index .Character.HandToHandCombatActions 2 }}</td>
+        <td>{{ index .Character.HandToHandCombatActions 3 }}</td>
+        </tr>
+    </table>
+  </div>
 </div>
 {{ end }}

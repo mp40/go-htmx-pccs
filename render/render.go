@@ -145,7 +145,7 @@ func (r *Render) renderCharacterEditContentFragment(w io.Writer, character domai
 	return r.execute(w, "character-edit", data)
 }
 
-func (r *Render) RenderCharacterPage(w io.Writer, signedIn bool, character domain.CharacterDTO) error {
+func (r *Render) RenderCharacterPage(w io.Writer, signedIn bool, character domain.EnrichedCharacterDTO) error {
 	var page bytes.Buffer
 	err := r.RenderCharacterFragment(&page, character)
 	if err != nil {
@@ -163,9 +163,9 @@ func (r *Render) RenderCharacterPage(w io.Writer, signedIn bool, character domai
 	return r.execute(w, "index", data)
 }
 
-func (r *Render) RenderCharacterFragment(w io.Writer, character domain.CharacterDTO) error {
+func (r *Render) RenderCharacterFragment(w io.Writer, character domain.EnrichedCharacterDTO) error {
 	data := struct {
-		Character domain.CharacterDTO
+		Character domain.EnrichedCharacterDTO
 	}{
 		Character: character,
 	}
