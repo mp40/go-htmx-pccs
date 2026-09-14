@@ -226,14 +226,9 @@ func TestCalculateCharacterCombatData(t *testing.T) {
 			ClothingWeight: 5,
 		}
 
-		character := EnrichedCharacterDTO{
-			CharacterDTO:         dto,
-			CharacterEncumbrance: enc,
-		}
+		got := calculateCombatStats(dto, enc)
 
-		character.enrichWithCombatData()
-
-		wantCombatStats := CharacterCombatStats{
+		want := CharacterCombatStats{
 			BaseSpeed:               3,
 			MaxSpeed:                7,
 			SAL:                     10,
@@ -244,8 +239,8 @@ func TestCalculateCharacterCombatData(t *testing.T) {
 			HandToHandCombatActions: []int{2, 1, 2, 2},
 		}
 
-		if !cmp.Equal(character.CharacterCombatStats, wantCombatStats) {
-			t.Errorf("got %+v, want %+v", character.CharacterCombatStats, wantCombatStats)
+		if !cmp.Equal(got, want) {
+			t.Errorf("got %+v, want %+v", got, want)
 		}
 	})
 
@@ -272,14 +267,9 @@ func TestCalculateCharacterCombatData(t *testing.T) {
 			ClothingWeight: 5,
 		}
 
-		character := EnrichedCharacterDTO{
-			CharacterDTO:         dto,
-			CharacterEncumbrance: enc,
-		}
+		got := calculateCombatStats(dto, enc)
 
-		character.enrichWithCombatData()
-
-		wantCombatStats := CharacterCombatStats{
+		want := CharacterCombatStats{
 			BaseSpeed:               3,
 			MaxSpeed:                6,
 			SAL:                     9,
@@ -290,8 +280,8 @@ func TestCalculateCharacterCombatData(t *testing.T) {
 			HandToHandCombatActions: []int{2, 1, 1, 1},
 		}
 
-		if !cmp.Equal(character.CharacterCombatStats, wantCombatStats) {
-			t.Errorf("got %+v, want %+v", character.CharacterCombatStats, wantCombatStats)
+		if !cmp.Equal(got, want) {
+			t.Errorf("got %+v, want %+v", got, want)
 		}
 	})
 
@@ -318,14 +308,9 @@ func TestCalculateCharacterCombatData(t *testing.T) {
 			ClothingWeight: 5,
 		}
 
-		character := EnrichedCharacterDTO{
-			CharacterDTO:         dto,
-			CharacterEncumbrance: enc,
-		}
+		got := calculateCombatStats(dto, enc)
 
-		character.enrichWithCombatData()
-
-		wantCombatStats := CharacterCombatStats{
+		want := CharacterCombatStats{
 			BaseSpeed:               3.5,
 			MaxSpeed:                8,
 			SAL:                     16,
@@ -336,8 +321,8 @@ func TestCalculateCharacterCombatData(t *testing.T) {
 			HandToHandCombatActions: []int{3, 2, 3, 3},
 		}
 
-		if !cmp.Equal(character.CharacterCombatStats, wantCombatStats) {
-			t.Errorf("got %+v, want %+v", character.CharacterCombatStats, wantCombatStats)
+		if !cmp.Equal(got, want) {
+			t.Errorf("got %+v, want %+v", got, want)
 		}
 	})
 
@@ -364,14 +349,9 @@ func TestCalculateCharacterCombatData(t *testing.T) {
 			ClothingWeight: 5,
 		}
 
-		character := EnrichedCharacterDTO{
-			CharacterDTO:         dto,
-			CharacterEncumbrance: enc,
-		}
+		got := calculateCombatStats(dto, enc)
 
-		character.enrichWithCombatData()
-
-		wantCombatStats := CharacterCombatStats{
+		want := CharacterCombatStats{
 			BaseSpeed:               3,
 			MaxSpeed:                8,
 			SAL:                     0,
@@ -382,8 +362,8 @@ func TestCalculateCharacterCombatData(t *testing.T) {
 			HandToHandCombatActions: []int{3, 3, 3, 3},
 		}
 
-		if !cmp.Equal(character.CharacterCombatStats, wantCombatStats) {
-			t.Errorf("got %+v, want %+v", character.CharacterCombatStats, wantCombatStats)
+		if !cmp.Equal(got, want) {
+			t.Errorf("got %+v, want %+v", got, want)
 		}
 	})
 }

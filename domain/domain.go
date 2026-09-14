@@ -48,29 +48,48 @@ type CharacterCombatStats struct {
 type CharacterEncumbrance struct {
 	Uniform        string
 	ClothingWeight float32
-	Encumbrance    float32
 }
 
-func (ce *CharacterEncumbrance) calculateTotalEncumbrance() {
-	ce.Encumbrance = ce.ClothingWeight
+func calculateTotalEncumbrance(enc CharacterEncumbrance) float32 {
+	return enc.ClothingWeight
 }
 
-func (e *EnrichedCharacterDTO) enrichWithCombatData() {
+func calculateCombatStats(dto CharacterDTO, enc CharacterEncumbrance) CharacterCombatStats {
 	var dominantCombatLevel int
-	if e.GunCombatLevel > e.HandToHandLevel {
-		dominantCombatLevel = e.GunCombatLevel
+	if dto.GunCombatLevel > dto.HandToHandLevel {
+		dominantCombatLevel = dto.GunCombatLevel
 	} else {
-		dominantCombatLevel = e.HandToHandLevel
+		dominantCombatLevel = dto.HandToHandLevel
 	}
-	e.calculateTotalEncumbrance()
-	e.BaseSpeed = pccs.CalculateBaseSpeed(e.Str, e.Encumbrance)
-	e.MaxSpeed = pccs.CalculateMaxSpeed(e.Agi, e.BaseSpeed)
-	e.SAL = pccs.ParseSkillLevelToSkillFactor(e.GunCombatLevel)
-	e.CE = pccs.ParseSkillLevelToSkillFactor(e.HandToHandLevel)
-	e.HandToHandDamageBonus = pccs.CalculateDamageBonus(e.MaxSpeed, (e.Agi + e.CE))
-	e.KnockoutValue = int((0.5 * float32(e.Wil)) * float32(dominantCombatLevel))
-	e.GunCombatActions = pccs.GetActionsPerImpulse(e.MaxSpeed, (e.Int + e.SAL))
-	e.HandToHandCombatActions = pccs.GetActionsPerImpulse(e.MaxSpeed, (e.Agi + e.CE))
+
+	baseSpeed := pccs.CalculateBaseSpeed(dto.Str, calculateTotalEncumbrance(enc))
+	maxSpeed := pccs.CalculateMaxSpeed(dto.Agi, baseSpeed)
+	sal := pccs.ParseSkillLevelToSkillFactor(dto.GunCombatLevel)
+	ce := pccs.ParseSkillLevelToSkillFactor(dto.HandToHandLevel)
+	handToHandDamageBonus := pccs.CalculateDamageBonus(maxSpeed, (dto.Agi + ce))
+	knockoutValue := int((0.5 * float32(dto.Wil)) * float32(dominantCombatLevel))
+	gunCombatActions := pccs.GetActionsPerImpulse(maxSpeed, (dto.Int + sal))
+	handToHandCombatActions := pccs.GetActionsPerImpulse(maxSpeed, (dto.Agi + ce))
+
+	return CharacterCombatStats{
+		BaseSpeed:               baseSpeed,
+		MaxSpeed:                maxSpeed,
+		SAL:                     sal,
+		CE:                      ce,
+		HandToHandDamageBonus:   handToHandDamageBonus,
+		KnockoutValue:           knockoutValue,
+		GunCombatActions:        gunCombatActions,
+		HandToHandCombatActions: handToHandCombatActions,
+	}
+}
+
+func EnrichCharacter(character CharacterDTO, enc CharacterEncumbrance) EnrichedCharacterDTO {
+	combatStats := calculateCombatStats(character, enc)
+	return EnrichedCharacterDTO{
+		CharacterDTO:         character,
+		CharacterEncumbrance: enc,
+		CharacterCombatStats: combatStats,
+	}
 }
 
 func ParseRawCharacter(form url.Values) (RawCharacter, map[string]string) {
