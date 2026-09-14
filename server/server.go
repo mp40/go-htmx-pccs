@@ -28,6 +28,7 @@ type CharacterService interface {
 	GetCharactersByUserID(userID uuid.UUID) ([]domain.CharacterDTO, error)
 	GetUserCharacterByID(userID uuid.UUID, characterID uuid.UUID) (*domain.CharacterDTO, error)
 	DeleteUserCharacterByID(userID uuid.UUID, charcaterID uuid.UUID) error
+	GetUserEnrichedCharacterByID(userID uuid.UUID, charcaterID uuid.UUID) (*domain.EnrichedCharacterDTO, error)
 }
 
 type Identity interface {

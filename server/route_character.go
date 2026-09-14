@@ -11,8 +11,8 @@ import (
 )
 
 type getCharacterPageRender interface {
-	RenderCharacterPage(w io.Writer, signedIn bool, character domain.CharacterDTO) error
-	RenderCharacterFragment(w io.Writer, character domain.CharacterDTO) error
+	RenderCharacterPage(w io.Writer, signedIn bool, character domain.EnrichedCharacterDTO) error
+	RenderCharacterFragment(w io.Writer, character domain.EnrichedCharacterDTO) error
 	RenderErrorMessageFragment(w io.Writer, msg string) error
 }
 
@@ -22,7 +22,7 @@ type getCharacterPageIdentity interface {
 }
 
 type getCharacterPageCharacters interface {
-	GetUserCharacterByID(userID uuid.UUID, characterID uuid.UUID) (*domain.CharacterDTO, error)
+	GetUserEnrichedCharacterByID(userID uuid.UUID, characterID uuid.UUID) (*domain.EnrichedCharacterDTO, error)
 }
 
 func getCharacterHandler(render getCharacterPageRender, characters getCharacterPageCharacters, identity getCharacterPageIdentity) http.Handler {
@@ -56,7 +56,7 @@ func getCharacterHandler(render getCharacterPageRender, characters getCharacterP
 			return
 		}
 
-		c, err := characters.GetUserCharacterByID(*userID, characterID)
+		c, err := characters.GetUserEnrichedCharacterByID(*userID, characterID)
 		if err != nil {
 			slog.Error("get character page", "err", err)
 			w.Header().Set("Content-Type", "text/html; charset=utf-8")

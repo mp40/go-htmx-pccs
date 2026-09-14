@@ -106,6 +106,25 @@ func (cs *CharacterService) DeleteUserCharacterByID(userID uuid.UUID, characterI
 	return cs.store.DeleteUserCharacterByID(userID, characterID)
 }
 
+func (cs *CharacterService) GetUserEnrichedCharacterByID(userID uuid.UUID, characterID uuid.UUID) (*domain.EnrichedCharacterDTO, error) {
+	character, err := cs.store.GetUserCharacterByID(userID, characterID)
+	if character == nil || err != nil {
+		return nil, err
+	}
+
+	// hard code until encumberance feature added
+	encumberance := domain.CharacterEncumbrance{
+		Uniform:        "Normal",
+		ClothingWeight: 5,
+	}
+
+	dto := mapStoreCharacterToDomainCharacter(*character)
+
+	enrichedCharacter := domain.EnrichCharacter(dto, encumberance)
+
+	return &enrichedCharacter, nil
+}
+
 var names = []string{"Leo", "Roy", "Sam", "Joe", "Ben", "Ray", "Avi", "Ian", "Dan", "Tom"}
 
 func generateRandomNumber(min int, max int) int {

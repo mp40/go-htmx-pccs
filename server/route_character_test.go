@@ -15,14 +15,14 @@ import (
 
 type stubCharacterPageCharacterService struct {
 	stubCharacterService
-	character      *domain.CharacterDTO
+	character      *domain.EnrichedCharacterDTO
 	err            error
 	spyCalls       int
 	spyCharacterID uuid.UUID
 	spyUserID      uuid.UUID
 }
 
-func (c *stubCharacterPageCharacterService) GetUserCharacterByID(userID uuid.UUID, characterID uuid.UUID) (*domain.CharacterDTO, error) {
+func (c *stubCharacterPageCharacterService) GetUserEnrichedCharacterByID(userID uuid.UUID, characterID uuid.UUID) (*domain.EnrichedCharacterDTO, error) {
 	c.spyCharacterID = characterID
 	c.spyUserID = userID
 	c.spyCalls++
@@ -51,7 +51,8 @@ func TestGetCharacterHandler(t *testing.T) {
 	t.Run("it renders full character page on successful GET request", func(t *testing.T) {
 		userID := uuid.MustParse("55600000-0000-4523-90a2-4868a5bfc90a")
 		identity := stubCharacterPageIndentity{userID: &userID, isSignedIn: true}
-		character := domain.CharacterDTO{RawCharacter: domain.RawCharacter{Name: "TEST-CHARACTER"}}
+		character := domain.EnrichedCharacterDTO{}
+		character.Name = "TEST-CHARACTER"
 		stubCharacterService := &stubCharacterPageCharacterService{character: &character}
 		server := NewServer(nil, nil, &identity, stubCharacterService, nil, r)
 
@@ -90,7 +91,8 @@ func TestGetCharacterHandler(t *testing.T) {
 	t.Run("it renders full character page fragment on HTMX GET request", func(t *testing.T) {
 		userID := uuid.MustParse("55600000-0000-4523-90a2-4868a5bfc90a")
 		identity := stubCharacterPageIndentity{userID: &userID, isSignedIn: true}
-		character := domain.CharacterDTO{RawCharacter: domain.RawCharacter{Name: "TEST-CHARACTER"}}
+		character := domain.EnrichedCharacterDTO{}
+		character.Name = "TEST-CHARACTER"
 		stubCharacterService := &stubCharacterPageCharacterService{character: &character}
 		server := NewServer(nil, nil, &identity, stubCharacterService, nil, r)
 
