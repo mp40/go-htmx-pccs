@@ -112,15 +112,15 @@ func (cs *CharacterService) GetUserEnrichedCharacterByID(userID uuid.UUID, chara
 		return nil, err
 	}
 
-	// hard code until encumberance feature added
-	encumberance := domain.CharacterEncumbrance{
+	// hard code until encumbrance feature added
+	encumbrance := domain.CharacterEncumbrance{
 		Uniform:        "Normal",
 		ClothingWeight: 5,
 	}
 
 	dto := mapStoreCharacterToDomainCharacter(*character)
 
-	enrichedCharacter := domain.EnrichCharacter(dto, encumberance)
+	enrichedCharacter := domain.EnrichCharacter(dto, encumbrance)
 
 	return &enrichedCharacter, nil
 }

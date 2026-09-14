@@ -13,7 +13,7 @@ type deleteCharacterRender interface {
 }
 
 type deleteCharacterService interface {
-	DeleteUserCharacterByID(userID uuid.UUID, charcaterID uuid.UUID) error
+	DeleteUserCharacterByID(userID uuid.UUID, characterID uuid.UUID) error
 }
 
 type deleteCharacterIdentity interface {

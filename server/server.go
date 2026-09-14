@@ -27,8 +27,8 @@ type CharacterService interface {
 	EditCharacter(userID uuid.UUID, characterID uuid.UUID, rawCharacterEdit domain.RawCharacter) (*domain.CharacterDTO, error)
 	GetCharactersByUserID(userID uuid.UUID) ([]domain.CharacterDTO, error)
 	GetUserCharacterByID(userID uuid.UUID, characterID uuid.UUID) (*domain.CharacterDTO, error)
-	DeleteUserCharacterByID(userID uuid.UUID, charcaterID uuid.UUID) error
-	GetUserEnrichedCharacterByID(userID uuid.UUID, charcaterID uuid.UUID) (*domain.EnrichedCharacterDTO, error)
+	DeleteUserCharacterByID(userID uuid.UUID, characterID uuid.UUID) error
+	GetUserEnrichedCharacterByID(userID uuid.UUID, characterID uuid.UUID) (*domain.EnrichedCharacterDTO, error)
 }
 
 type Identity interface {

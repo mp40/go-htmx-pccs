@@ -23,10 +23,10 @@ func (s *stubCharacterService) GetCharactersByUserID(userID uuid.UUID) ([]domain
 	panic("method not used in test")
 }
 
-func (s *stubCharacterService) DeleteUserCharacterByID(userID uuid.UUID, charcaterID uuid.UUID) error {
+func (s *stubCharacterService) DeleteUserCharacterByID(userID uuid.UUID, characterID uuid.UUID) error {
 	panic("method not used in test")
 }
 
-func (s *stubCharacterService) GetUserEnrichedCharacterByID(userID uuid.UUID, charcaterID uuid.UUID) (*domain.EnrichedCharacterDTO, error) {
+func (s *stubCharacterService) GetUserEnrichedCharacterByID(userID uuid.UUID, characterID uuid.UUID) (*domain.EnrichedCharacterDTO, error) {
 	panic("method not used in test")
 }

@@ -21,8 +21,8 @@ type stubDeleteCharacterIndentity struct {
 	userID *uuid.UUID
 }
 
-func (s *stubDeleteCharacter) DeleteUserCharacterByID(userID uuid.UUID, charcaterID uuid.UUID) error {
-	s.spyCharacterID = charcaterID
+func (s *stubDeleteCharacter) DeleteUserCharacterByID(userID uuid.UUID, characterID uuid.UUID) error {
+	s.spyCharacterID = characterID
 	return s.err
 }
 
