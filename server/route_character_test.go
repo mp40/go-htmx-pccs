@@ -13,49 +13,50 @@ import (
 	"github.com/mp40/go-htmx-pccs/render"
 )
 
-type stubRouteCharacterEditCharacter struct {
+type stubCharacterPageCharacterService struct {
 	stubCharacterService
-	character      *domain.CharacterDTO
+	character      *domain.EnrichedCharacterDTO
 	err            error
 	spyCalls       int
 	spyCharacterID uuid.UUID
 	spyUserID      uuid.UUID
 }
 
-func (c *stubRouteCharacterEditCharacter) GetUserCharacterByID(userID uuid.UUID, characterID uuid.UUID) (*domain.CharacterDTO, error) {
+func (c *stubCharacterPageCharacterService) GetUserEnrichedCharacterByID(userID uuid.UUID, characterID uuid.UUID) (*domain.EnrichedCharacterDTO, error) {
 	c.spyCharacterID = characterID
 	c.spyUserID = userID
 	c.spyCalls++
 	return c.character, c.err
 }
 
-type stubRouteCharacterEditIndentity struct {
+type stubCharacterPageIndentity struct {
 	userID     *uuid.UUID
 	isSignedIn bool
 }
 
-func (i *stubRouteCharacterEditIndentity) GetUserID(r *http.Request) *uuid.UUID {
+func (i *stubCharacterPageIndentity) GetUserID(r *http.Request) *uuid.UUID {
 	return i.userID
 }
 
-func (i *stubRouteCharacterEditIndentity) IsSignedIn(r *http.Request) bool {
+func (i *stubCharacterPageIndentity) IsSignedIn(r *http.Request) bool {
 	return i.isSignedIn
 }
 
-func TestGetCharacterEditHandler_Route(t *testing.T) {
-	t.Run("it should render edit character page on successful GET request", func(t *testing.T) {
-		r, err := render.NewRenderService()
-		if err != nil {
-			t.Fatalf("render service error %v", err)
-		}
+func TestGetCharacterHandler(t *testing.T) {
+	r, err := render.NewRenderService()
+	if err != nil {
+		t.Fatalf("render service error %v", err)
+	}
 
+	t.Run("it renders full character page on successful GET request", func(t *testing.T) {
 		userID := uuid.MustParse("55600000-0000-4523-90a2-4868a5bfc90a")
-		identity := stubRouteCharacterEditIndentity{userID: &userID, isSignedIn: true}
-		character := domain.CharacterDTO{RawCharacter: domain.RawCharacter{Name: "TEST-CHARACTER"}}
-		stubCharacterService := &stubRouteCharacterEditCharacter{character: &character}
+		identity := stubCharacterPageIndentity{userID: &userID, isSignedIn: true}
+		character := domain.EnrichedCharacterDTO{}
+		character.Name = "TEST-CHARACTER"
+		stubCharacterService := &stubCharacterPageCharacterService{character: &character}
 		server := NewServer(nil, nil, &identity, stubCharacterService, nil, r)
 
-		request := httptest.NewRequest(http.MethodGet, "/account/characters/69000000-0000-4523-90a2-4868a5bfc90a/edit", nil)
+		request := httptest.NewRequest(http.MethodGet, "/character/69000000-0000-4523-90a2-4868a5bfc90a", nil)
 		response := httptest.NewRecorder()
 		server.ServeHTTP(response, request)
 
@@ -78,8 +79,8 @@ func TestGetCharacterEditHandler_Route(t *testing.T) {
 			t.Errorf("got user id %v want user id %v", stubCharacterService.spyUserID, userID)
 		}
 
-		if !strings.Contains(string(body), "<h2>Edit TEST-CHARACTER</h2>") {
-			t.Errorf("expected edit character page, got: %s", body)
+		if !strings.Contains(string(body), "<h1>TEST-CHARACTER</h1>") {
+			t.Errorf("expected character page, got: %s", body)
 		}
 
 		if !strings.Contains(string(body), "<!doctype html>") {
@@ -87,19 +88,15 @@ func TestGetCharacterEditHandler_Route(t *testing.T) {
 		}
 	})
 
-	t.Run("it should render edit character fragment on HTMX GET request", func(t *testing.T) {
-		r, err := render.NewRenderService()
-		if err != nil {
-			t.Fatalf("render service error %v", err)
-		}
-
+	t.Run("it renders full character page fragment on HTMX GET request", func(t *testing.T) {
 		userID := uuid.MustParse("55600000-0000-4523-90a2-4868a5bfc90a")
-		identity := stubRouteCharacterEditIndentity{userID: &userID, isSignedIn: true}
-		character := domain.CharacterDTO{RawCharacter: domain.RawCharacter{Name: "TEST-CHARACTER"}}
-		stubCharacterService := &stubRouteCharacterEditCharacter{character: &character}
+		identity := stubCharacterPageIndentity{userID: &userID, isSignedIn: true}
+		character := domain.EnrichedCharacterDTO{}
+		character.Name = "TEST-CHARACTER"
+		stubCharacterService := &stubCharacterPageCharacterService{character: &character}
 		server := NewServer(nil, nil, &identity, stubCharacterService, nil, r)
 
-		request := httptest.NewRequest(http.MethodGet, "/account/characters/69000000-0000-4523-90a2-4868a5bfc90a/edit", nil)
+		request := httptest.NewRequest(http.MethodGet, "/character/69000000-0000-4523-90a2-4868a5bfc90a", nil)
 		request.Header.Set("HX-Request", "true")
 		response := httptest.NewRecorder()
 		server.ServeHTTP(response, request)
@@ -120,11 +117,11 @@ func TestGetCharacterEditHandler_Route(t *testing.T) {
 		}
 
 		if stubCharacterService.spyUserID != userID {
-			t.Errorf("got character id %v want character id %v", stubCharacterService.spyUserID, userID)
+			t.Errorf("got user id %v want user id %v", stubCharacterService.spyUserID, userID)
 		}
 
-		if !strings.Contains(string(body), "<h2>Edit TEST-CHARACTER</h2") {
-			t.Errorf("expected edit character page, got: %s", body)
+		if !strings.Contains(string(body), "<h1>TEST-CHARACTER</h1>") {
+			t.Errorf("expected character page, got: %s", body)
 		}
 
 		if strings.Contains(string(body), "<!doctype html>") {
@@ -133,17 +130,12 @@ func TestGetCharacterEditHandler_Route(t *testing.T) {
 	})
 
 	t.Run("it returns bad request message on malformed character id", func(t *testing.T) {
-		r, err := render.NewRenderService()
-		if err != nil {
-			t.Fatalf("render service error %v", err)
-		}
-
 		userID := uuid.MustParse("55600000-0000-4523-90a2-4868a5bfc90a")
-		identity := stubRouteCharacterEditIndentity{userID: &userID, isSignedIn: true}
-		stubCharacterService := &stubRouteCharacterEditCharacter{}
+		identity := stubCharacterPageIndentity{userID: &userID, isSignedIn: true}
+		stubCharacterService := &stubCharacterPageCharacterService{}
 		server := NewServer(nil, nil, &identity, stubCharacterService, nil, r)
 
-		request := httptest.NewRequest(http.MethodGet, "/account/characters/bad-id/edit", nil)
+		request := httptest.NewRequest(http.MethodGet, "/character/bad-id", nil)
 		request.Header.Set("HX-Request", "true")
 		response := httptest.NewRecorder()
 		server.ServeHTTP(response, request)
@@ -169,16 +161,11 @@ func TestGetCharacterEditHandler_Route(t *testing.T) {
 	})
 
 	t.Run("it returns unauthorized message on nil user id", func(t *testing.T) {
-		r, err := render.NewRenderService()
-		if err != nil {
-			t.Fatalf("render service error %v", err)
-		}
-
-		identity := stubRouteCharacterEditIndentity{isSignedIn: true}
-		stubCharacterService := &stubRouteCharacterEditCharacter{}
+		identity := stubCharacterPageIndentity{isSignedIn: true}
+		stubCharacterService := &stubCharacterPageCharacterService{}
 		server := NewServer(nil, nil, &identity, stubCharacterService, nil, r)
 
-		request := httptest.NewRequest(http.MethodGet, "/account/characters/69000000-0000-4523-90a2-4868a5bfc90a/edit", nil)
+		request := httptest.NewRequest(http.MethodGet, "/character/69000000-0000-4523-90a2-4868a5bfc90a", nil)
 		request.Header.Set("HX-Request", "true")
 		response := httptest.NewRecorder()
 		server.ServeHTTP(response, request)
@@ -204,17 +191,12 @@ func TestGetCharacterEditHandler_Route(t *testing.T) {
 	})
 
 	t.Run("it should return internal server error message on get character error", func(t *testing.T) {
-		r, err := render.NewRenderService()
-		if err != nil {
-			t.Fatalf("render service error %v", err)
-		}
-
 		userID := uuid.MustParse("55600000-0000-4523-90a2-4868a5bfc90a")
-		identity := stubRouteCharacterEditIndentity{userID: &userID, isSignedIn: true}
-		stubCharacterService := &stubRouteCharacterEditCharacter{err: fmt.Errorf("sadness")}
+		identity := stubCharacterPageIndentity{userID: &userID, isSignedIn: true}
+		stubCharacterService := &stubCharacterPageCharacterService{err: fmt.Errorf("sadness")}
 		server := NewServer(nil, nil, &identity, stubCharacterService, nil, r)
 
-		request := httptest.NewRequest(http.MethodGet, "/account/characters/69000000-0000-4523-90a2-4868a5bfc90a/edit", nil)
+		request := httptest.NewRequest(http.MethodGet, "/character/69000000-0000-4523-90a2-4868a5bfc90a", nil)
 		request.Header.Set("HX-Request", "true")
 		response := httptest.NewRecorder()
 		server.ServeHTTP(response, request)
@@ -246,11 +228,11 @@ func TestGetCharacterEditHandler_Route(t *testing.T) {
 		}
 
 		userID := uuid.MustParse("55600000-0000-4523-90a2-4868a5bfc90a")
-		identity := stubRouteCharacterEditIndentity{userID: &userID, isSignedIn: true}
-		stubCharacterService := &stubRouteCharacterEditCharacter{}
+		identity := stubCharacterPageIndentity{userID: &userID, isSignedIn: true}
+		stubCharacterService := &stubCharacterPageCharacterService{}
 		server := NewServer(nil, nil, &identity, stubCharacterService, nil, r)
 
-		request := httptest.NewRequest(http.MethodGet, "/account/characters/69000000-0000-4523-90a2-4868a5bfc90a/edit", nil)
+		request := httptest.NewRequest(http.MethodGet, "/character/69000000-0000-4523-90a2-4868a5bfc90a", nil)
 		request.Header.Set("HX-Request", "true")
 		response := httptest.NewRecorder()
 		server.ServeHTTP(response, request)

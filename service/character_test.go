@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
 	"github.com/mp40/go-htmx-pccs/domain"
 	"github.com/mp40/go-htmx-pccs/store"
@@ -160,6 +161,45 @@ func TestDeleteUserCharacterByID(t *testing.T) {
 		err := service.DeleteUserCharacterByID(uuid.New(), uuid.New())
 		if err == nil {
 			t.Errorf("expected error, got <nil>")
+		}
+	})
+}
+
+func TestGetUserEnrichedCharacterByID(t *testing.T) {
+	t.Run("it returns an enriched character", func(t *testing.T) {
+		c := store.Character{
+			Str:                      10,
+			Int:                      10,
+			Wil:                      10,
+			Agi:                      10,
+			GunCombatLearningPoints:  4,
+			HandToHandLearningPoints: 2,
+		}
+		store := &stubStore{character: &c}
+		service := NewCharacterService(store)
+
+		got, err := service.GetUserEnrichedCharacterByID(uuid.New(), uuid.New())
+		if err != nil {
+			t.Errorf("unexpected error, got %v", err)
+		}
+
+		if got == nil {
+			t.Errorf("expected character not to be nil")
+		}
+
+		wantCombatStats := domain.CharacterCombatStats{
+			BaseSpeed:               3,
+			MaxSpeed:                6,
+			SAL:                     7,
+			CE:                      5,
+			HandToHandDamageBonus:   1.5,
+			KnockoutValue:           10,
+			GunCombatActions:        []int{2, 1, 2, 1},
+			HandToHandCombatActions: []int{2, 1, 1, 1},
+		}
+
+		if !cmp.Equal(got.CharacterCombatStats, wantCombatStats) {
+			t.Errorf("got %+v, want %+v", got.CharacterCombatStats, wantCombatStats)
 		}
 	})
 }

@@ -1,4 +1,4 @@
-package server
+package domain
 
 import (
 	"fmt"
@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/mp40/go-htmx-pccs/domain"
 )
 
 func TestParseRawCharacter(t *testing.T) {
@@ -23,12 +22,12 @@ func TestParseRawCharacter(t *testing.T) {
 			"gun_combat_learning_points":   {"  2"},
 			"hand_to_hand_learning_points": {"0 "},
 		}
-		got, problems := parseRawCharacter(formValues)
+		got, problems := ParseRawCharacter(formValues)
 		if len(problems) != 0 {
 			t.Errorf("got %d parsing problems, want 0", len(problems))
 		}
 
-		want := domain.RawCharacter{
+		want := RawCharacter{
 			Name:                     "Test-Man",
 			Str:                      9,
 			Int:                      8,
@@ -55,7 +54,7 @@ func TestParseRawCharacter(t *testing.T) {
 			"gun_combat_learning_points":   {"2"},
 			"hand_to_hand_learning_points": {"0 "},
 		}
-		_, problems := parseRawCharacter(formValues)
+		_, problems := ParseRawCharacter(formValues)
 		if len(problems) != 1 {
 			t.Errorf("got %d parsing problems, want 1", len(problems))
 		}
@@ -72,7 +71,7 @@ func TestParseRawCharacter(t *testing.T) {
 			"gun_combat_learning_points":   {"R"},
 			"hand_to_hand_learning_points": {"G"},
 		}
-		_, problems := parseRawCharacter(formValues)
+		_, problems := ParseRawCharacter(formValues)
 		if len(problems) != 8 {
 			t.Errorf("got %d parsing problems, want 8", len(problems))
 		}
@@ -103,7 +102,7 @@ func TestParseRawCharacter(t *testing.T) {
 				}
 				formValues.Set(test.characteristic, "0")
 
-				_, problems := parseRawCharacter(formValues)
+				_, problems := ParseRawCharacter(formValues)
 				if !strings.Contains(problems[test.characteristic], "invalid") {
 					t.Errorf("expected %s problem key to contain validation message", test.characteristic)
 				}
@@ -136,7 +135,7 @@ func TestParseRawCharacter(t *testing.T) {
 				}
 				formValues.Set(test.characteristic, "22")
 
-				_, problems := parseRawCharacter(formValues)
+				_, problems := ParseRawCharacter(formValues)
 				if !strings.Contains(problems[test.characteristic], "invalid") {
 					t.Errorf("expected %s problem key to contain validation message", test.characteristic)
 				}
@@ -165,7 +164,7 @@ func TestParseRawCharacter(t *testing.T) {
 				}
 				formValues.Set(test.level, "-1")
 
-				_, problems := parseRawCharacter(formValues)
+				_, problems := ParseRawCharacter(formValues)
 				if !strings.Contains(problems[test.level], "invalid") {
 					t.Errorf("expected %s problem key to contain validation message", test.level)
 				}
@@ -194,11 +193,177 @@ func TestParseRawCharacter(t *testing.T) {
 				}
 				formValues.Set(test.level, "1835")
 
-				_, problems := parseRawCharacter(formValues)
+				_, problems := ParseRawCharacter(formValues)
 				if !strings.Contains(problems[test.level], "invalid") {
 					t.Errorf("expected %s problem key to contain validation message", test.level)
 				}
 			})
+		}
+	})
+}
+
+func TestCalculateCharacterCombatData(t *testing.T) {
+	t.Run("it calculates combat data of average grunt in uniform", func(t *testing.T) {
+		raw := RawCharacter{
+			Str:                      14,
+			Int:                      10,
+			Wil:                      10,
+			Hlt:                      10,
+			Agi:                      12,
+			Tch:                      10,
+			GunCombatLearningPoints:  16,
+			HandToHandLearningPoints: 4,
+		}
+
+		dto := CharacterDTO{
+			RawCharacter:    raw,
+			GunCombatLevel:  4,
+			HandToHandLevel: 2,
+		}
+
+		enc := CharacterEncumbrance{
+			Uniform:        "Normal",
+			ClothingWeight: 5,
+		}
+
+		got := calculateCombatStats(dto, enc)
+
+		want := CharacterCombatStats{
+			BaseSpeed:               3,
+			MaxSpeed:                7,
+			SAL:                     10,
+			CE:                      7,
+			KnockoutValue:           20,
+			HandToHandDamageBonus:   2.5,
+			GunCombatActions:        []int{2, 1, 2, 2},
+			HandToHandCombatActions: []int{2, 1, 2, 2},
+		}
+
+		if !cmp.Equal(got, want) {
+			t.Errorf("got %+v, want %+v", got, want)
+		}
+	})
+
+	t.Run("it calculates combat data of conscript in uniform", func(t *testing.T) {
+		raw := RawCharacter{
+			Str:                      13,
+			Int:                      10,
+			Wil:                      9,
+			Hlt:                      10,
+			Agi:                      10,
+			Tch:                      10,
+			GunCombatLearningPoints:  8,
+			HandToHandLearningPoints: 2,
+		}
+
+		dto := CharacterDTO{
+			RawCharacter:    raw,
+			GunCombatLevel:  3,
+			HandToHandLevel: 1,
+		}
+
+		enc := CharacterEncumbrance{
+			Uniform:        "Normal",
+			ClothingWeight: 5,
+		}
+
+		got := calculateCombatStats(dto, enc)
+
+		want := CharacterCombatStats{
+			BaseSpeed:               3,
+			MaxSpeed:                6,
+			SAL:                     9,
+			CE:                      5,
+			KnockoutValue:           13,
+			HandToHandDamageBonus:   1.5,
+			GunCombatActions:        []int{2, 1, 2, 1},
+			HandToHandCombatActions: []int{2, 1, 1, 1},
+		}
+
+		if !cmp.Equal(got, want) {
+			t.Errorf("got %+v, want %+v", got, want)
+		}
+	})
+
+	t.Run("it calculates combat data of super-grunt in uniform", func(t *testing.T) {
+		raw := RawCharacter{
+			Str:                      16,
+			Int:                      17,
+			Wil:                      15,
+			Hlt:                      10,
+			Agi:                      14,
+			Tch:                      10,
+			GunCombatLearningPoints:  218,
+			HandToHandLearningPoints: 32,
+		}
+
+		dto := CharacterDTO{
+			RawCharacter:    raw,
+			GunCombatLevel:  10,
+			HandToHandLevel: 5,
+		}
+
+		enc := CharacterEncumbrance{
+			Uniform:        "Normal",
+			ClothingWeight: 5,
+		}
+
+		got := calculateCombatStats(dto, enc)
+
+		want := CharacterCombatStats{
+			BaseSpeed:               3.5,
+			MaxSpeed:                8,
+			SAL:                     16,
+			CE:                      11,
+			KnockoutValue:           75,
+			HandToHandDamageBonus:   4,
+			GunCombatActions:        []int{4, 3, 3, 3},
+			HandToHandCombatActions: []int{3, 2, 3, 3},
+		}
+
+		if !cmp.Equal(got, want) {
+			t.Errorf("got %+v, want %+v", got, want)
+		}
+	})
+
+	t.Run("it calculates combat data of hand to hand specialist in uniform", func(t *testing.T) {
+		raw := RawCharacter{
+			Str:                      10,
+			Int:                      10,
+			Wil:                      10,
+			Hlt:                      10,
+			Agi:                      19,
+			Tch:                      10,
+			GunCombatLearningPoints:  0,
+			HandToHandLearningPoints: 88,
+		}
+
+		dto := CharacterDTO{
+			RawCharacter:    raw,
+			GunCombatLevel:  0,
+			HandToHandLevel: 7,
+		}
+
+		enc := CharacterEncumbrance{
+			Uniform:        "Normal",
+			ClothingWeight: 5,
+		}
+
+		got := calculateCombatStats(dto, enc)
+
+		want := CharacterCombatStats{
+			BaseSpeed:               3,
+			MaxSpeed:                8,
+			SAL:                     0,
+			CE:                      13,
+			KnockoutValue:           35,
+			HandToHandDamageBonus:   5,
+			GunCombatActions:        []int{1, 1, 1, 1},
+			HandToHandCombatActions: []int{3, 3, 3, 3},
+		}
+
+		if !cmp.Equal(got, want) {
+			t.Errorf("got %+v, want %+v", got, want)
 		}
 	})
 }

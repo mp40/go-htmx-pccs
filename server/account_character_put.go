@@ -30,7 +30,7 @@ func putCharacterHandler(render putCharacterRender, characterService putCharacte
 		rawCharacterID := r.PathValue("id")
 		characterID, err := uuid.Parse(rawCharacterID)
 		if err != nil {
-			slog.Error("edit charcater error", "err", "charcacter id is malformed")
+			slog.Error("edit character error", "err", "charcacter id is malformed")
 			http.Error(w, "", http.StatusBadRequest)
 			return
 		}
@@ -49,7 +49,7 @@ func putCharacterHandler(render putCharacterRender, characterService putCharacte
 			return
 		}
 
-		c, problems := parseRawCharacter(r.PostForm)
+		c, problems := domain.ParseRawCharacter(r.PostForm)
 		if len(problems) > 0 {
 			slog.Warn("put character, invalid data submitted", "problems", problems)
 			errorList := []string{}
