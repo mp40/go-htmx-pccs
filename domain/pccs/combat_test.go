@@ -297,6 +297,7 @@ func TestCalculateDamageBonus(t *testing.T) {
 			t.Errorf("got %g, want %g", got, want)
 		}
 	})
+
 	t.Run("it should return 12 for max speed 11 and skill factor 39", func(t *testing.T) {
 		got := CalculateDamageBonus(11, 39)
 		want := float32(12)
@@ -305,6 +306,7 @@ func TestCalculateDamageBonus(t *testing.T) {
 			t.Errorf("got %g, want %g", got, want)
 		}
 	})
+
 	t.Run("it should return 2.5 for max speed 7 and skill factor 21", func(t *testing.T) {
 		got := CalculateDamageBonus(7, 21)
 		want := float32(2.5)
@@ -313,9 +315,19 @@ func TestCalculateDamageBonus(t *testing.T) {
 			t.Errorf("got %g, want %g", got, want)
 		}
 	})
+
 	t.Run("it should round down skill factor 12 to 11 and return 1 for max speed 6", func(t *testing.T) {
 		got := CalculateDamageBonus(6, 11)
 		want := float32(1)
+
+		if got != want {
+			t.Errorf("got %g, want %g", got, want)
+		}
+	})
+
+	t.Run("it should treat skill factors less than 7 as 7", func(t *testing.T) {
+		got := CalculateDamageBonus(1, 1)
+		want := float32(0.5)
 
 		if got != want {
 			t.Errorf("got %g, want %g", got, want)

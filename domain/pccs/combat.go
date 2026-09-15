@@ -52,7 +52,7 @@ func calculateActions(maxSpeed int, skillFactor int) int {
 
 	actionsRow := combatActionsTable[maxSpeed]
 	if skillFactor < 7 {
-		return combatActionsTable[maxSpeed][0]
+		return actionsRow[0]
 	}
 
 	var thresholdIndex int
@@ -84,6 +84,10 @@ func CalculateDamageBonus(maxSpeed int, skillFactor int) float32 {
 	}
 
 	dbRow := handToHandDamageBonusTable[maxSpeed]
+	if skillFactor < 7 {
+		return dbRow[0]
+	}
+
 	var thresholdIndex int
 	for i, t := range skillThresholds {
 		if skillFactor == t {
