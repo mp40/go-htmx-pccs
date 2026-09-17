@@ -63,3 +63,17 @@ func (s *State) GetUniforms() ([]Uniform, error) {
 	}
 	return uniforms, err
 }
+
+func (s *State) GetUniformByID(uniformID int) (*Uniform, error) {
+	uniform := Uniform{}
+	err := s.db.QueryRow("SELECT id, name, weight FROM uniform WHERE id = ?", uniformID).
+		Scan(&uniform.ID, &uniform.Name, &uniform, uniform.Weight)
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	return &uniform, err
+}
