@@ -13,4 +13,4 @@ CREATE TABLE uniform (
 INSERT INTO uniform (id, name, weight_lbs) VALUES
     (1, 'Tropical', 4.5),
     (2, 'Normal',   5),
-    (2, 'Winter',   7);
+    (3, 'Winter',   7);

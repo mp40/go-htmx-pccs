@@ -21,6 +21,10 @@ func connectToStore(path string) (*sql.DB, error) {
 	if err != nil {
 		return nil, fmt.Errorf("db create character table: %w", err)
 	}
+	_, err = storeDB.Exec("CREATE TABLE IF NOT EXISTS character_uniform (character_id TEXT PRIMARY KEY NOT NULL, uniform_id INTEGER NOT NULL)")
+	if err != nil {
+		return nil, fmt.Errorf("db create character uniform table: %w", err)
+	}
 
 	return storeDB, nil
 }
