@@ -7,12 +7,14 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
 	"github.com/mp40/go-htmx-pccs/domain"
+	"github.com/mp40/go-htmx-pccs/state"
 	"github.com/mp40/go-htmx-pccs/store"
 )
 
 type stubStore struct {
 	characters []store.Character
 	character  *store.Character
+	uniformID  *int
 	err        error
 }
 
@@ -36,10 +38,24 @@ func (s *stubStore) DeleteUserCharacterByID(userID uuid.UUID, characterID uuid.U
 	return s.err
 }
 
+func (s *stubStore) GetUniformIDByCharacterID(characterID uuid.UUID) (*int, error) {
+	return s.uniformID, s.err
+}
+
+type stubState struct {
+	uniform *state.Uniform
+	err     error
+}
+
+func (s *stubState) GetUniformByID(uniformID int) (*state.Uniform, error) {
+	return s.uniform, s.err
+}
+
 func TestAddCharacter(t *testing.T) {
 	t.Run("it generates random name if none provided", func(t *testing.T) {
 		store := &stubStore{}
-		service := NewCharacterService(store)
+		state := &stubState{}
+		service := NewCharacterService(store, state)
 
 		rawCharacter := domain.RawCharacter{}
 
@@ -60,9 +76,9 @@ func TestAddCharacter(t *testing.T) {
 
 func TestGetCharactersByUserID(t *testing.T) {
 	t.Run("it returns customers", func(t *testing.T) {
-		s := &stubStore{}
-		s.characters = []store.Character{{Name: "TEST GRUNT"}}
-		service := NewCharacterService(s)
+		store := &stubStore{characters: []store.Character{{Name: "TEST GRUNT"}}}
+		state := &stubState{}
+		service := NewCharacterService(store, state)
 
 		got, err := service.GetCharactersByUserID(uuid.New())
 		if err != nil {
@@ -75,9 +91,9 @@ func TestGetCharactersByUserID(t *testing.T) {
 	})
 
 	t.Run("it maps gun combat learning points to levels", func(t *testing.T) {
-		s := &stubStore{}
-		s.characters = []store.Character{{GunCombatLearningPoints: 16}}
-		service := NewCharacterService(s)
+		store := &stubStore{characters: []store.Character{{GunCombatLearningPoints: 16}}}
+		state := &stubState{}
+		service := NewCharacterService(store, state)
 
 		got, err := service.GetCharactersByUserID(uuid.New())
 		if err != nil {
@@ -90,9 +106,9 @@ func TestGetCharactersByUserID(t *testing.T) {
 	})
 
 	t.Run("it maps hand to hand combat learning points to levels", func(t *testing.T) {
-		s := &stubStore{}
-		s.characters = []store.Character{{HandToHandLearningPoints: 4}}
-		service := NewCharacterService(s)
+		store := &stubStore{characters: []store.Character{{HandToHandLearningPoints: 4}}}
+		state := &stubState{}
+		service := NewCharacterService(store, state)
 
 		got, err := service.GetCharactersByUserID(uuid.New())
 		if err != nil {
@@ -108,7 +124,8 @@ func TestGetCharactersByUserID(t *testing.T) {
 func TestEditCharacter(t *testing.T) {
 	t.Run("it updates character", func(t *testing.T) {
 		store := &stubStore{}
-		service := NewCharacterService(store)
+		state := &stubState{}
+		service := NewCharacterService(store, state)
 
 		rawCharacter := domain.RawCharacter{}
 
@@ -126,7 +143,8 @@ func TestEditCharacter(t *testing.T) {
 func TestGetUserCharacterByID(t *testing.T) {
 	t.Run("it gets character by character id and user id", func(t *testing.T) {
 		store := &stubStore{character: &store.Character{Name: "TEST-CHARACTER"}}
-		service := NewCharacterService(store)
+		state := &stubState{}
+		service := NewCharacterService(store, state)
 
 		got, err := service.GetUserCharacterByID(uuid.New(), uuid.New())
 		if err != nil {
@@ -140,7 +158,8 @@ func TestGetUserCharacterByID(t *testing.T) {
 
 	t.Run("it returns nil character when not found", func(t *testing.T) {
 		store := &stubStore{}
-		service := NewCharacterService(store)
+		state := &stubState{}
+		service := NewCharacterService(store, state)
 
 		got, err := service.GetUserCharacterByID(uuid.New(), uuid.New())
 		if err != nil {
@@ -156,7 +175,8 @@ func TestGetUserCharacterByID(t *testing.T) {
 func TestDeleteUserCharacterByID(t *testing.T) {
 	t.Run("it handles errors", func(t *testing.T) {
 		store := &stubStore{err: fmt.Errorf("sadness")}
-		service := NewCharacterService(store)
+		state := &stubState{}
+		service := NewCharacterService(store, state)
 
 		err := service.DeleteUserCharacterByID(uuid.New(), uuid.New())
 		if err == nil {
@@ -176,7 +196,8 @@ func TestGetUserEnrichedCharacterByID(t *testing.T) {
 			HandToHandLearningPoints: 2,
 		}
 		store := &stubStore{character: &c}
-		service := NewCharacterService(store)
+		state := &stubState{}
+		service := NewCharacterService(store, state)
 
 		got, err := service.GetUserEnrichedCharacterByID(uuid.New(), uuid.New())
 		if err != nil {

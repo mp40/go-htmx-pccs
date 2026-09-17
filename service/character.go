@@ -7,14 +7,16 @@ import (
 	"github.com/google/uuid"
 	"github.com/mp40/go-htmx-pccs/domain"
 	"github.com/mp40/go-htmx-pccs/domain/pccs"
+	"github.com/mp40/go-htmx-pccs/state"
 	"github.com/mp40/go-htmx-pccs/store"
 )
 
 type CharacterService struct {
-	store Store
+	store characterStore
+	state characterState
 }
 
-type Store interface {
+type characterStore interface {
 	AddCharacter(character store.Character) (*store.Character, error)
 	UpdateCharacter(character store.Character) (*store.Character, error)
 	GetCharactersByUserID(userID uuid.UUID) ([]store.Character, error)
@@ -22,9 +24,14 @@ type Store interface {
 	DeleteUserCharacterByID(userID uuid.UUID, characterID uuid.UUID) error
 }
 
-func NewCharacterService(store Store) *CharacterService {
+type characterState interface {
+	GetUniformByID(uniformID int) (*state.Uniform, error)
+}
+
+func NewCharacterService(store characterStore, state characterState) *CharacterService {
 	return &CharacterService{
 		store: store,
+		state: state,
 	}
 }
 

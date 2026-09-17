@@ -3,14 +3,14 @@ package service
 import "github.com/mp40/go-htmx-pccs/state"
 
 type GearService struct {
-	state State
+	state equipmentState
 }
 
-type State interface {
+type equipmentState interface {
 	GetEquipment() ([]state.Equipment, error)
 }
 
-func NewGearService(state State) *GearService {
+func NewGearService(state equipmentState) *GearService {
 	return &GearService{
 		state: state,
 	}

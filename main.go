@@ -70,7 +70,7 @@ func run(ctx context.Context, getenv func(string) string, stderr io.Writer) erro
 		return fmt.Errorf("init render service: %w", err)
 	}
 
-	characterService := service.NewCharacterService(storeService)
+	characterService := service.NewCharacterService(storeService, stateService)
 	gearService := service.NewGearService(stateService)
 	identityPkg := &identity.Identity{}
 
