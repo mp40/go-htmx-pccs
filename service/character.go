@@ -128,27 +128,17 @@ func (cs *CharacterService) GetUserEnrichedCharacterByID(userID uuid.UUID, chara
 
 	var u *state.Uniform
 	if uniformID == nil {
-		slog.Warn("get character uniform, could not get by id", "character id:", characterID)
+		slog.Warn("character has no uniform assigned", "character_id", characterID)
 	} else {
 		u, err = cs.state.GetUniformByID(*uniformID)
 		if err != nil {
-			slog.Warn("get uniform, could not get by id", "uniform id:", uniformID)
+			slog.Warn("could not get uniform by id", "uniform_id", *uniformID, "err", err)
 			return nil, err
 		}
-
-	}
-
-	encumbrance := domain.CharacterEncumbrance{
-		Uniform:        "None",
-		ClothingWeight: 0,
-	}
-
-	if u != nil {
-		encumbrance.Uniform = u.Name
-		encumbrance.ClothingWeight = u.Weight
 	}
 
 	dto := mapStoreCharacterToDomainCharacter(*character)
+	encumbrance := mapStateUniformToDomainEncumbrance(u)
 
 	enrichedCharacter := domain.EnrichCharacter(dto, encumbrance)
 
@@ -184,4 +174,19 @@ func mapStoreCharacterToDomainCharacter(c store.Character) domain.CharacterDTO {
 		HandToHandLevel: pccs.ConvertLearningPointsToLevel(c.HandToHandLearningPoints),
 	}
 	return dto
+}
+
+func mapStateUniformToDomainEncumbrance(uniform *state.Uniform) domain.CharacterEncumbrance {
+	encumbrance := domain.CharacterEncumbrance{
+		Uniform:        "None",
+		ClothingWeight: 0,
+	}
+	if uniform == nil {
+		return encumbrance
+	}
+
+	encumbrance.Uniform = uniform.Name
+	encumbrance.ClothingWeight = uniform.Weight
+
+	return encumbrance
 }
