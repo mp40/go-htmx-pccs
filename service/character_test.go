@@ -12,10 +12,11 @@ import (
 )
 
 type stubStore struct {
-	characters []store.Character
-	character  *store.Character
-	uniformID  *int
-	err        error
+	characters   []store.Character
+	character    *store.Character
+	uniformID    *int
+	characterErr error
+	uniformErr   error
 }
 
 func (s *stubStore) AddCharacter(character store.Character) (*store.Character, error) {
@@ -31,23 +32,27 @@ func (s *stubStore) GetCharactersByUserID(userID uuid.UUID) ([]store.Character, 
 }
 
 func (s *stubStore) GetUserCharacterByID(userID uuid.UUID, characterID uuid.UUID) (*store.Character, error) {
-	return s.character, s.err
+	return s.character, s.characterErr
 }
 
 func (s *stubStore) DeleteUserCharacterByID(userID uuid.UUID, characterID uuid.UUID) error {
-	return s.err
+	return s.characterErr
 }
 
 func (s *stubStore) GetUniformIDByCharacterID(characterID uuid.UUID) (*int, error) {
-	return s.uniformID, s.err
+	return s.uniformID, s.uniformErr
 }
 
 type stubState struct {
-	uniform *state.Uniform
-	err     error
+	uniform      *state.Uniform
+	err          error
+	spyUniformId int
+	spyCalls     int
 }
 
 func (s *stubState) GetUniformByID(uniformID int) (*state.Uniform, error) {
+	s.spyUniformId = uniformID
+	s.spyCalls++
 	return s.uniform, s.err
 }
 
@@ -174,7 +179,7 @@ func TestGetUserCharacterByID(t *testing.T) {
 
 func TestDeleteUserCharacterByID(t *testing.T) {
 	t.Run("it handles errors", func(t *testing.T) {
-		store := &stubStore{err: fmt.Errorf("sadness")}
+		store := &stubStore{characterErr: fmt.Errorf("sadness")}
 		state := &stubState{}
 		service := NewCharacterService(store, state)
 
@@ -195,8 +200,10 @@ func TestGetUserEnrichedCharacterByID(t *testing.T) {
 			GunCombatLearningPoints:  4,
 			HandToHandLearningPoints: 2,
 		}
-		store := &stubStore{character: &c}
-		state := &stubState{}
+		id := 1
+		store := &stubStore{character: &c, uniformID: &id}
+		u := state.Uniform{ID: 1, Name: "FAKE-UNIFORM", Weight: 5.5}
+		state := &stubState{uniform: &u}
 		service := NewCharacterService(store, state)
 
 		got, err := service.GetUserEnrichedCharacterByID(uuid.New(), uuid.New())
@@ -219,8 +226,149 @@ func TestGetUserEnrichedCharacterByID(t *testing.T) {
 			HandToHandCombatActions: []int{2, 1, 1, 1},
 		}
 
+		wantEncumbrance := domain.CharacterEncumbrance{
+			Uniform:        "FAKE-UNIFORM",
+			ClothingWeight: 5.5,
+		}
+
 		if !cmp.Equal(got.CharacterCombatStats, wantCombatStats) {
-			t.Errorf("got %+v, want %+v", got.CharacterCombatStats, wantCombatStats)
+			t.Errorf("unexpected CombatStats, got %+v, want %+v", got.CharacterCombatStats, wantCombatStats)
+		}
+
+		if state.spyUniformId != 1 {
+			t.Errorf("unexpected uniform id as argument, got %d, want %d", state.spyUniformId, 1)
+		}
+
+		if !cmp.Equal(got.CharacterEncumbrance, wantEncumbrance) {
+			t.Errorf("unexpected Encumbrance, got %+v, want %+v", got.CharacterEncumbrance, wantEncumbrance)
+		}
+	})
+
+	t.Run("it defaults to no uniform if not found by character id", func(t *testing.T) {
+		c := store.Character{
+			Str:                      10,
+			Int:                      10,
+			Wil:                      10,
+			Agi:                      10,
+			GunCombatLearningPoints:  4,
+			HandToHandLearningPoints: 2,
+		}
+		store := &stubStore{character: &c}
+		state := &stubState{}
+		service := NewCharacterService(store, state)
+
+		got, err := service.GetUserEnrichedCharacterByID(uuid.New(), uuid.New())
+		if err != nil {
+			t.Errorf("unexpected error, got %v", err)
+		}
+
+		if got == nil {
+			t.Errorf("expected character not to be nil")
+		}
+
+		wantEncumbrance := domain.CharacterEncumbrance{
+			Uniform:        "None",
+			ClothingWeight: 0,
+		}
+
+		if !cmp.Equal(got.CharacterEncumbrance, wantEncumbrance) {
+			t.Errorf("unexpected Encumbrance, got %+v, want %+v", got.CharacterEncumbrance, wantEncumbrance)
+		}
+
+		if state.spyCalls != 0 {
+			t.Errorf("unexpected call to state: got %d, want 0", state.spyCalls)
+		}
+	})
+
+	t.Run("it defaults to no uniform if not found by uniform id", func(t *testing.T) {
+		c := store.Character{
+			Str:                      10,
+			Int:                      10,
+			Wil:                      10,
+			Agi:                      10,
+			GunCombatLearningPoints:  4,
+			HandToHandLearningPoints: 2,
+		}
+		id := 1
+		store := &stubStore{character: &c, uniformID: &id}
+		state := &stubState{}
+		service := NewCharacterService(store, state)
+
+		got, err := service.GetUserEnrichedCharacterByID(uuid.New(), uuid.New())
+		if err != nil {
+			t.Errorf("unexpected error, got %v", err)
+		}
+
+		if got == nil {
+			t.Errorf("expected character not to be nil")
+		}
+
+		wantEncumbrance := domain.CharacterEncumbrance{
+			Uniform:        "None",
+			ClothingWeight: 0,
+		}
+
+		if !cmp.Equal(got.CharacterEncumbrance, wantEncumbrance) {
+			t.Errorf("unexpected Encumbrance, got %+v, want %+v", got.CharacterEncumbrance, wantEncumbrance)
+		}
+
+		if state.spyCalls != 1 {
+			t.Errorf("calls to state: got %d, want 1", state.spyCalls)
+		}
+	})
+
+	t.Run("it returns error on get uniform by character id error", func(t *testing.T) {
+		c := store.Character{
+			Str:                      10,
+			Int:                      10,
+			Wil:                      10,
+			Agi:                      10,
+			GunCombatLearningPoints:  4,
+			HandToHandLearningPoints: 2,
+		}
+		store := &stubStore{character: &c, uniformErr: fmt.Errorf("GET UNIFORM ID SADNESS")}
+		state := &stubState{}
+		service := NewCharacterService(store, state)
+
+		got, err := service.GetUserEnrichedCharacterByID(uuid.New(), uuid.New())
+		if err == nil {
+			t.Errorf("expected error, got nil")
+		}
+
+		if got != nil {
+			t.Errorf("expected character to be nil")
+		}
+
+		if state.spyCalls != 0 {
+			t.Errorf("unexpected call to state: got %d, want 0", state.spyCalls)
+		}
+	})
+
+	t.Run("it returns error on get uniform by id error", func(t *testing.T) {
+		c := store.Character{
+			Str:                      10,
+			Int:                      10,
+			Wil:                      10,
+			Agi:                      10,
+			GunCombatLearningPoints:  4,
+			HandToHandLearningPoints: 2,
+		}
+		id := 1
+		store := &stubStore{character: &c, uniformID: &id}
+		state := &stubState{err: fmt.Errorf("GET UNIFORM SADNESS")}
+		service := NewCharacterService(store, state)
+
+		got, err := service.GetUserEnrichedCharacterByID(uuid.New(), uuid.New())
+		if err == nil {
+			t.Errorf("expected error, got nil")
+		}
+
+		if got != nil {
+			t.Errorf("expected character to be nil")
+		}
+
+		if state.spyCalls != 1 {
+			t.Errorf("unexpected call to state: got %d, want 1", state.spyCalls)
 		}
 	})
 }

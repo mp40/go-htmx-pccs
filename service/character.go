@@ -2,6 +2,7 @@ package service
 
 import (
 	"fmt"
+	"log/slog"
 	"math/rand"
 
 	"github.com/google/uuid"
@@ -22,6 +23,7 @@ type characterStore interface {
 	GetCharactersByUserID(userID uuid.UUID) ([]store.Character, error)
 	GetUserCharacterByID(userID uuid.UUID, characterID uuid.UUID) (*store.Character, error)
 	DeleteUserCharacterByID(userID uuid.UUID, characterID uuid.UUID) error
+	GetUniformIDByCharacterID(characterID uuid.UUID) (*int, error)
 }
 
 type characterState interface {
@@ -119,10 +121,31 @@ func (cs *CharacterService) GetUserEnrichedCharacterByID(userID uuid.UUID, chara
 		return nil, err
 	}
 
-	// hard code until encumbrance feature added
+	uniformID, err := cs.store.GetUniformIDByCharacterID(characterID)
+	if err != nil {
+		return nil, err
+	}
+
+	var u *state.Uniform
+	if uniformID == nil {
+		slog.Warn("get character uniform, could not get by id", "character id:", characterID)
+	} else {
+		u, err = cs.state.GetUniformByID(*uniformID)
+		if err != nil {
+			slog.Warn("get uniform, could not get by id", "uniform id:", uniformID)
+			return nil, err
+		}
+
+	}
+
 	encumbrance := domain.CharacterEncumbrance{
-		Uniform:        "Normal",
-		ClothingWeight: 5,
+		Uniform:        "None",
+		ClothingWeight: 0,
+	}
+
+	if u != nil {
+		encumbrance.Uniform = u.Name
+		encumbrance.ClothingWeight = u.Weight
 	}
 
 	dto := mapStoreCharacterToDomainCharacter(*character)
