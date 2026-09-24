@@ -15,6 +15,7 @@ type stubStore struct {
 	characters   []store.Character
 	character    *store.Character
 	uniformID    *int
+	spyUniformID int
 	characterErr error
 	uniformErr   error
 }
@@ -41,6 +42,11 @@ func (s *stubStore) DeleteUserCharacterByID(userID uuid.UUID, characterID uuid.U
 
 func (s *stubStore) GetUniformIDByCharacterID(characterID uuid.UUID) (*int, error) {
 	return s.uniformID, s.uniformErr
+}
+
+func (s *stubStore) AddUniformIDByCharacterID(uniformID int, characterID uuid.UUID) error {
+	s.spyUniformID = uniformID
+	return s.uniformErr
 }
 
 type stubState struct {
@@ -75,6 +81,44 @@ func TestAddCharacter(t *testing.T) {
 
 		if len(got.Name) == 0 {
 			t.Errorf("expected length of name to be greater than 0")
+		}
+	})
+
+	t.Run("it sets uniform to default Normal", func(t *testing.T) {
+		store := &stubStore{}
+		state := &stubState{}
+		service := NewCharacterService(store, state)
+
+		rawCharacter := domain.RawCharacter{}
+
+		got, err := service.AddCharacter(uuid.New(), rawCharacter)
+		if err != nil {
+			t.Errorf("unexpected error, got %v", err)
+		}
+
+		if got == nil {
+			t.Errorf("expected character not to be nil")
+		}
+
+		if store.spyUniformID != defaultUniformID {
+			t.Errorf("expected uniform set to id %d, got: %d", defaultUniformID, store.spyUniformID)
+		}
+	})
+
+	t.Run("it does not block execution on set uniform error", func(t *testing.T) {
+		store := &stubStore{uniformErr: fmt.Errorf("sadness")}
+		state := &stubState{}
+		service := NewCharacterService(store, state)
+
+		rawCharacter := domain.RawCharacter{}
+
+		got, err := service.AddCharacter(uuid.New(), rawCharacter)
+		if err != nil {
+			t.Errorf("unexpected error, got %v", err)
+		}
+
+		if got == nil {
+			t.Errorf("expected character not to be nil")
 		}
 	})
 }

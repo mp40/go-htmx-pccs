@@ -12,6 +12,8 @@ import (
 	"github.com/mp40/go-htmx-pccs/store"
 )
 
+var defaultUniformID = 2
+
 type CharacterService struct {
 	store characterStore
 	state characterState
@@ -24,6 +26,7 @@ type characterStore interface {
 	GetUserCharacterByID(userID uuid.UUID, characterID uuid.UUID) (*store.Character, error)
 	DeleteUserCharacterByID(userID uuid.UUID, characterID uuid.UUID) error
 	GetUniformIDByCharacterID(characterID uuid.UUID) (*int, error)
+	AddUniformIDByCharacterID(uniformID int, characterID uuid.UUID) error
 }
 
 type characterState interface {
@@ -73,6 +76,11 @@ func (cs *CharacterService) AddCharacter(userID uuid.UUID, rawCharacter domain.R
 	character, err := cs.store.AddCharacter(new)
 	if character == nil || err != nil {
 		return nil, err
+	}
+
+	uniformErr := cs.store.AddUniformIDByCharacterID(defaultUniformID, character.ID)
+	if uniformErr != nil {
+		slog.Error("could not set default uniform by id", "err", err)
 	}
 
 	dto := mapStoreCharacterToDomainCharacter(*character)

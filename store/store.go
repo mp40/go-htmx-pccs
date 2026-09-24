@@ -184,3 +184,12 @@ func (s *Store) GetUniformIDByCharacterID(characterID uuid.UUID) (*int, error) {
 
 	return &id, nil
 }
+
+func (s *Store) AddUniformIDByCharacterID(uniformID int, characterID uuid.UUID) error {
+	_, err := s.db.Exec(
+		"INSERT INTO character_uniform (character_id, uuniform_id) VALUES (?, ?)",
+		characterID, uniformID,
+	)
+
+	return err
+}
