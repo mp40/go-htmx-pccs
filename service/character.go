@@ -80,7 +80,7 @@ func (cs *CharacterService) AddCharacter(userID uuid.UUID, rawCharacter domain.R
 
 	uniformErr := cs.store.AddUniformIDByCharacterID(defaultUniformID, character.ID)
 	if uniformErr != nil {
-		slog.Error("could not set default uniform by id", "err", err)
+		slog.Error("could not set default uniform by id", "err", uniformErr)
 	}
 
 	dto := mapStoreCharacterToDomainCharacter(*character)
