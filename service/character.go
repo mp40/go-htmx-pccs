@@ -2,29 +2,41 @@ package service
 
 import (
 	"fmt"
+	"log/slog"
 	"math/rand"
 
 	"github.com/google/uuid"
 	"github.com/mp40/go-htmx-pccs/domain"
 	"github.com/mp40/go-htmx-pccs/domain/pccs"
+	"github.com/mp40/go-htmx-pccs/state"
 	"github.com/mp40/go-htmx-pccs/store"
 )
 
+var defaultUniformID = 2
+
 type CharacterService struct {
-	store Store
+	store characterStore
+	state characterState
 }
 
-type Store interface {
+type characterStore interface {
 	AddCharacter(character store.Character) (*store.Character, error)
 	UpdateCharacter(character store.Character) (*store.Character, error)
 	GetCharactersByUserID(userID uuid.UUID) ([]store.Character, error)
 	GetUserCharacterByID(userID uuid.UUID, characterID uuid.UUID) (*store.Character, error)
 	DeleteUserCharacterByID(userID uuid.UUID, characterID uuid.UUID) error
+	GetUniformIDByCharacterID(characterID uuid.UUID) (*int, error)
+	AddUniformIDByCharacterID(uniformID int, characterID uuid.UUID) error
 }
 
-func NewCharacterService(store Store) *CharacterService {
+type characterState interface {
+	GetUniformByID(uniformID int) (*state.Uniform, error)
+}
+
+func NewCharacterService(store characterStore, state characterState) *CharacterService {
 	return &CharacterService{
 		store: store,
+		state: state,
 	}
 }
 
@@ -64,6 +76,11 @@ func (cs *CharacterService) AddCharacter(userID uuid.UUID, rawCharacter domain.R
 	character, err := cs.store.AddCharacter(new)
 	if character == nil || err != nil {
 		return nil, err
+	}
+
+	uniformErr := cs.store.AddUniformIDByCharacterID(defaultUniformID, character.ID)
+	if uniformErr != nil {
+		slog.Error("could not set default uniform by id", "err", uniformErr)
 	}
 
 	dto := mapStoreCharacterToDomainCharacter(*character)
@@ -112,13 +129,24 @@ func (cs *CharacterService) GetUserEnrichedCharacterByID(userID uuid.UUID, chara
 		return nil, err
 	}
 
-	// hard code until encumbrance feature added
-	encumbrance := domain.CharacterEncumbrance{
-		Uniform:        "Normal",
-		ClothingWeight: 5,
+	uniformID, err := cs.store.GetUniformIDByCharacterID(characterID)
+	if err != nil {
+		return nil, err
+	}
+
+	var u *state.Uniform
+	if uniformID == nil {
+		slog.Warn("character has no uniform assigned", "character_id", characterID)
+	} else {
+		u, err = cs.state.GetUniformByID(*uniformID)
+		if err != nil {
+			slog.Warn("could not get uniform by id", "uniform_id", *uniformID, "err", err)
+			return nil, err
+		}
 	}
 
 	dto := mapStoreCharacterToDomainCharacter(*character)
+	encumbrance := mapStateUniformToDomainEncumbrance(u)
 
 	enrichedCharacter := domain.EnrichCharacter(dto, encumbrance)
 
@@ -154,4 +182,19 @@ func mapStoreCharacterToDomainCharacter(c store.Character) domain.CharacterDTO {
 		HandToHandLevel: pccs.ConvertLearningPointsToLevel(c.HandToHandLearningPoints),
 	}
 	return dto
+}
+
+func mapStateUniformToDomainEncumbrance(uniform *state.Uniform) domain.CharacterEncumbrance {
+	encumbrance := domain.CharacterEncumbrance{
+		Uniform:        "None",
+		ClothingWeight: 0,
+	}
+	if uniform == nil {
+		return encumbrance
+	}
+
+	encumbrance.Uniform = uniform.Name
+	encumbrance.ClothingWeight = uniform.Weight
+
+	return encumbrance
 }

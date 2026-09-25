@@ -170,3 +170,26 @@ func (s *Store) DeleteUserCharacterByID(userID uuid.UUID, characterID uuid.UUID)
 
 	return err
 }
+
+func (s *Store) GetUniformIDByCharacterID(characterID uuid.UUID) (*int, error) {
+	var id int
+	err := s.db.QueryRow("SELECT uniform_id FROM character_uniform WHERE character_id = ?", characterID).
+		Scan(&id)
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	return &id, nil
+}
+
+func (s *Store) AddUniformIDByCharacterID(uniformID int, characterID uuid.UUID) error {
+	_, err := s.db.Exec(
+		"INSERT INTO character_uniform (character_id, uniform_id) VALUES (?, ?)",
+		characterID, uniformID,
+	)
+
+	return err
+}
