@@ -31,6 +31,12 @@ type Character struct {
 	UpdatedAt                int64     `json:"updated_at"` // unix timestamp
 }
 
+type Equipment struct {
+	EquipmentID  int  `json:"equipment_id"`
+	QtyPrimary   *int `json:"qty_primary"`
+	QtySecondary *int `json:"qty_secondary"`
+}
+
 type Store struct {
 	db *sql.DB
 }
@@ -192,4 +198,24 @@ func (s *Store) AddUniformIDByCharacterID(uniformID int, characterID uuid.UUID) 
 	)
 
 	return err
+}
+
+func (s *Store) GetEquipmentByCharacterID(characterID uuid.UUID) ([]Equipment, error) {
+	equipment := []Equipment{}
+	rows, err := s.db.Query("SELECT equipment_id, qty_primary, qty_secondary FROM character_equipment WHERE character_id = ?", characterID)
+	if err != nil {
+		return equipment, err
+	}
+
+	for rows.Next() {
+		e := Equipment{}
+		err := rows.Scan(&e.EquipmentID, &e.QtyPrimary, &e.QtySecondary)
+		if err != nil {
+			return []Equipment{}, err
+		}
+
+		equipment = append(equipment, e)
+	}
+
+	return equipment, nil
 }

@@ -77,3 +77,8 @@ func (s *State) GetUniformByID(uniformID int) (*Uniform, error) {
 
 	return &uniform, err
 }
+
+func (s *State) GetEquipmentByIDs(equipmentIDs []int) ([]Equipment, error) {
+	// TODO get by equipment ids
+	return []Equipment{}, nil
+}

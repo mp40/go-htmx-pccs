@@ -45,13 +45,24 @@ type CharacterCombatStats struct {
 	HandToHandCombatActions []int
 }
 
+type CharacterEquipment struct {
+	ID     int
+	Name   string
+	Weight float32
+	Qty    int
+}
+
 type CharacterEncumbrance struct {
-	Uniform        string
-	ClothingWeight float32
+	Uniform                  string
+	ClothingWeight           float32
+	PrimaryEquipment         []CharacterEquipment
+	SecondaryEquipment       []CharacterEquipment
+	PrimaryEquipmentWeight   float32
+	SecondaryEquipmentWeight float32
 }
 
 func calculateTotalEncumbrance(enc CharacterEncumbrance) float32 {
-	return enc.ClothingWeight
+	return enc.ClothingWeight + enc.PrimaryEquipmentWeight + enc.SecondaryEquipmentWeight
 }
 
 func calculateCombatStats(dto CharacterDTO, enc CharacterEncumbrance) CharacterCombatStats {

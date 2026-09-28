@@ -27,10 +27,12 @@ type characterStore interface {
 	DeleteUserCharacterByID(userID uuid.UUID, characterID uuid.UUID) error
 	GetUniformIDByCharacterID(characterID uuid.UUID) (*int, error)
 	AddUniformIDByCharacterID(uniformID int, characterID uuid.UUID) error
+	GetEquipmentByCharacterID(characterID uuid.UUID) ([]store.Equipment, error)
 }
 
 type characterState interface {
 	GetUniformByID(uniformID int) (*state.Uniform, error)
+	GetEquipmentByIDs(equipmentIDs []int) ([]state.Equipment, error)
 }
 
 func NewCharacterService(store characterStore, state characterState) *CharacterService {
@@ -145,8 +147,29 @@ func (cs *CharacterService) GetUserEnrichedCharacterByID(userID uuid.UUID, chara
 		}
 	}
 
+	characterEquipment, err := cs.store.GetEquipmentByCharacterID(characterID)
+	if err != nil {
+		return nil, err
+	}
+
+	ids := []int{}
+	for _, e := range characterEquipment {
+		ids = append(ids, e.EquipmentID)
+	}
+
+	stateEquipment, err := cs.state.GetEquipmentByIDs(ids)
+	if err != nil {
+		return nil, err
+	}
+
 	dto := mapStoreCharacterToDomainCharacter(*character)
+
 	encumbrance := mapStateUniformToDomainEncumbrance(u)
+	primary, secondary := mapCharacterEquipment(stateEquipment, characterEquipment)
+	encumbrance.PrimaryEquipment = primary
+	encumbrance.SecondaryEquipment = secondary
+	encumbrance.PrimaryEquipmentWeight = calculateEquipmentWeight(primary)
+	encumbrance.SecondaryEquipmentWeight = calculateEquipmentWeight(secondary)
 
 	enrichedCharacter := domain.EnrichCharacter(dto, encumbrance)
 
@@ -197,4 +220,36 @@ func mapStateUniformToDomainEncumbrance(uniform *state.Uniform) domain.Character
 	encumbrance.ClothingWeight = uniform.Weight
 
 	return encumbrance
+}
+
+func mapCharacterEquipment(stateEquipment []state.Equipment, characterEquipment []store.Equipment) ([]domain.CharacterEquipment, []domain.CharacterEquipment) {
+	primary := []domain.CharacterEquipment{}
+	secondary := []domain.CharacterEquipment{}
+
+	for _, ce := range characterEquipment {
+		var w float32
+		for _, se := range stateEquipment {
+			if se.ID == ce.EquipmentID {
+				w = se.Weight
+			}
+		}
+		if ce.QtyPrimary != nil {
+			primary = append(primary, domain.CharacterEquipment{ID: ce.EquipmentID, Qty: *ce.QtyPrimary, Weight: w})
+		}
+		if ce.QtySecondary != nil {
+			secondary = append(secondary, domain.CharacterEquipment{ID: ce.EquipmentID, Qty: *ce.QtySecondary, Weight: w})
+		}
+	}
+
+	return primary, secondary
+}
+
+func calculateEquipmentWeight(equipment []domain.CharacterEquipment) float32 {
+	var weight float32
+
+	for _, e := range equipment {
+		weight = weight + (e.Weight * float32(e.Qty))
+	}
+
+	return weight
 }
