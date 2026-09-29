@@ -228,16 +228,18 @@ func mapCharacterEquipment(stateEquipment []state.Equipment, characterEquipment 
 
 	for _, ce := range characterEquipment {
 		var w float32
+		var n string
 		for _, se := range stateEquipment {
 			if se.ID == ce.EquipmentID {
 				w = se.Weight
+				n = se.Name
 			}
 		}
 		if ce.QtyPrimary != nil {
-			primary = append(primary, domain.CharacterEquipment{ID: ce.EquipmentID, Qty: *ce.QtyPrimary, Weight: w})
+			primary = append(primary, domain.CharacterEquipment{ID: ce.EquipmentID, Name: n, Qty: *ce.QtyPrimary, Weight: w})
 		}
 		if ce.QtySecondary != nil {
-			secondary = append(secondary, domain.CharacterEquipment{ID: ce.EquipmentID, Qty: *ce.QtySecondary, Weight: w})
+			secondary = append(secondary, domain.CharacterEquipment{ID: ce.EquipmentID, Name: n, Qty: *ce.QtySecondary, Weight: w})
 		}
 	}
 

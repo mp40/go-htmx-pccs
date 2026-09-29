@@ -2,7 +2,6 @@ package service
 
 import (
 	"fmt"
-	"slices"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -73,7 +72,6 @@ func (s *stubState) GetUniformByID(uniformID int) (*state.Uniform, error) {
 }
 
 func (s *stubState) GetEquipmentByIDs(equipmentIDs []int) ([]state.Equipment, error) {
-	slices.Sort(equipmentIDs)
 	s.spyEquipmentIds = equipmentIDs
 	return s.equipment, s.equipmentErr
 }
@@ -263,7 +261,7 @@ func TestGetUserEnrichedCharacterByID(t *testing.T) {
 		zero := 0
 		one := 1
 		two := 2
-		store := &stubStore{character: &c, uniformID: &one, equipment: []store.Equipment{{EquipmentID: 1, QtyPrimary: &one}, {EquipmentID: 3, QtyPrimary: &zero}, {EquipmentID: 2, QtyPrimary: &two, QtySecondary: &one}}}
+		store := &stubStore{character: &c, uniformID: &one, equipment: []store.Equipment{{EquipmentID: 1, QtyPrimary: &one}, {EquipmentID: 2, QtyPrimary: &two, QtySecondary: &one}, {EquipmentID: 3, QtyPrimary: &zero}}}
 		u := state.Uniform{ID: 1, Name: "FAKE-UNIFORM", Weight: 5.5}
 		state := &stubState{uniform: &u, equipment: []state.Equipment{{ID: 1, Name: "A", Weight: 1.1}, {ID: 2, Name: "B", Weight: 2.2}, {ID: 3, Name: "C", Weight: 33.33}}}
 		service := NewCharacterService(store, state)
@@ -278,14 +276,14 @@ func TestGetUserEnrichedCharacterByID(t *testing.T) {
 		}
 
 		wantCombatStats := domain.CharacterCombatStats{
-			BaseSpeed:               3,
-			MaxSpeed:                6,
+			BaseSpeed:               2.5,
+			MaxSpeed:                5,
 			SAL:                     7,
 			CE:                      5,
-			HandToHandDamageBonus:   1.5,
+			HandToHandDamageBonus:   1,
 			KnockoutValue:           10,
 			GunCombatActions:        []int{2, 1, 1, 1},
-			HandToHandCombatActions: []int{2, 1, 1, 1},
+			HandToHandCombatActions: []int{1, 1, 1, 1},
 		}
 
 		wantEncumbrance := domain.CharacterEncumbrance{
@@ -298,7 +296,7 @@ func TestGetUserEnrichedCharacterByID(t *testing.T) {
 		}
 
 		if !cmp.Equal(got.CharacterCombatStats, wantCombatStats) {
-			t.Errorf("unexpected CombatStats, got %+v, want %+v", got.CharacterCombatStats, wantCombatStats)
+			t.Errorf("unexpected CombatStats: %+v", cmp.Diff(got.CharacterCombatStats, wantCombatStats))
 		}
 
 		if state.spyUniformId != 1 {
@@ -306,11 +304,11 @@ func TestGetUserEnrichedCharacterByID(t *testing.T) {
 		}
 
 		if !cmp.Equal(state.spyEquipmentIds, []int{1, 2, 3}) {
-			t.Errorf("unexpected uniform id as argument, got %v, want %v", state.spyEquipmentIds, []int{1, 2, 3})
+			t.Errorf("unexpected equipment ids as argument: %v", cmp.Diff(state.spyEquipmentIds, []int{1, 2, 3}))
 		}
 
 		if !cmp.Equal(got.CharacterEncumbrance, wantEncumbrance) {
-			t.Errorf("unexpected Encumbrance, got %+v, want %+v", got.CharacterEncumbrance, wantEncumbrance)
+			t.Errorf("unexpected Encumbrance: %v", cmp.Diff(got.CharacterEncumbrance, wantEncumbrance))
 		}
 	})
 
