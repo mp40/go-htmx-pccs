@@ -131,6 +131,29 @@ func (cs *CharacterService) GetUserEnrichedCharacterByID(userID uuid.UUID, chara
 		return nil, err
 	}
 
+	uniform, err := cs.getCharacterUniform(characterID)
+	if err != nil {
+		return nil, err
+	}
+
+	equipment, err := cs.getCharacterEquipment(characterID)
+	if err != nil {
+		return nil, err
+	}
+
+	dto := mapStoreCharacterToDomainCharacter(*character)
+
+	encumbrance := domain.CharacterEncumbrance{
+		Uniform:   *uniform,
+		Equipment: *equipment,
+	}
+
+	enrichedCharacter := domain.EnrichCharacter(dto, encumbrance)
+
+	return &enrichedCharacter, nil
+}
+
+func (cs *CharacterService) getCharacterUniform(characterID uuid.UUID) (*domain.Uniform, error) {
 	uniformID, err := cs.store.GetUniformIDByCharacterID(characterID)
 	if err != nil {
 		return nil, err
@@ -147,6 +170,12 @@ func (cs *CharacterService) GetUserEnrichedCharacterByID(userID uuid.UUID, chara
 		}
 	}
 
+	uniform := mapStateUniformToDomainEncumbrance(u)
+
+	return &uniform, nil
+}
+
+func (cs *CharacterService) getCharacterEquipment(characterID uuid.UUID) (*domain.Equipment, error) {
 	characterEquipment, err := cs.store.GetEquipmentByCharacterID(characterID)
 	if err != nil {
 		return nil, err
@@ -162,18 +191,9 @@ func (cs *CharacterService) GetUserEnrichedCharacterByID(userID uuid.UUID, chara
 		return nil, err
 	}
 
-	dto := mapStoreCharacterToDomainCharacter(*character)
+	equipment := mapCharacterEquipment(stateEquipment, characterEquipment)
 
-	encumbrance := mapStateUniformToDomainEncumbrance(u)
-	primary, secondary := mapCharacterEquipment(stateEquipment, characterEquipment)
-	encumbrance.PrimaryEquipment = primary
-	encumbrance.SecondaryEquipment = secondary
-	encumbrance.PrimaryEquipmentWeight = calculateEquipmentWeight(primary)
-	encumbrance.SecondaryEquipmentWeight = calculateEquipmentWeight(secondary)
-
-	enrichedCharacter := domain.EnrichCharacter(dto, encumbrance)
-
-	return &enrichedCharacter, nil
+	return &equipment, nil
 }
 
 var names = []string{"Leo", "Roy", "Sam", "Joe", "Ben", "Ray", "Avi", "Ian", "Dan", "Tom"}
@@ -207,8 +227,8 @@ func mapStoreCharacterToDomainCharacter(c store.Character) domain.CharacterDTO {
 	return dto
 }
 
-func mapStateUniformToDomainEncumbrance(uniform *state.Uniform) domain.CharacterEncumbrance {
-	encumbrance := domain.CharacterEncumbrance{
+func mapStateUniformToDomainEncumbrance(uniform *state.Uniform) domain.Uniform {
+	encumbrance := domain.Uniform{
 		Uniform:        "None",
 		ClothingWeight: 0,
 	}
@@ -222,9 +242,9 @@ func mapStateUniformToDomainEncumbrance(uniform *state.Uniform) domain.Character
 	return encumbrance
 }
 
-func mapCharacterEquipment(stateEquipment []state.Equipment, characterEquipment []store.Equipment) ([]domain.CharacterEquipment, []domain.CharacterEquipment) {
-	primary := []domain.CharacterEquipment{}
-	secondary := []domain.CharacterEquipment{}
+func mapCharacterEquipment(stateEquipment []state.Equipment, characterEquipment []store.Equipment) domain.Equipment {
+	primaryItems := []domain.Item{}
+	secondaryItems := []domain.Item{}
 
 	for _, ce := range characterEquipment {
 		var w float32
@@ -233,25 +253,17 @@ func mapCharacterEquipment(stateEquipment []state.Equipment, characterEquipment 
 			if se.ID == ce.EquipmentID {
 				w = se.Weight
 				n = se.Name
+			} else {
+				continue
+			}
+			if ce.QtyPrimary != nil {
+				primaryItems = append(primaryItems, domain.Item{ID: ce.EquipmentID, Name: n, Qty: *ce.QtyPrimary, Weight: w})
+			}
+			if ce.QtySecondary != nil {
+				secondaryItems = append(secondaryItems, domain.Item{ID: ce.EquipmentID, Name: n, Qty: *ce.QtySecondary, Weight: w})
 			}
 		}
-		if ce.QtyPrimary != nil {
-			primary = append(primary, domain.CharacterEquipment{ID: ce.EquipmentID, Name: n, Qty: *ce.QtyPrimary, Weight: w})
-		}
-		if ce.QtySecondary != nil {
-			secondary = append(secondary, domain.CharacterEquipment{ID: ce.EquipmentID, Name: n, Qty: *ce.QtySecondary, Weight: w})
-		}
 	}
 
-	return primary, secondary
-}
-
-func calculateEquipmentWeight(equipment []domain.CharacterEquipment) float32 {
-	var weight float32
-
-	for _, e := range equipment {
-		weight = weight + (e.Weight * float32(e.Qty))
-	}
-
-	return weight
+	return domain.Equipment{Primary: domain.Load{Items: primaryItems}, Secondary: domain.Load{Items: secondaryItems}}
 }

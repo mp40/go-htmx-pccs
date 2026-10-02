@@ -45,24 +45,46 @@ type CharacterCombatStats struct {
 	HandToHandCombatActions []int
 }
 
-type CharacterEquipment struct {
+type Uniform struct {
+	Uniform        string
+	ClothingWeight float32
+}
+
+type Item struct {
 	ID     int
 	Name   string
 	Weight float32
 	Qty    int
 }
 
+type Load struct {
+	Items []Item
+}
+
+type Equipment struct {
+	Primary   Load
+	Secondary Load
+}
+
 type CharacterEncumbrance struct {
-	Uniform                  string
-	ClothingWeight           float32
-	PrimaryEquipment         []CharacterEquipment
-	SecondaryEquipment       []CharacterEquipment
-	PrimaryEquipmentWeight   float32
-	SecondaryEquipmentWeight float32
+	Uniform   Uniform
+	Equipment Equipment
+}
+
+func (l *Load) claculateLoadWeight() float32 {
+	var weight float32
+
+	for _, e := range l.Items {
+		weight = weight + (e.Weight * float32(e.Qty))
+	}
+
+	return weight
 }
 
 func calculateTotalEncumbrance(enc CharacterEncumbrance) float32 {
-	return enc.ClothingWeight + enc.PrimaryEquipmentWeight + enc.SecondaryEquipmentWeight
+	primary := enc.Equipment.Primary.claculateLoadWeight()
+	secondary := enc.Equipment.Secondary.claculateLoadWeight()
+	return enc.Uniform.ClothingWeight + primary + secondary
 }
 
 func calculateCombatStats(dto CharacterDTO, enc CharacterEncumbrance) CharacterCombatStats {

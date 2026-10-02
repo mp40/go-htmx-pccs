@@ -221,9 +221,13 @@ func TestCalculateCharacterCombatData(t *testing.T) {
 			HandToHandLevel: 2,
 		}
 
-		enc := CharacterEncumbrance{
+		uniform := Uniform{
 			Uniform:        "Normal",
 			ClothingWeight: 5,
+		}
+
+		enc := CharacterEncumbrance{
+			Uniform: uniform,
 		}
 
 		got := calculateCombatStats(dto, enc)
@@ -262,9 +266,13 @@ func TestCalculateCharacterCombatData(t *testing.T) {
 			HandToHandLevel: 1,
 		}
 
-		enc := CharacterEncumbrance{
+		uniform := Uniform{
 			Uniform:        "Normal",
 			ClothingWeight: 5,
+		}
+
+		enc := CharacterEncumbrance{
+			Uniform: uniform,
 		}
 
 		got := calculateCombatStats(dto, enc)
@@ -303,9 +311,13 @@ func TestCalculateCharacterCombatData(t *testing.T) {
 			HandToHandLevel: 5,
 		}
 
-		enc := CharacterEncumbrance{
+		uniform := Uniform{
 			Uniform:        "Normal",
 			ClothingWeight: 5,
+		}
+
+		enc := CharacterEncumbrance{
+			Uniform: uniform,
 		}
 
 		got := calculateCombatStats(dto, enc)
@@ -344,9 +356,13 @@ func TestCalculateCharacterCombatData(t *testing.T) {
 			HandToHandLevel: 7,
 		}
 
-		enc := CharacterEncumbrance{
+		uniform := Uniform{
 			Uniform:        "Normal",
 			ClothingWeight: 5,
+		}
+
+		enc := CharacterEncumbrance{
+			Uniform: uniform,
 		}
 
 		got := calculateCombatStats(dto, enc)
