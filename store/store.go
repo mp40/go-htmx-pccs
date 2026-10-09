@@ -116,10 +116,11 @@ func (s *Store) UpdateCharacter(character Character) (*Character, error) {
 func (s *Store) GetCharactersByUserID(userID uuid.UUID) ([]Character, error) {
 	rows, err := s.db.Query("SELECT * FROM characters WHERE user_id = ?", userID)
 	if err != nil {
-		return []Character{}, err
+		return nil, err
 	}
+	defer rows.Close()
 
-	var characters []Character
+	characters := []Character{}
 
 	for rows.Next() {
 		character := Character{}
@@ -127,7 +128,7 @@ func (s *Store) GetCharactersByUserID(userID uuid.UUID) ([]Character, error) {
 		var userIdStr string
 		err := rows.Scan(&idStr, &userIdStr, &character.Name, &character.Str, &character.Int, &character.Wil, &character.Hlt, &character.Agi, &character.Tch, &character.GunCombatLearningPoints, &character.HandToHandLearningPoints, &character.CreatedAt, &character.UpdatedAt)
 		if err != nil {
-			return []Character{}, err
+			return nil, err
 		}
 
 		character.ID, err = uuid.Parse(idStr)
@@ -140,6 +141,11 @@ func (s *Store) GetCharactersByUserID(userID uuid.UUID) ([]Character, error) {
 		}
 
 		characters = append(characters, character)
+	}
+
+	err = rows.Err()
+	if err != nil {
+		return nil, err
 	}
 
 	return characters, nil
@@ -201,20 +207,27 @@ func (s *Store) AddUniformIDByCharacterID(uniformID int, characterID uuid.UUID) 
 }
 
 func (s *Store) GetEquipmentByCharacterID(characterID uuid.UUID) ([]Equipment, error) {
-	equipment := []Equipment{}
 	rows, err := s.db.Query("SELECT equipment_id, qty_primary, qty_secondary FROM character_equipment WHERE character_id = ?", characterID)
 	if err != nil {
-		return equipment, err
+		return nil, err
 	}
+	defer rows.Close()
+
+	equipment := []Equipment{}
 
 	for rows.Next() {
 		e := Equipment{}
 		err := rows.Scan(&e.EquipmentID, &e.QtyPrimary, &e.QtySecondary)
 		if err != nil {
-			return []Equipment{}, err
+			return nil, err
 		}
 
 		equipment = append(equipment, e)
+	}
+
+	err = rows.Err()
+	if err != nil {
+		return nil, err
 	}
 
 	return equipment, nil
