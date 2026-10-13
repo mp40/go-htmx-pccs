@@ -3,18 +3,48 @@
   <h1>{{ .Character.Name }}</h1>
   <div class="container">
     <table class="attributes">
-      <tr><td>Str:</td><td>{{ .Character.Str }}</td></tr>
-      <tr><td>Int:</td><td>{{ .Character.Int }}</td></tr>
-      <tr><td>Wil:</td><td>{{ .Character.Wil }}</td></tr>
-      <tr><td>Hlt:</td><td>{{ .Character.Hlt }}</td></tr>
-      <tr><td>Agi:</td><td>{{ .Character.Agi }}</td></tr>
-      <tr><td>Tch:</td><td>{{ .Character.Tch }}</td></tr>
+      <tr>
+        <td>Str:</td>
+        <td>{{ .Character.Str }}</td>
+      </tr>
+      <tr>
+        <td>Int:</td>
+        <td>{{ .Character.Int }}</td>
+      </tr>
+      <tr>
+        <td>Wil:</td>
+        <td>{{ .Character.Wil }}</td>
+      </tr>
+      <tr>
+        <td>Hlt:</td>
+        <td>{{ .Character.Hlt }}</td>
+      </tr>
+      <tr>
+        <td>Agi:</td>
+        <td>{{ .Character.Agi }}</td>
+      </tr>
+      <tr>
+        <td>Tch:</td>
+        <td>{{ .Character.Tch }}</td>
+      </tr>
     </table>
     <table class="stats">
-      <tr><td>Gun Combat Lvl:</td><td>{{ .Character.GunCombatLevel}}</td></tr>
-      <tr><td>Hand to Hand Lvl:</td><td>{{ .Character.HandToHandLevel}}</td></tr>
-      <tr><td>Hand to Hand DB:</td><td>{{ .Character.HandToHandDamageBonus}}</td></tr>
-      <tr><td>Knockout Value:</td><td>{{ .Character.KnockoutValue}}</td></tr>
+      <tr>
+        <td>Gun Combat Lvl:</td>
+        <td>{{ .Character.GunCombatLevel}}</td>
+      </tr>
+      <tr>
+        <td>Hand to Hand Lvl:</td>
+        <td>{{ .Character.HandToHandLevel}}</td>
+      </tr>
+      <tr>
+        <td>Hand to Hand DB:</td>
+        <td>{{ .Character.HandToHandDamageBonus}}</td>
+      </tr>
+      <tr>
+        <td>Knockout Value:</td>
+        <td>{{ .Character.KnockoutValue}}</td>
+      </tr>
     </table>
     <table class="actions">
       <tr>
@@ -37,8 +67,46 @@
         <td>{{ index .Character.HandToHandCombatActions 1 }}</td>
         <td>{{ index .Character.HandToHandCombatActions 2 }}</td>
         <td>{{ index .Character.HandToHandCombatActions 3 }}</td>
-        </tr>
+      </tr>
     </table>
+    <div class="equipment">
+      <div class="primary">
+        <div>Primary</div>
+        <button command="show-modal" commandfor="add-primary-equipment">
+          Add
+        </button>
+        {{range .Character.CharacterEncumbrance.Equipment.Primary.Items}}
+        <div>
+          <span>{{.Name}}</span>
+          <span>{{.Weight}}</span>
+          <span>{{.Qty}}</span>
+        </div>
+        {{end}}
+      </div>
+      <div class="secondary">
+        <div>Secondary</div>
+        <button command="show-modal" commandfor="add-secondary-equipment">
+          Add
+        </button>
+        {{range .Character.CharacterEncumbrance.Equipment.Secondary.Items}}
+        <div>
+          <span>{{.Name}}</span>
+          <span>{{.Weight}}</span>
+          <span>{{.Qty}}</span>
+        </div>
+        {{end}}
+      </div>
+    </div>
   </div>
+  <dialog id="add-primary-equipment" class="dialog-modal">
+    <button command="close">&times;</button>
+    <button commandfor="add-primary-equipment" command="close">x</button>
+    <p>render equipment selection here</p>
+  </dialog>
+  <dialog id="add-secondary-equipment" class="dialog-modal">
+    <button command="close">&times;</button>
+    <button commandfor="add-primary-equipment" command="close">x</button>
+    <p>render equipment selection here</p>
+  </dialog>
 </div>
 {{ end }}

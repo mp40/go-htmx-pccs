@@ -239,6 +239,47 @@ body {
   margin-bottom: 15px;
 }
 
+.dialog-modal {
+  margin: auto;
+  background-color: whitesmoke;
+  border-radius: 3px;
+  padding: 1.25em 1.5em;
+  border: none;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+  opacity: 0;
+  scale: 0.95;
+  transition:
+    opacity 0.2s,
+    scale 0.2s,
+    overlay 0.2s allow-discrete,
+    display 0.2s allow-discrete;
+}
+.dialog-modal[open] {
+  opacity: 1;
+  scale: 1;
+}
+@starting-style {
+  .dialog-modal[open] {
+    opacity: 0;
+    scale: 0.95;
+  }
+}
+.dialog-modal::backdrop {
+  background: rgb(0 0 0 / 0.5);
+}
+
+.dialog-modal > button {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 1em;
+  height: 1em;
+  font-family: monospace;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .error {
   color: var(--german-orange);
   font-style: italic;
@@ -484,8 +525,13 @@ body {
 
 .character-page > .container {
   display: grid;
-  grid-template-columns: 2em 2em 2em 2em 2em 2em 2em 2em 2em 2em 2em;
-  grid-gap: 0.5em;
+  grid-template-columns: repeat(3, max-content);
+  gap: 1em;
+  align-content: start;
+}
+
+.character-page > .container > .equipment {
+  grid-column: 1 / -1;
 }
 
 .character-page > .container > table {
@@ -494,7 +540,7 @@ body {
   border-collapse: collapse;
 }
 
-.character-page > .container > table > tbody > tr > td:nth-of-type(n+2) {
+.character-page > .container > table > tbody > tr > td:nth-of-type(n + 2) {
   text-align: center;
 }
 
@@ -502,18 +548,8 @@ body {
   padding: 0 2px;
 }
 
-
-.character-page > .container > .attributes {
-  grid-column: 1 / 2;
-}
-
-.character-page > .container > .stats {
-  grid-column: 3 / 7;
-}
-
 .character-page > .container > .actions {
   border: 1px solid var(--panzer-grey);
-  grid-column: 8 / 10;
 }
 
 .character-page > .container > .actions > tbody > tr > th {
@@ -526,7 +562,7 @@ body {
   padding: 0 2px;
 }
 
-.character-page > .container > .actions > tbody > tr > th:nth-of-type(n+2) {
+.character-page > .container > .actions > tbody > tr > th:nth-of-type(n + 2) {
   text-align: center;
   padding: 0 6px;
 }
