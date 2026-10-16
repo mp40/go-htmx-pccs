@@ -6,6 +6,7 @@ import (
 	"html/template"
 	"io"
 
+	"github.com/google/uuid"
 	"github.com/mp40/go-htmx-pccs/domain"
 	"github.com/mp40/go-htmx-pccs/state"
 )
@@ -189,6 +190,20 @@ func (r *Render) RenderReferencePage(w io.Writer, signedIn bool) error {
 	}
 
 	return r.execute(w, "index", data)
+}
+
+func (r *Render) RenderEquipmentSelect(w io.Writer, characterID uuid.UUID, load string, equipment []state.Equipment) error {
+	data := struct {
+		CharacterID uuid.UUID
+		Load        string
+		Equipment   []state.Equipment
+	}{
+		CharacterID: characterID,
+		Load:        load,
+		Equipment:   equipment,
+	}
+
+	return r.execute(w, "character-equipment-select", data)
 }
 
 func (r *Render) RenderReferenceFragment(w io.Writer) error {
