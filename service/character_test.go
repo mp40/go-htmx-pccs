@@ -55,6 +55,10 @@ func (s *stubStore) GetEquipmentByCharacterID(characterID uuid.UUID) ([]store.Eq
 	return s.equipment, s.equipmentErr
 }
 
+func (s *stubStore) AddEquipmentIDByCharacterID(equipmentID int, characterID uuid.UUID, load string) error {
+	return s.equipmentErr
+}
+
 type stubState struct {
 	uniform         *state.Uniform
 	equipment       []state.Equipment
@@ -466,6 +470,17 @@ func TestGetCharacterEquipment(t *testing.T) {
 
 		if !cmp.Equal(*got, want) {
 			t.Errorf("unexpected Equipment: %v", cmp.Diff(*got, want))
+		}
+	})
+}
+
+func TestAddCharacterEquipment(t *testing.T) {
+	t.Run("it returns error on db error", func(t *testing.T) {
+		store := &stubStore{equipmentErr: fmt.Errorf("sadness")}
+		service := NewCharacterService(store, nil)
+		_, err := service.AddCharacterEquipment(uuid.New(), uuid.New(), 1, "primary")
+		if err == nil {
+			t.Errorf("expected error, got nil")
 		}
 	})
 }

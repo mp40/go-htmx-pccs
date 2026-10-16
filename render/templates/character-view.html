@@ -1,7 +1,7 @@
 {{ define "character-view" }}
 <div class="page-div character-page">
   <h1>{{ .Character.Name }}</h1>
-  <div class="container">
+  <div id="character-view" class="container">
     <table class="attributes">
       <tr>
         <td>Str:</td>
@@ -72,7 +72,13 @@
     <div class="equipment">
       <div class="primary">
         <div>Primary</div>
-        <button command="show-modal" commandfor="add-primary-equipment">
+        <button
+          command="show-modal"
+          commandfor="add-primary-equipment"
+          hx-get="/character/{{ .Character.ID }}/equipment/select?load=primary"
+          hx-target="#add-primary-equipment .dialog-body"
+          hx-swap="outerHTML"
+        >
           Add
         </button>
         {{range .Character.CharacterEncumbrance.Equipment.Primary.Items}}
@@ -85,7 +91,12 @@
       </div>
       <div class="secondary">
         <div>Secondary</div>
-        <button command="show-modal" commandfor="add-secondary-equipment">
+        <button
+          command="show-modal"
+          commandfor="add-secondary-equipment"
+          hx-get="/character/{{ .Character.ID }}/equipment/select?load=secondary"
+          hx-target="#add-secondary-equipment .dialog-body"
+        >
           Add
         </button>
         {{range .Character.CharacterEncumbrance.Equipment.Secondary.Items}}
@@ -99,14 +110,14 @@
     </div>
   </div>
   <dialog id="add-primary-equipment" class="dialog-modal">
-    <button command="close">&times;</button>
-    <button commandfor="add-primary-equipment" command="close">x</button>
-    <p>render equipment selection here</p>
+    <button commandfor="add-primary-equipment" command="close">&times;</button>
+    <div class="dialog-body">Loading…</div>
   </dialog>
   <dialog id="add-secondary-equipment" class="dialog-modal">
-    <button command="close">&times;</button>
-    <button commandfor="add-primary-equipment" command="close">x</button>
-    <p>render equipment selection here</p>
+    <button commandfor="add-secondary-equipment" command="close">
+      &times;
+    </button>
+    <div class="dialog-body">Loading…</div>
   </dialog>
 </div>
 {{ end }}

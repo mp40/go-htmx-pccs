@@ -2,6 +2,7 @@ package store
 
 import (
 	"database/sql"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -231,4 +232,13 @@ func (s *Store) GetEquipmentByCharacterID(characterID uuid.UUID) ([]Equipment, e
 	}
 
 	return equipment, nil
+}
+
+func (s *Store) AddEquipmentIDByCharacterID(equipmentID int, characterID uuid.UUID, load string) error {
+	_, err := s.db.Exec(
+		fmt.Sprintf("INSERT INTO character_equipment (character_id, equipment_id, %s) VALUES (?, ?, ?) ON CONFLICT (character_id, equipment_id) DO UPDATE SET %s = %s", fmt.Sprintf("qty_%s", load), fmt.Sprintf("qty_%s", load), fmt.Sprintf("excluded.qty_%s", load)),
+		characterID, equipmentID, 1,
+	)
+
+	return err
 }

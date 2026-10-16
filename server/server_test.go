@@ -30,3 +30,7 @@ func (s *stubCharacterService) DeleteUserCharacterByID(userID uuid.UUID, charact
 func (s *stubCharacterService) GetUserEnrichedCharacterByID(userID uuid.UUID, characterID uuid.UUID) (*domain.EnrichedCharacterDTO, error) {
 	panic("method not used in test")
 }
+
+func (s *stubCharacterService) AddCharacterEquipment(userID uuid.UUID, characterID uuid.UUID, equipmentID int, load string) (*domain.EnrichedCharacterDTO, error) {
+	panic("method not used in test")
+}

@@ -240,7 +240,8 @@ body {
 }
 
 .dialog-modal {
-  margin: auto;
+  /* margin: auto; */
+  margin: auto 2rem auto auto;
   background-color: whitesmoke;
   border-radius: 3px;
   padding: 1.25em 1.5em;
