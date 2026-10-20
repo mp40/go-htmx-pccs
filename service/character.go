@@ -206,6 +206,10 @@ func (cs *CharacterService) AddCharacterEquipment(userID uuid.UUID, characterID 
 	return cs.GetUserEnrichedCharacterByID(userID, characterID)
 }
 
+func (cs *CharacterService) UpdateCharacterEquipment(userID uuid.UUID, characterID uuid.UUID, equipmentID int, load string, qty int) (*domain.EnrichedCharacterDTO, error) {
+	return nil, nil
+}
+
 var names = []string{"Leo", "Roy", "Sam", "Joe", "Ben", "Ray", "Avi", "Ian", "Dan", "Tom"}
 
 func generateRandomNumber(min int, max int) int {
