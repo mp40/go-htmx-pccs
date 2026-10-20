@@ -97,11 +97,11 @@ func postCharacterEquipmentHandler(render postCharacterEquipmentRender, characte
 			return
 		}
 		if c == nil {
-			slog.Warn("get character page: character not found", "character_id", characterID, "user_id", *userID)
+			slog.Error("post character equipment error, character is nil")
 			w.Header().Set("Content-Type", "text/html; charset=utf-8")
-			w.WriteHeader(http.StatusNotFound)
-			if err := render.RenderErrorMessageFragment(w, "character not found"); err != nil {
-				slog.Error("character page error", "err", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			if err := render.RenderErrorMessageFragment(w, "internal server error"); err != nil {
+				slog.Error("post character equipment error", "err", err)
 				http.Error(w, "internal server error", http.StatusInternalServerError)
 			}
 			return

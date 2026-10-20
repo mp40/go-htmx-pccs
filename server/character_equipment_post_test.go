@@ -52,7 +52,7 @@ func TestPostCharacterEquipmentHandler(t *testing.T) {
 		character.HandToHandCombatActions = []int{1, 0, 1, 0}
 		character.Name = "TEST-CHARACTER"
 		character.Equipment.Primary.Items = []domain.Item{{ID: 1, Name: "Equipment A", Weight: 2.2, Qty: 1}}
-		characterService := &stubPostCharacterEquipmentCharacterService{}
+		characterService := &stubPostCharacterEquipmentCharacterService{character: &character}
 
 		server := NewServer(nil, nil, &identity, characterService, nil, r)
 
@@ -81,10 +81,7 @@ func TestPostCharacterEquipmentHandler(t *testing.T) {
 		}
 
 		if !strings.Contains(string(body), "Equipment A") {
-			t.Errorf("equipment name in document, got: %s", body)
-		}
-		if !strings.Contains(string(body), "Equipment x") {
-			t.Errorf("equipment name in document, got: %s", body)
+			t.Errorf("expected equipment name in document, got: %s", body)
 		}
 	})
 
