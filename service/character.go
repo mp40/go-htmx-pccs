@@ -29,6 +29,7 @@ type characterStore interface {
 	AddUniformIDByCharacterID(uniformID int, characterID uuid.UUID) error
 	GetEquipmentByCharacterID(characterID uuid.UUID) ([]store.Equipment, error)
 	AddEquipmentIDByCharacterID(equipmentID int, characterID uuid.UUID, load string) error
+	UpsertEquipmentByCharacterID(equipmentID int, characterID uuid.UUID, load string, qty int) error
 }
 
 type characterState interface {
@@ -207,7 +208,12 @@ func (cs *CharacterService) AddCharacterEquipment(userID uuid.UUID, characterID 
 }
 
 func (cs *CharacterService) UpdateCharacterEquipment(userID uuid.UUID, characterID uuid.UUID, equipmentID int, load string, qty int) (*domain.EnrichedCharacterDTO, error) {
-	return nil, nil
+	err := cs.store.UpsertEquipmentByCharacterID(equipmentID, characterID, load, qty)
+	if err != nil {
+		return nil, err
+	}
+
+	return cs.GetUserEnrichedCharacterByID(userID, characterID)
 }
 
 var names = []string{"Leo", "Roy", "Sam", "Joe", "Ben", "Ray", "Avi", "Ian", "Dan", "Tom"}

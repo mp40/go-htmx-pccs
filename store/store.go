@@ -242,3 +242,12 @@ func (s *Store) AddEquipmentIDByCharacterID(equipmentID int, characterID uuid.UU
 
 	return err
 }
+
+func (s *Store) UpsertEquipmentByCharacterID(equipmentID int, characterID uuid.UUID, load string, qty int) error {
+	_, err := s.db.Exec(
+		fmt.Sprintf("INSERT INTO character_equipment (character_id, equipment_id, %s) VALUES (?, ?, ?) ON CONFLICT (character_id, equipment_id) DO UPDATE SET %s = %s", fmt.Sprintf("qty_%s", load), fmt.Sprintf("qty_%s", load), fmt.Sprintf("excluded.qty_%s", load)),
+		characterID, equipmentID, qty,
+	)
+
+	return err
+}
