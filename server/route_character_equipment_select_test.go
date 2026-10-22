@@ -189,6 +189,40 @@ func TestGetCharacterEquipmentSelectHandler(t *testing.T) {
 		}
 	})
 
+	t.Run("it returns 400 on malformed load name", func(t *testing.T) {
+		r, err := render.NewRenderService()
+		if err != nil {
+			t.Fatalf("render service error %v", err)
+		}
+
+		userID := uuid.MustParse("55600000-0000-4523-90a2-4868a5bfc90a")
+		identity := stubRouteCharacterEquipmentSelectIndentity{userID: &userID, isSignedIn: true}
+		gear := &stubRouteCharacterEquipmentSelectGearService{}
+
+		server := NewServer(nil, nil, &identity, nil, gear, r)
+
+		request := httptest.NewRequest(http.MethodGet, "/character/69000000-0000-4523-90a2-4868a5bfc90a/equipment/select?load=xxxx", nil)
+		response := httptest.NewRecorder()
+		server.ServeHTTP(response, request)
+
+		got := response.Result()
+
+		if got.StatusCode != http.StatusBadRequest {
+			t.Errorf("got %v want %v", got.StatusCode, http.StatusBadRequest)
+		}
+		if got.Header.Get("Content-Type") != "text/html; charset=utf-8" {
+			t.Errorf("got Content-Type %q, want %q", got.Header.Get("Content-Type"), "text/html; charset=utf-8")
+		}
+
+		body, err := io.ReadAll(got.Body)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !strings.Contains(string(body), "bad request") {
+			t.Errorf("want bad request error message render, got: %s", body)
+		}
+	})
+
 	t.Run("it returns 500 on get equipment error", func(t *testing.T) {
 		r, err := render.NewRenderService()
 		if err != nil {

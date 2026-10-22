@@ -25,9 +25,17 @@ type getSelectEquipmentGearService interface {
 
 func getCharacterEquipmentSelectHandler(render getSelectEquipmentRender, identity getSelectEquipmentIdentity, gearService getSelectEquipmentGearService) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		rawLoad := r.URL.Query().Get("load")
-		// TODO validate load
-		load := rawLoad
+		load := r.URL.Query().Get("load")
+		if load != "primary" && load != "secondary" {
+			slog.Error("get character equipment select error, incorrect load name", "err", load)
+			w.Header().Set("Content-Type", "text/html; charset=utf-8")
+			w.WriteHeader(http.StatusBadRequest)
+			if err := render.RenderErrorMessageFragment(w, "bad request: primary or secondary load name required"); err != nil {
+				slog.Error("get character equipment selec error", "error", err)
+				http.Error(w, "internal server error", http.StatusInternalServerError)
+			}
+			return
+		}
 
 		userID := identity.GetUserID(r)
 		if userID == nil {
