@@ -56,6 +56,10 @@ func (s *stubStore) GetEquipmentByCharacterID(characterID uuid.UUID) ([]store.Eq
 	return s.equipment, s.equipmentErr
 }
 
+func (s *stubStore) AddEquipmentIDByCharacterID(equipmentID int, characterID uuid.UUID, load string) error {
+	return s.equipmentErr
+}
+
 func (s *stubStore) UpsertEquipmentByCharacterID(equipmentID int, characterID uuid.UUID, load string, qty int) error {
 	return s.equipmentErr
 }

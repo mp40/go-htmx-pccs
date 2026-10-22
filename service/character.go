@@ -28,6 +28,7 @@ type characterStore interface {
 	GetUniformIDByCharacterID(characterID uuid.UUID) (*int, error)
 	AddUniformIDByCharacterID(uniformID int, characterID uuid.UUID) error
 	GetEquipmentByCharacterID(characterID uuid.UUID) ([]store.Equipment, error)
+	AddEquipmentIDByCharacterID(equipmentID int, characterID uuid.UUID, load string) error
 	UpsertEquipmentByCharacterID(equipmentID int, characterID uuid.UUID, load string, qty int) error
 	CharacterIDBelongsToUserID(characterID uuid.UUID, userID uuid.UUID) (bool, error)
 }
@@ -207,7 +208,7 @@ func (cs *CharacterService) AddCharacterEquipment(userID uuid.UUID, characterID 
 		return nil, fmt.Errorf("character %v does not belong to user %v", characterID, userID)
 	}
 
-	err = cs.store.UpsertEquipmentByCharacterID(equipmentID, characterID, load, 1)
+	err = cs.store.AddEquipmentIDByCharacterID(equipmentID, characterID, load)
 	if err != nil {
 		return nil, err
 	}

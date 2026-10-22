@@ -251,6 +251,20 @@ func (s *Store) GetEquipmentByCharacterID(characterID uuid.UUID) ([]Equipment, e
 	return equipment, nil
 }
 
+func (s *Store) AddEquipmentIDByCharacterID(equipmentID int, characterID uuid.UUID, load string) error {
+	parsedLoad, err := parseEquipmentLoadType(load)
+	if err != nil {
+		return err
+	}
+
+	_, err = s.db.Exec(
+		fmt.Sprintf("INSERT INTO character_equipment (character_id, equipment_id, %[1]s) VALUES (?, ?, ?) ON CONFLICT (character_id, equipment_id) DO UPDATE SET %[1]s = excluded.%[1]s WHERE COALESCE(character_equipment.%[1]s, 0) = 0", parsedLoad),
+		characterID, equipmentID, 1,
+	)
+
+	return err
+}
+
 func (s *Store) UpsertEquipmentByCharacterID(equipmentID int, characterID uuid.UUID, load string, qty int) error {
 	parsedLoad, err := parseEquipmentLoadType(load)
 	if err != nil {
@@ -258,7 +272,7 @@ func (s *Store) UpsertEquipmentByCharacterID(equipmentID int, characterID uuid.U
 	}
 
 	_, err = s.db.Exec(
-		fmt.Sprintf("INSERT INTO character_equipment (character_id, equipment_id, %s) VALUES (?, ?, ?) ON CONFLICT (character_id, equipment_id) DO UPDATE SET %s = %s", parsedLoad, parsedLoad, fmt.Sprintf("excluded.%s", parsedLoad)),
+		fmt.Sprintf("INSERT INTO character_equipment (character_id, equipment_id, %[1]s) VALUES (?, ?, ?) ON CONFLICT (character_id, equipment_id) DO UPDATE SET %[1]s = excluded.%[1]s", parsedLoad),
 		characterID, equipmentID, qty,
 	)
 
