@@ -17,6 +17,7 @@ type stubStore struct {
 	uniformID    *int
 	equipment    []store.Equipment
 	spyUniformID int
+	belongs      bool
 	characterErr error
 	uniformErr   error
 	equipmentErr error
@@ -55,12 +56,12 @@ func (s *stubStore) GetEquipmentByCharacterID(characterID uuid.UUID) ([]store.Eq
 	return s.equipment, s.equipmentErr
 }
 
-func (s *stubStore) AddEquipmentIDByCharacterID(equipmentID int, characterID uuid.UUID, load string) error {
+func (s *stubStore) UpsertEquipmentByCharacterID(equipmentID int, characterID uuid.UUID, load string, qty int) error {
 	return s.equipmentErr
 }
 
-func (s *stubStore) UpsertEquipmentByCharacterID(equipmentID int, characterID uuid.UUID, load string, qty int) error {
-	return s.equipmentErr
+func (s *stubStore) CharacterIDBelongsToUserID(characterID uuid.UUID, userID uuid.UUID) (bool, error) {
+	return s.belongs, s.characterErr
 }
 
 type stubState struct {
@@ -479,6 +480,15 @@ func TestGetCharacterEquipment(t *testing.T) {
 }
 
 func TestAddCharacterEquipment(t *testing.T) {
+	t.Run("it returns error if character id does not belong to user", func(t *testing.T) {
+		store := &stubStore{belongs: false}
+		service := NewCharacterService(store, nil)
+		_, err := service.AddCharacterEquipment(uuid.New(), uuid.New(), 1, "primary")
+		if err == nil {
+			t.Errorf("expected error, got nil")
+		}
+	})
+
 	t.Run("it returns error on db error", func(t *testing.T) {
 		store := &stubStore{equipmentErr: fmt.Errorf("sadness")}
 		service := NewCharacterService(store, nil)
@@ -490,8 +500,17 @@ func TestAddCharacterEquipment(t *testing.T) {
 }
 
 func TestUpdateCharacterEquipment(t *testing.T) {
+	t.Run("it returns error if character id does not belong to user", func(t *testing.T) {
+		store := &stubStore{belongs: false}
+		service := NewCharacterService(store, nil)
+		_, err := service.UpdateCharacterEquipment(uuid.New(), uuid.New(), 1, "primary", 3)
+		if err == nil {
+			t.Errorf("expected error, got nil")
+		}
+	})
+
 	t.Run("it returns error on db error", func(t *testing.T) {
-		store := &stubStore{equipmentErr: fmt.Errorf("sadness")}
+		store := &stubStore{belongs: true, equipmentErr: fmt.Errorf("sadness")}
 		service := NewCharacterService(store, nil)
 		_, err := service.UpdateCharacterEquipment(uuid.New(), uuid.New(), 1, "primary", 3)
 		if err == nil {

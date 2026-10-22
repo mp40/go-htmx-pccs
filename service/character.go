@@ -28,8 +28,8 @@ type characterStore interface {
 	GetUniformIDByCharacterID(characterID uuid.UUID) (*int, error)
 	AddUniformIDByCharacterID(uniformID int, characterID uuid.UUID) error
 	GetEquipmentByCharacterID(characterID uuid.UUID) ([]store.Equipment, error)
-	AddEquipmentIDByCharacterID(equipmentID int, characterID uuid.UUID, load string) error
 	UpsertEquipmentByCharacterID(equipmentID int, characterID uuid.UUID, load string, qty int) error
+	CharacterIDBelongsToUserID(characterID uuid.UUID, userID uuid.UUID) (bool, error)
 }
 
 type characterState interface {
@@ -199,7 +199,15 @@ func (cs *CharacterService) getCharacterEquipment(characterID uuid.UUID) (*domai
 }
 
 func (cs *CharacterService) AddCharacterEquipment(userID uuid.UUID, characterID uuid.UUID, equipmentID int, load string) (*domain.EnrichedCharacterDTO, error) {
-	err := cs.store.AddEquipmentIDByCharacterID(equipmentID, characterID, load)
+	characterBlongsToUser, err := cs.store.CharacterIDBelongsToUserID(characterID, userID)
+	if err != nil {
+		return nil, err
+	}
+	if !characterBlongsToUser {
+		return nil, fmt.Errorf("character %v does not belong to user %v", characterID, userID)
+	}
+
+	err = cs.store.UpsertEquipmentByCharacterID(equipmentID, characterID, load, 1)
 	if err != nil {
 		return nil, err
 	}
@@ -208,7 +216,15 @@ func (cs *CharacterService) AddCharacterEquipment(userID uuid.UUID, characterID 
 }
 
 func (cs *CharacterService) UpdateCharacterEquipment(userID uuid.UUID, characterID uuid.UUID, equipmentID int, load string, qty int) (*domain.EnrichedCharacterDTO, error) {
-	err := cs.store.UpsertEquipmentByCharacterID(equipmentID, characterID, load, qty)
+	characterBlongsToUser, err := cs.store.CharacterIDBelongsToUserID(characterID, userID)
+	if err != nil {
+		return nil, err
+	}
+	if !characterBlongsToUser {
+		return nil, fmt.Errorf("character %v does not belong to user %v", characterID, userID)
+	}
+
+	err = cs.store.UpsertEquipmentByCharacterID(equipmentID, characterID, load, qty)
 	if err != nil {
 		return nil, err
 	}

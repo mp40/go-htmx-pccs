@@ -152,6 +152,23 @@ func (s *Store) GetCharactersByUserID(userID uuid.UUID) ([]Character, error) {
 	return characters, nil
 }
 
+func (s *Store) CharacterIDBelongsToUserID(characterID uuid.UUID, userID uuid.UUID) (bool, error) {
+	var count int
+	err := s.db.QueryRow("SELECT COUNT(*) FROM characters WHERE id = ? AND user_id = ?", characterID, userID).Scan(&count)
+	if err != nil {
+		return false, err
+	}
+
+	switch {
+	case count == 1:
+		return true, nil
+	case count == 0:
+		return false, nil
+	default:
+		return false, fmt.Errorf("unexpected count, got: %d", count)
+	}
+}
+
 func (s *Store) GetUserCharacterByID(userID uuid.UUID, characterID uuid.UUID) (*Character, error) {
 	character := Character{}
 	var idStr string
@@ -234,20 +251,27 @@ func (s *Store) GetEquipmentByCharacterID(characterID uuid.UUID) ([]Equipment, e
 	return equipment, nil
 }
 
-func (s *Store) AddEquipmentIDByCharacterID(equipmentID int, characterID uuid.UUID, load string) error {
-	_, err := s.db.Exec(
-		fmt.Sprintf("INSERT INTO character_equipment (character_id, equipment_id, %s) VALUES (?, ?, ?) ON CONFLICT (character_id, equipment_id) DO UPDATE SET %s = %s", fmt.Sprintf("qty_%s", load), fmt.Sprintf("qty_%s", load), fmt.Sprintf("excluded.qty_%s", load)),
-		characterID, equipmentID, 1,
+func (s *Store) UpsertEquipmentByCharacterID(equipmentID int, characterID uuid.UUID, load string, qty int) error {
+	parsedLoad, err := parseEquipmentLoadType(load)
+	if err != nil {
+		return err
+	}
+
+	_, err = s.db.Exec(
+		fmt.Sprintf("INSERT INTO character_equipment (character_id, equipment_id, %s) VALUES (?, ?, ?) ON CONFLICT (character_id, equipment_id) DO UPDATE SET %s = %s", parsedLoad, parsedLoad, fmt.Sprintf("excluded.%s", parsedLoad)),
+		characterID, equipmentID, qty,
 	)
 
 	return err
 }
 
-func (s *Store) UpsertEquipmentByCharacterID(equipmentID int, characterID uuid.UUID, load string, qty int) error {
-	_, err := s.db.Exec(
-		fmt.Sprintf("INSERT INTO character_equipment (character_id, equipment_id, %s) VALUES (?, ?, ?) ON CONFLICT (character_id, equipment_id) DO UPDATE SET %s = %s", fmt.Sprintf("qty_%s", load), fmt.Sprintf("qty_%s", load), fmt.Sprintf("excluded.qty_%s", load)),
-		characterID, equipmentID, qty,
-	)
-
-	return err
+func parseEquipmentLoadType(load string) (string, error) {
+	switch {
+	case load == "primary":
+		return "qty_primary", nil
+	case load == "secondary":
+		return "qty_secondary", nil
+	default:
+		return "", fmt.Errorf("invalid load type, got: %s", load)
+	}
 }
