@@ -36,6 +36,7 @@ func patchCharacterEquipmentHandler(render patchCharacterEquipmentRender, charac
 				slog.Error("patch character equipment error", "err", err)
 				http.Error(w, "internal server error", http.StatusInternalServerError)
 			}
+			return
 		}
 
 		rawEquipmentID := r.PathValue("equipmentId")
@@ -48,6 +49,7 @@ func patchCharacterEquipmentHandler(render patchCharacterEquipmentRender, charac
 				slog.Error("patch character equipment error", "error", err)
 				http.Error(w, "internal server error", http.StatusInternalServerError)
 			}
+			return
 		}
 
 		load := r.URL.Query().Get("load")
@@ -59,6 +61,7 @@ func patchCharacterEquipmentHandler(render patchCharacterEquipmentRender, charac
 				slog.Error("patch character equipment error", "error", err)
 				http.Error(w, "internal server error", http.StatusInternalServerError)
 			}
+			return
 		}
 
 		userID := identity.GetUserID(r)
@@ -75,7 +78,7 @@ func patchCharacterEquipmentHandler(render patchCharacterEquipmentRender, charac
 
 		err = r.ParseForm()
 		if err != nil {
-			slog.Error("post character, patch form error", "err", err)
+			slog.Error("patch character, patch form error", "err", err)
 			http.Error(w, "", http.StatusBadRequest)
 			return
 		}

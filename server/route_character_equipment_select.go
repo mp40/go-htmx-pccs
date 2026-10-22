@@ -25,9 +25,6 @@ type getSelectEquipmentGearService interface {
 
 func getCharacterEquipmentSelectHandler(render getSelectEquipmentRender, identity getSelectEquipmentIdentity, gearService getSelectEquipmentGearService) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// htmxHeader := r.Header.Get("HX-Request")
-		// isHtmx, _ := strconv.ParseBool(htmxHeader)
-		// signedIn := identity.IsSignedIn(r)
 		rawLoad := r.URL.Query().Get("load")
 		// TODO validate load
 		load := rawLoad

@@ -1,7 +1,6 @@
 package server
 
 import (
-	"fmt"
 	"io"
 	"log/slog"
 	"net/http"
@@ -42,7 +41,6 @@ func postCharacterEquipmentHandler(render postCharacterEquipmentRender, characte
 
 		userID := identity.GetUserID(r)
 		if userID == nil {
-			fmt.Println("WTF")
 			slog.Error("post character equipment: user id nil")
 			w.Header().Set("Content-Type", "text/html; charset=utf-8")
 			w.WriteHeader(http.StatusUnauthorized)
