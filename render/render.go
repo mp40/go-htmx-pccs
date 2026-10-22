@@ -19,7 +19,12 @@ type Render struct {
 }
 
 func NewRenderService() (*Render, error) {
-	tmpl, err := template.ParseFS(templatesFS, "templates/*.html")
+	funcs := template.FuncMap{
+		"add": func(a, b int) int { return a + b },
+		"sub": func(a, b int) int { return a - b },
+	}
+
+	tmpl, err := template.New("").Funcs(funcs).ParseFS(templatesFS, "templates/*.html")
 	if err != nil {
 		return nil, err
 	}

@@ -77,15 +77,40 @@
           commandfor="add-primary-equipment"
           hx-get="/character/{{ .Character.ID }}/equipment/select?load=primary"
           hx-target="#add-primary-equipment .dialog-body"
-          hx-swap="outerHTML"
         >
           Add
         </button>
+        <div><span>Name</span><span>Weight</span><span>Qty</span></div>
         {{range .Character.CharacterEncumbrance.Equipment.Primary.Items}}
         <div>
           <span>{{.Name}}</span>
           <span>{{.Weight}}</span>
           <span>{{.Qty}}</span>
+          <button
+            hx-patch="/character/{{ $.Character.ID }}/equipment/{{ .ID }}?load=primary"
+            hx-vals='{"qty": {{ add .Qty 1 }}}'
+            hx-target=".character-page"
+            hx-swap="outerHTML"
+            hx-target-5*=".update-equipment-error"
+            hx-target-4*=".update-equipment-error"
+          >
+            {{template "icon-plus-circle"}}
+          </button>
+          {{ if le .Qty 0 }}
+          <button disabled>{{template "icon-minus-circle"}}</button>
+          {{ else }}
+          <button
+            hx-patch="/character/{{ $.Character.ID }}/equipment/{{ .ID }}?load=primary"
+            hx-vals='{"qty": {{ sub .Qty 1 }}}'
+            hx-target=".character-page"
+            hx-swap="outerHTML"
+            hx-target-5*=".update-equipment-error"
+            hx-target-4*=".update-equipment-error"
+          >
+            {{template "icon-minus-circle"}}
+          </button>
+          {{end}}
+          <button>{{template "icon-x-circle"}}</button>
         </div>
         {{end}}
       </div>
@@ -99,14 +124,41 @@
         >
           Add
         </button>
+        <div><span>Name</span><span>Weight</span><span>Qty</span></div>
         {{range .Character.CharacterEncumbrance.Equipment.Secondary.Items}}
         <div>
           <span>{{.Name}}</span>
           <span>{{.Weight}}</span>
           <span>{{.Qty}}</span>
+          <button
+            hx-patch="/character/{{ $.Character.ID }}/equipment/{{ .ID }}?load=secondary"
+            hx-vals='{"qty": {{ add .Qty 1 }}}'
+            hx-target=".character-page"
+            hx-swap="outerHTML"
+            hx-target-5*=".update-equipment-error"
+            hx-target-4*=".update-equipment-error"
+          >
+            {{template "icon-plus-circle"}}
+          </button>
+          {{ if le .Qty 0 }}
+          <button disabled>{{template "icon-minus-circle"}}</button>
+          {{ else }}
+          <button
+            hx-patch="/character/{{ $.Character.ID }}/equipment/{{ .ID }}?load=secondary"
+            hx-vals='{"qty": {{ sub .Qty 1 }}}'
+            hx-target=".character-page"
+            hx-swap="outerHTML"
+            hx-target-5*=".update-equipment-error"
+            hx-target-4*=".update-equipment-error"
+          >
+            {{template "icon-minus-circle"}}
+          </button>
+          {{end}}
+          <button>{{template "icon-x-circle"}}</button>
         </div>
         {{end}}
       </div>
+      <div class="update-equipment-error"></div>
     </div>
   </div>
   <dialog id="add-primary-equipment" class="dialog-modal">
