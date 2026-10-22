@@ -31,7 +31,7 @@ func getCharacterEquipmentSelectHandler(render getSelectEquipmentRender, identit
 			w.Header().Set("Content-Type", "text/html; charset=utf-8")
 			w.WriteHeader(http.StatusBadRequest)
 			if err := render.RenderErrorMessageFragment(w, "bad request: primary or secondary load name required"); err != nil {
-				slog.Error("get character equipment selec error", "error", err)
+				slog.Error("get character equipment select error", "error", err)
 				http.Error(w, "internal server error", http.StatusInternalServerError)
 			}
 			return
@@ -66,7 +66,7 @@ func getCharacterEquipmentSelectHandler(render getSelectEquipmentRender, identit
 		if err != nil {
 			slog.Error("get character equipment select", "err", "get equipment error")
 			w.Header().Set("Content-Type", "text/html; charset=utf-8")
-			w.WriteHeader(http.StatusBadRequest)
+			w.WriteHeader(http.StatusInternalServerError)
 			if err := render.RenderErrorMessageFragment(w, "internal server error"); err != nil {
 				slog.Error("character equipment select error", "err", err)
 				http.Error(w, "internal server error", http.StatusInternalServerError)

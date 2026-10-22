@@ -484,17 +484,21 @@ func TestGetCharacterEquipment(t *testing.T) {
 }
 
 func TestAddCharacterEquipment(t *testing.T) {
-	t.Run("it returns error if character id does not belong to user", func(t *testing.T) {
+	t.Run("it returns nil character and nil err when character id does not belong to user", func(t *testing.T) {
 		store := &stubStore{belongs: false}
 		service := NewCharacterService(store, nil)
-		_, err := service.AddCharacterEquipment(uuid.New(), uuid.New(), 1, "primary")
-		if err == nil {
-			t.Errorf("expected error, got nil")
+		character, err := service.AddCharacterEquipment(uuid.New(), uuid.New(), 1, "primary")
+		if err != nil {
+			t.Errorf("unexpected error want nil, got %v", err)
+		}
+
+		if character != nil {
+			t.Errorf("unexpected character value want nil, got %v", character)
 		}
 	})
 
 	t.Run("it returns error on db error", func(t *testing.T) {
-		store := &stubStore{equipmentErr: fmt.Errorf("sadness")}
+		store := &stubStore{belongs: true, equipmentErr: fmt.Errorf("sadness")}
 		service := NewCharacterService(store, nil)
 		_, err := service.AddCharacterEquipment(uuid.New(), uuid.New(), 1, "primary")
 		if err == nil {
@@ -504,12 +508,16 @@ func TestAddCharacterEquipment(t *testing.T) {
 }
 
 func TestUpdateCharacterEquipment(t *testing.T) {
-	t.Run("it returns error if character id does not belong to user", func(t *testing.T) {
+	t.Run("it returns nil character and nil err when character id does not belong to user", func(t *testing.T) {
 		store := &stubStore{belongs: false}
 		service := NewCharacterService(store, nil)
-		_, err := service.UpdateCharacterEquipment(uuid.New(), uuid.New(), 1, "primary", 3)
-		if err == nil {
-			t.Errorf("expected error, got nil")
+		character, err := service.UpdateCharacterEquipment(uuid.New(), uuid.New(), 1, "primary", 3)
+		if err != nil {
+			t.Errorf("unexpected error want nil, got %v", err)
+		}
+
+		if character != nil {
+			t.Errorf("unexpected character value want nil, got %v", character)
 		}
 	})
 

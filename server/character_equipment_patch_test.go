@@ -397,6 +397,44 @@ func TestPatchCharacterEquipmentHandler(t *testing.T) {
 		}
 	})
 
+	t.Run("it returns 404 on nil character", func(t *testing.T) {
+		r, err := render.NewRenderService()
+		if err != nil {
+			t.Fatalf("render service error %v", err)
+		}
+
+		userID := uuid.MustParse("55600000-0000-4523-90a2-4868a5bfc90a")
+		identity := stubPatchCharacterEquipmentIdentity{userID: &userID}
+		characterService := &stubPatchCharacterEquipmentCharacterService{}
+
+		server := NewServer(nil, nil, &identity, characterService, nil, r)
+
+		formValues := url.Values{"qty": {"2"}}
+
+		request := httptest.NewRequest(http.MethodPatch, "/character/69000000-0000-4523-90a2-4868a5bfc90a/equipment/1?load=primary", strings.NewReader(formValues.Encode()))
+		request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+		response := httptest.NewRecorder()
+		server.ServeHTTP(response, request)
+
+		got := response.Result()
+
+		if got.StatusCode != http.StatusNotFound {
+			t.Errorf("got %v, want %v", got.StatusCode, http.StatusNotFound)
+		}
+
+		if got.Header.Get("Content-Type") != "text/html; charset=utf-8" {
+			t.Errorf("got Content-Type %q, want %q", got.Header.Get("Content-Type"), "text/html; charset=utf-8")
+		}
+
+		body, err := io.ReadAll(got.Body)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !strings.Contains(string(body), "not found") {
+			t.Errorf("want not found error message render, got: %s", body)
+		}
+	})
+
 	t.Run("it returns 500 on update error", func(t *testing.T) {
 		r, err := render.NewRenderService()
 		if err != nil {

@@ -205,7 +205,7 @@ func (cs *CharacterService) AddCharacterEquipment(userID uuid.UUID, characterID 
 		return nil, err
 	}
 	if !characterBlongsToUser {
-		return nil, fmt.Errorf("character %v does not belong to user %v", characterID, userID)
+		return nil, nil
 	}
 
 	err = cs.store.AddEquipmentIDByCharacterID(equipmentID, characterID, load)
@@ -222,7 +222,7 @@ func (cs *CharacterService) UpdateCharacterEquipment(userID uuid.UUID, character
 		return nil, err
 	}
 	if !characterBlongsToUser {
-		return nil, fmt.Errorf("character %v does not belong to user %v", characterID, userID)
+		return nil, nil
 	}
 
 	err = cs.store.UpsertEquipmentByCharacterID(equipmentID, characterID, load, qty)
