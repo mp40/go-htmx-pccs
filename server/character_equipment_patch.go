@@ -138,6 +138,5 @@ func patchCharacterEquipmentHandler(render patchCharacterEquipmentRender, charac
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
-
 	})
 }

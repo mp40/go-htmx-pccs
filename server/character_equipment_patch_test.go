@@ -80,7 +80,7 @@ func TestPatchCharacterEquipmentHandler(t *testing.T) {
 		}
 
 		if !strings.Contains(string(body), "<span>2</span>") {
-			t.Errorf("equipment name in document, got: %s", body)
+			t.Errorf("equipment qty in document, got: %s", body)
 		}
 	})
 
