@@ -29,3 +29,15 @@ func TestUpsertEquipmentIDByCharacterID(t *testing.T) {
 		}
 	})
 }
+
+func TestDeleteEquipmentIDByCharacterID(t *testing.T) {
+	t.Run("it returns error when load is not primary or secondary", func(t *testing.T) {
+		store := NewStoreService(nil)
+
+		err := store.DeleteEquipmentByCharacterID(1, uuid.New(), "xxxx")
+
+		if err == nil {
+			t.Errorf("expect error, got nil")
+		}
+	})
+}

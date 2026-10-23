@@ -31,6 +31,7 @@ type characterStore interface {
 	AddEquipmentIDByCharacterID(equipmentID int, characterID uuid.UUID, load string) error
 	UpsertEquipmentByCharacterID(equipmentID int, characterID uuid.UUID, load string, qty int) error
 	CharacterIDBelongsToUserID(characterID uuid.UUID, userID uuid.UUID) (bool, error)
+	DeleteEquipmentByCharacterID(equipmentID int, characterID uuid.UUID, load string) error
 }
 
 type characterState interface {
@@ -226,6 +227,23 @@ func (cs *CharacterService) UpdateCharacterEquipment(userID uuid.UUID, character
 	}
 
 	err = cs.store.UpsertEquipmentByCharacterID(equipmentID, characterID, load, qty)
+	if err != nil {
+		return nil, err
+	}
+
+	return cs.GetUserEnrichedCharacterByID(userID, characterID)
+}
+
+func (cs *CharacterService) DeleteCharacterEquipment(userID uuid.UUID, characterID uuid.UUID, equipmentID int, load string) (*domain.EnrichedCharacterDTO, error) {
+	characterBlongsToUser, err := cs.store.CharacterIDBelongsToUserID(characterID, userID)
+	if err != nil {
+		return nil, err
+	}
+	if !characterBlongsToUser {
+		return nil, nil
+	}
+
+	err = cs.store.DeleteEquipmentByCharacterID(equipmentID, characterID, load)
 	if err != nil {
 		return nil, err
 	}

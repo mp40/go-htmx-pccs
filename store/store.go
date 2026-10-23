@@ -279,12 +279,58 @@ func (s *Store) UpsertEquipmentByCharacterID(equipmentID int, characterID uuid.U
 	return err
 }
 
+func (s *Store) DeleteEquipmentByCharacterID(equipmentID int, characterID uuid.UUID, load string) error {
+	parsedLoad, err := parseEquipmentLoadType(load)
+	if err != nil {
+		return err
+	}
+	otherLoad, err := getOppositeLoadType(load)
+	if err != nil {
+		return err
+	}
+
+	tx, err := s.db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	_, err = tx.Exec(
+		fmt.Sprintf("DELETE FROM character_equipment WHERE character_id = ? AND equipment_id = ? AND %s IS NULL;", otherLoad),
+		characterID, equipmentID,
+	)
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.Exec(
+		fmt.Sprintf("UPDATE character_equipment SET %s = NULL WHERE character_id = ? AND equipment_id = ?", parsedLoad),
+		characterID, equipmentID,
+	)
+	if err != nil {
+		return err
+	}
+
+	return tx.Commit()
+}
+
 func parseEquipmentLoadType(load string) (string, error) {
 	switch {
 	case load == "primary":
 		return "qty_primary", nil
 	case load == "secondary":
 		return "qty_secondary", nil
+	default:
+		return "", fmt.Errorf("invalid load type, got: %s", load)
+	}
+}
+
+func getOppositeLoadType(load string) (string, error) {
+	switch {
+	case load == "primary":
+		return "qty_secondary", nil
+	case load == "secondary":
+		return "qty_primary", nil
 	default:
 		return "", fmt.Errorf("invalid load type, got: %s", load)
 	}

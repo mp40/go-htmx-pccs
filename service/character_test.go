@@ -68,6 +68,10 @@ func (s *stubStore) CharacterIDBelongsToUserID(characterID uuid.UUID, userID uui
 	return s.belongs, s.characterErr
 }
 
+func (s *stubStore) DeleteEquipmentByCharacterID(equipmentID int, characterID uuid.UUID, load string) error {
+	return s.equipmentErr
+}
+
 type stubState struct {
 	uniform         *state.Uniform
 	equipment       []state.Equipment
@@ -525,6 +529,30 @@ func TestUpdateCharacterEquipment(t *testing.T) {
 		store := &stubStore{belongs: true, equipmentErr: fmt.Errorf("sadness")}
 		service := NewCharacterService(store, nil)
 		_, err := service.UpdateCharacterEquipment(uuid.New(), uuid.New(), 1, "primary", 3)
+		if err == nil {
+			t.Errorf("expected error, got nil")
+		}
+	})
+}
+
+func TestDeleteCharacterEquipment(t *testing.T) {
+	t.Run("it returns nil character and nil err when character id does not belong to user", func(t *testing.T) {
+		store := &stubStore{belongs: false}
+		service := NewCharacterService(store, nil)
+		character, err := service.DeleteCharacterEquipment(uuid.New(), uuid.New(), 1, "primary")
+		if err != nil {
+			t.Errorf("unexpected error want nil, got %v", err)
+		}
+
+		if character != nil {
+			t.Errorf("unexpected character value want nil, got %v", character)
+		}
+	})
+
+	t.Run("it returns error on db error", func(t *testing.T) {
+		store := &stubStore{belongs: true, equipmentErr: fmt.Errorf("sadness")}
+		service := NewCharacterService(store, nil)
+		_, err := service.DeleteCharacterEquipment(uuid.New(), uuid.New(), 1, "primary")
 		if err == nil {
 			t.Errorf("expected error, got nil")
 		}
