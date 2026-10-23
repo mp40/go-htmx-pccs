@@ -110,7 +110,15 @@
             {{template "icon-minus-circle"}}
           </button>
           {{end}}
-          <button>{{template "icon-x-circle"}}</button>
+          <button
+            hx-delete="/character/{{ $.Character.ID }}/equipment/{{ .ID }}?load=primary"
+            hx-target=".character-page"
+            hx-swap="outerHTML"
+            hx-target-5*=".update-equipment-error"
+            hx-target-4*=".update-equipment-error"
+          >
+            {{template "icon-x-circle"}}
+          </button>
         </div>
         {{end}}
       </div>
@@ -154,7 +162,15 @@
             {{template "icon-minus-circle"}}
           </button>
           {{end}}
-          <button>{{template "icon-x-circle"}}</button>
+          <button
+            hx-delete="/character/{{ $.Character.ID }}/equipment/{{ .ID }}?load=secondary"
+            hx-target=".character-page"
+            hx-swap="outerHTML"
+            hx-target-5*=".update-equipment-error"
+            hx-target-4*=".update-equipment-error"
+          >
+            {{template "icon-x-circle"}}
+          </button>
         </div>
         {{end}}
       </div>
