@@ -163,13 +163,6 @@ body {
   filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#bed264",endColorstr="#55673f",GradientType=1);
 }
 
-.page-div.account-page > .buttons {
-  display: flex;
-  flex-direction: column;
-  max-width: fit-content;
-  margin-bottom: 2em;
-}
-
 .page-button-grey {
   border: none;
   color: whitesmoke;
@@ -200,7 +193,6 @@ body {
 }
 
 .modal-div {
-  position: fixed;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
@@ -240,7 +232,6 @@ body {
 }
 
 .dialog-modal {
-  /* margin: auto; */
   margin: auto 2rem auto auto;
   background-color: whitesmoke;
   border-radius: 3px;
@@ -353,10 +344,6 @@ body {
 .character-container > div {
   display: flex;
   justify-content: flex-start;
-}
-
-.character-container > div > span {
-  float: left;
 }
 
 .character-container > div > span:nth-of-type(1) {
@@ -525,47 +512,108 @@ body {
 }
 
 .character-page > .container {
-  display: grid;
-  grid-template-columns: repeat(3, max-content);
-  gap: 1em;
-  align-content: start;
+  display: flex;
+  flex-direction: column;
 }
 
-.character-page > .container > .equipment {
-  grid-column: 1 / -1;
+.character-page > .container > .fixed-stats {
+  display: flex;
+  flex-direction: row;
+  margin-bottom: 2em;
 }
 
-.character-page > .container > table {
+.character-page > .container > .fixed-stats > table {
+  margin-right: 1em;
+}
+
+.character-page > .container > .load-derived-stats {
+  display: flex;
+  flex-direction: row;
+  margin-bottom: 2em;
+}
+
+.character-page > .container > .load-derived-stats > div {
+  margin-right: 1em;
+}
+
+.character-page > .container table {
   height: fit-content;
   white-space: nowrap;
   border-collapse: collapse;
 }
 
-.character-page > .container > table > tbody > tr > td:nth-of-type(n + 2) {
+.character-page > .container table td:nth-of-type(n + 2) {
   text-align: center;
 }
 
-.character-page > .container > table > tbody > tr > td:first-of-type {
+.character-page > .container table td:first-of-type {
   padding: 0 2px;
 }
 
-.character-page > .container > .actions {
+.character-page > .container .actions {
   border: 1px solid var(--panzer-grey);
 }
 
-.character-page > .container > .actions > tbody > tr > th {
+.character-page > .container .actions th {
   background-color: var(--panzer-grey);
   color: var(--insignia-white);
 }
 
-.character-page > .container > .actions > tbody > tr > th:first-of-type {
+.character-page > .container .actions th:first-of-type {
   text-align: left;
   padding: 0 2px;
 }
 
-.character-page > .container > .actions > tbody > tr > th:nth-of-type(n + 2) {
+.character-page > .container .actions th:nth-of-type(n + 2) {
   text-align: center;
   padding: 0 6px;
+}
+
+.character-page .equipment {
+  display: grid;
+  grid-template-columns: max-content max-content max-content repeat(
+      3,
+      min-content
+    );
+  column-gap: 0.75em;
+  align-items: center;
+  row-gap: 1.5em;
+}
+
+.character-page .equipment .primary,
+.character-page .equipment .secondary {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: subgrid;
+  align-items: center;
+  align-content: start;
+}
+
+.character-page .equipment .primary > div:nth-of-type(n + 2),
+.character-page .equipment .secondary > div:nth-of-type(n + 2) {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: subgrid;
+  align-items: center;
+}
+
+.character-equipment-select > ul {
+  list-style: none;
+  columns: 3;
+  column-gap: 2em;
+}
+
+.character-equipment-select li {
+  display: grid;
+  grid-template-columns: 1fr max-content max-content;
+  column-gap: 0.75em;
+  align-items: center;
+  break-inside: avoid;
+  padding: 2px 0;
+}
+
+.character-equipment-select li > span:nth-of-type(2) {
+  text-align: right;
 }
 
 .icon {
