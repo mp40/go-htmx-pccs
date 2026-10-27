@@ -52,8 +52,6 @@ func TestGetCharacterHandler(t *testing.T) {
 		userID := uuid.MustParse("55600000-0000-4523-90a2-4868a5bfc90a")
 		identity := stubCharacterPageIndentity{userID: &userID, isSignedIn: true}
 		character := domain.EnrichedCharacterDTO{}
-		character.Primary.GunCombatActions = []int{0, 0, 0, 0}
-		character.Primary.HandToHandCombatActions = []int{0, 0, 0, 0}
 		character.Name = "TEST-CHARACTER"
 		stubCharacterService := &stubCharacterPageCharacterService{character: &character}
 		server := NewServer(nil, nil, &identity, stubCharacterService, nil, r)
@@ -95,8 +93,6 @@ func TestGetCharacterHandler(t *testing.T) {
 		identity := stubCharacterPageIndentity{userID: &userID, isSignedIn: true}
 		character := domain.EnrichedCharacterDTO{}
 		character.Name = "TEST-CHARACTER"
-		character.Primary.GunCombatActions = []int{0, 0, 0, 0}
-		character.Primary.HandToHandCombatActions = []int{0, 0, 0, 0}
 		stubCharacterService := &stubCharacterPageCharacterService{character: &character}
 		server := NewServer(nil, nil, &identity, stubCharacterService, nil, r)
 

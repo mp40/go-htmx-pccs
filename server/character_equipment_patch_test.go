@@ -48,8 +48,6 @@ func TestPatchCharacterEquipmentHandler(t *testing.T) {
 		identity := stubPatchCharacterEquipmentIdentity{userID: &userID}
 
 		character := domain.EnrichedCharacterDTO{}
-		character.Primary.GunCombatActions = []int{1, 1, 1, 1}
-		character.Primary.HandToHandCombatActions = []int{1, 0, 1, 0}
 		character.Name = "TEST-CHARACTER"
 		character.Equipment.Primary.Items = []domain.Item{{ID: 1, Name: "Equipment A", Weight: 2.2, Qty: 2}}
 		characterService := &stubPatchCharacterEquipmentCharacterService{character: &character}

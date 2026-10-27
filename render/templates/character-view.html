@@ -57,22 +57,20 @@
           </tr>
           <tr>
             <td>Gun Combat</td>
-            <td>{{ index .Character.Primary.GunCombatActions 0 }}</td>
-            <td>{{ index .Character.Primary.GunCombatActions 1 }}</td>
-            <td>{{ index .Character.Primary.GunCombatActions 2 }}</td>
-            <td>{{ index .Character.Primary.GunCombatActions 3 }}</td>
+            {{ range .Character.Primary.GunCombatActions }}
+            <td>{{ . }}</td>
+            {{ end }}
           </tr>
           <tr>
             <td>Hand to Hand</td>
-            <td>{{ index .Character.Primary.HandToHandCombatActions 0 }}</td>
-            <td>{{ index .Character.Primary.HandToHandCombatActions 1 }}</td>
-            <td>{{ index .Character.Primary.HandToHandCombatActions 2 }}</td>
-            <td>{{ index .Character.Primary.HandToHandCombatActions 3 }}</td>
+            {{ range .Character.Primary.HandToHandCombatActions }}
+            <td>{{ . }}</td>
+            {{ end }}
           </tr>
         </table>
-        <span>BS {{ index .Character.Primary.BaseSpeed }}</span>
-        <span>MS {{ index .Character.Primary.MaxSpeed }}</span>
-        <span>DB {{ index .Character.Primary.HandToHandDamageBonus }}</span>
+        <span>BS {{ .Character.Primary.BaseSpeed }}</span>
+        <span>MS {{ .Character.Primary.MaxSpeed }}</span>
+        <span>DB {{ .Character.Primary.HandToHandDamageBonus }}</span>
       </div>
       <div>
         <span>Total Load</span>
@@ -86,22 +84,20 @@
           </tr>
           <tr>
             <td>Gun Combat</td>
-            <td>{{ index .Character.Total.GunCombatActions 0 }}</td>
-            <td>{{ index .Character.Total.GunCombatActions 1 }}</td>
-            <td>{{ index .Character.Total.GunCombatActions 2 }}</td>
-            <td>{{ index .Character.Total.GunCombatActions 3 }}</td>
+            {{ range .Character.Total.GunCombatActions }}
+            <td>{{ . }}</td>
+            {{ end }}
           </tr>
           <tr>
             <td>Hand to Hand</td>
-            <td>{{ index .Character.Total.HandToHandCombatActions 0 }}</td>
-            <td>{{ index .Character.Total.HandToHandCombatActions 1 }}</td>
-            <td>{{ index .Character.Total.HandToHandCombatActions 2 }}</td>
-            <td>{{ index .Character.Total.HandToHandCombatActions 3 }}</td>
+            {{ range .Character.Total.HandToHandCombatActions }}
+            <td>{{ . }}</td>
+            {{ end }}
           </tr>
         </table>
-        <span>BS {{ index .Character.Total.BaseSpeed }}</span>
-        <span>MS {{ index .Character.Total.MaxSpeed }}</span>
-        <span>DB {{ index .Character.Total.HandToHandDamageBonus }}</span>
+        <span>BS {{ .Character.Total.BaseSpeed }}</span>
+        <span>MS {{ .Character.Total.MaxSpeed }}</span>
+        <span>DB {{ .Character.Total.HandToHandDamageBonus }}</span>
       </div>
     </section>
     <div class="equipment">
