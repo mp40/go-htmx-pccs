@@ -15,9 +15,12 @@ type stubStore struct {
 	characters   []store.Character
 	character    *store.Character
 	uniformID    *int
+	equipment    []store.Equipment
 	spyUniformID int
+	belongs      bool
 	characterErr error
 	uniformErr   error
+	equipmentErr error
 }
 
 func (s *stubStore) AddCharacter(character store.Character) (*store.Character, error) {
@@ -49,17 +52,44 @@ func (s *stubStore) AddUniformIDByCharacterID(uniformID int, characterID uuid.UU
 	return s.uniformErr
 }
 
+func (s *stubStore) GetEquipmentByCharacterID(characterID uuid.UUID) ([]store.Equipment, error) {
+	return s.equipment, s.equipmentErr
+}
+
+func (s *stubStore) AddEquipmentIDByCharacterID(equipmentID int, characterID uuid.UUID, load string) error {
+	return s.equipmentErr
+}
+
+func (s *stubStore) UpsertEquipmentByCharacterID(equipmentID int, characterID uuid.UUID, load string, qty int) error {
+	return s.equipmentErr
+}
+
+func (s *stubStore) CharacterIDBelongsToUserID(characterID uuid.UUID, userID uuid.UUID) (bool, error) {
+	return s.belongs, s.characterErr
+}
+
+func (s *stubStore) DeleteEquipmentByCharacterID(equipmentID int, characterID uuid.UUID, load string) error {
+	return s.equipmentErr
+}
+
 type stubState struct {
-	uniform      *state.Uniform
-	err          error
-	spyUniformId int
-	spyCalls     int
+	uniform         *state.Uniform
+	equipment       []state.Equipment
+	Err             error
+	spyUniformId    int
+	spyEquipmentIds []int
+	spyCalls        int
 }
 
 func (s *stubState) GetUniformByID(uniformID int) (*state.Uniform, error) {
 	s.spyUniformId = uniformID
 	s.spyCalls++
-	return s.uniform, s.err
+	return s.uniform, s.Err
+}
+
+func (s *stubState) GetEquipmentByIDs(equipmentIDs []int) ([]state.Equipment, error) {
+	s.spyEquipmentIds = equipmentIDs
+	return s.equipment, s.Err
 }
 
 func TestAddCharacter(t *testing.T) {
@@ -244,10 +274,12 @@ func TestGetUserEnrichedCharacterByID(t *testing.T) {
 			GunCombatLearningPoints:  4,
 			HandToHandLearningPoints: 2,
 		}
-		id := 1
-		store := &stubStore{character: &c, uniformID: &id}
+		zero := 0
+		one := 1
+		two := 2
+		store := &stubStore{character: &c, uniformID: &one, equipment: []store.Equipment{{EquipmentID: 1, QtyPrimary: &one}, {EquipmentID: 2, QtyPrimary: &two, QtySecondary: &one}, {EquipmentID: 3, QtyPrimary: &zero}}}
 		u := state.Uniform{ID: 1, Name: "FAKE-UNIFORM", Weight: 5.5}
-		state := &stubState{uniform: &u}
+		state := &stubState{uniform: &u, equipment: []state.Equipment{{ID: 1, Name: "A", Weight: 1.1}, {ID: 2, Name: "B", Weight: 2.2}, {ID: 3, Name: "C", Weight: 33.33}}}
 		service := NewCharacterService(store, state)
 
 		got, err := service.GetUserEnrichedCharacterByID(uuid.New(), uuid.New())
@@ -260,48 +292,68 @@ func TestGetUserEnrichedCharacterByID(t *testing.T) {
 		}
 
 		wantCombatStats := domain.CharacterCombatStats{
-			BaseSpeed:               3,
-			MaxSpeed:                6,
-			SAL:                     7,
-			CE:                      5,
-			HandToHandDamageBonus:   1.5,
-			KnockoutValue:           10,
-			GunCombatActions:        []int{2, 1, 2, 1},
-			HandToHandCombatActions: []int{2, 1, 1, 1},
+			SAL:           7,
+			CE:            5,
+			KnockoutValue: 10,
+			Primary: domain.LoadStats{
+				BaseSpeed:               2.5,
+				MaxSpeed:                5,
+				HandToHandDamageBonus:   1,
+				GunCombatActions:        []int{2, 1, 1, 1},
+				HandToHandCombatActions: []int{1, 1, 1, 1},
+			},
+			Total: domain.LoadStats{
+				BaseSpeed:               2.5,
+				MaxSpeed:                5,
+				HandToHandDamageBonus:   1,
+				GunCombatActions:        []int{2, 1, 1, 1},
+				HandToHandCombatActions: []int{1, 1, 1, 1},
+			},
 		}
 
-		wantEncumbrance := domain.CharacterEncumbrance{
+		wantUniform := domain.Uniform{
 			Uniform:        "FAKE-UNIFORM",
 			ClothingWeight: 5.5,
 		}
 
+		wantEquipment := domain.Equipment{
+			Primary: domain.Load{
+				Items: []domain.Item{{ID: 1, Name: "A", Weight: 1.1, Qty: 1}, {ID: 2, Name: "B", Weight: 2.2, Qty: 2}, {ID: 3, Name: "C", Weight: 33.33, Qty: 0}},
+			},
+			Secondary: domain.Load{
+				Items: []domain.Item{{ID: 2, Name: "B", Weight: 2.2, Qty: 1}},
+			},
+		}
+
 		if !cmp.Equal(got.CharacterCombatStats, wantCombatStats) {
-			t.Errorf("unexpected CombatStats, got %+v, want %+v", got.CharacterCombatStats, wantCombatStats)
+			t.Errorf("unexpected CombatStats: %+v", cmp.Diff(got.CharacterCombatStats, wantCombatStats))
 		}
 
 		if state.spyUniformId != 1 {
 			t.Errorf("unexpected uniform id as argument, got %d, want %d", state.spyUniformId, 1)
 		}
 
-		if !cmp.Equal(got.CharacterEncumbrance, wantEncumbrance) {
-			t.Errorf("unexpected Encumbrance, got %+v, want %+v", got.CharacterEncumbrance, wantEncumbrance)
+		if !cmp.Equal(state.spyEquipmentIds, []int{1, 2, 3}) {
+			t.Errorf("unexpected equipment ids as argument: %v", cmp.Diff(state.spyEquipmentIds, []int{1, 2, 3}))
+		}
+
+		if !cmp.Equal(got.CharacterEncumbrance.Uniform, wantUniform) {
+			t.Errorf("unexpected Uniform: %v", cmp.Diff(got.CharacterEncumbrance.Uniform, wantUniform))
+		}
+
+		if !cmp.Equal(got.CharacterEncumbrance.Equipment, wantEquipment) {
+			t.Errorf("unexpected Equipment: %v", cmp.Diff(got.CharacterEncumbrance.Equipment, wantEquipment))
 		}
 	})
+}
 
+func TestGetCharacterUniform(t *testing.T) {
 	t.Run("it defaults to no uniform if not found by character id", func(t *testing.T) {
-		c := store.Character{
-			Str:                      10,
-			Int:                      10,
-			Wil:                      10,
-			Agi:                      10,
-			GunCombatLearningPoints:  4,
-			HandToHandLearningPoints: 2,
-		}
-		store := &stubStore{character: &c}
+		store := &stubStore{}
 		state := &stubState{}
 		service := NewCharacterService(store, state)
 
-		got, err := service.GetUserEnrichedCharacterByID(uuid.New(), uuid.New())
+		got, err := service.getCharacterUniform(uuid.New())
 		if err != nil {
 			t.Errorf("unexpected error, got %v", err)
 		}
@@ -310,13 +362,13 @@ func TestGetUserEnrichedCharacterByID(t *testing.T) {
 			t.Errorf("expected character not to be nil")
 		}
 
-		wantEncumbrance := domain.CharacterEncumbrance{
+		want := domain.Uniform{
 			Uniform:        "None",
 			ClothingWeight: 0,
 		}
 
-		if !cmp.Equal(got.CharacterEncumbrance, wantEncumbrance) {
-			t.Errorf("unexpected Encumbrance, got %+v, want %+v", got.CharacterEncumbrance, wantEncumbrance)
+		if !cmp.Equal(*got, want) {
+			t.Errorf("got %+v, want %+v", *got, want)
 		}
 
 		if state.spyCalls != 0 {
@@ -325,20 +377,12 @@ func TestGetUserEnrichedCharacterByID(t *testing.T) {
 	})
 
 	t.Run("it defaults to no uniform if not found by uniform id", func(t *testing.T) {
-		c := store.Character{
-			Str:                      10,
-			Int:                      10,
-			Wil:                      10,
-			Agi:                      10,
-			GunCombatLearningPoints:  4,
-			HandToHandLearningPoints: 2,
-		}
 		id := 1
-		store := &stubStore{character: &c, uniformID: &id}
+		store := &stubStore{uniformID: &id}
 		state := &stubState{}
 		service := NewCharacterService(store, state)
 
-		got, err := service.GetUserEnrichedCharacterByID(uuid.New(), uuid.New())
+		got, err := service.getCharacterUniform(uuid.New())
 		if err != nil {
 			t.Errorf("unexpected error, got %v", err)
 		}
@@ -347,13 +391,13 @@ func TestGetUserEnrichedCharacterByID(t *testing.T) {
 			t.Errorf("expected character not to be nil")
 		}
 
-		wantEncumbrance := domain.CharacterEncumbrance{
+		want := domain.Uniform{
 			Uniform:        "None",
 			ClothingWeight: 0,
 		}
 
-		if !cmp.Equal(got.CharacterEncumbrance, wantEncumbrance) {
-			t.Errorf("unexpected Encumbrance, got %+v, want %+v", got.CharacterEncumbrance, wantEncumbrance)
+		if !cmp.Equal(*got, want) {
+			t.Errorf("got %+v, want %+v", *got, want)
 		}
 
 		if state.spyCalls != 1 {
@@ -362,25 +406,17 @@ func TestGetUserEnrichedCharacterByID(t *testing.T) {
 	})
 
 	t.Run("it returns error on get uniform by character id error", func(t *testing.T) {
-		c := store.Character{
-			Str:                      10,
-			Int:                      10,
-			Wil:                      10,
-			Agi:                      10,
-			GunCombatLearningPoints:  4,
-			HandToHandLearningPoints: 2,
-		}
-		store := &stubStore{character: &c, uniformErr: fmt.Errorf("GET UNIFORM ID SADNESS")}
+		store := &stubStore{uniformErr: fmt.Errorf("GET UNIFORM ID SADNESS")}
 		state := &stubState{}
 		service := NewCharacterService(store, state)
 
-		got, err := service.GetUserEnrichedCharacterByID(uuid.New(), uuid.New())
+		got, err := service.getCharacterUniform(uuid.New())
 		if err == nil {
 			t.Errorf("expected error, got nil")
 		}
 
 		if got != nil {
-			t.Errorf("expected character to be nil")
+			t.Errorf("expected uniform to be nil")
 		}
 
 		if state.spyCalls != 0 {
@@ -389,30 +425,145 @@ func TestGetUserEnrichedCharacterByID(t *testing.T) {
 	})
 
 	t.Run("it returns error on get uniform by id error", func(t *testing.T) {
-		c := store.Character{
-			Str:                      10,
-			Int:                      10,
-			Wil:                      10,
-			Agi:                      10,
-			GunCombatLearningPoints:  4,
-			HandToHandLearningPoints: 2,
-		}
 		id := 1
-		store := &stubStore{character: &c, uniformID: &id}
-		state := &stubState{err: fmt.Errorf("GET UNIFORM SADNESS")}
+		store := &stubStore{uniformID: &id}
+		state := &stubState{Err: fmt.Errorf("GET UNIFORM SADNESS")}
 		service := NewCharacterService(store, state)
 
-		got, err := service.GetUserEnrichedCharacterByID(uuid.New(), uuid.New())
+		got, err := service.getCharacterUniform(uuid.New())
 		if err == nil {
 			t.Errorf("expected error, got nil")
 		}
 
 		if got != nil {
-			t.Errorf("expected character to be nil")
+			t.Errorf("expected uniform to be nil")
 		}
 
 		if state.spyCalls != 1 {
 			t.Errorf("unexpected call to state: got %d, want 1", state.spyCalls)
+		}
+	})
+}
+
+func TestGetCharacterEquipment(t *testing.T) {
+	t.Run("it defaults to no equipment if not found by character id", func(t *testing.T) {
+		store := &stubStore{equipment: []store.Equipment{}}
+		state := &stubState{}
+		service := NewCharacterService(store, state)
+
+		got, err := service.getCharacterEquipment(uuid.New())
+		if err != nil {
+			t.Errorf("unexpected error, got %v", err)
+		}
+
+		if got == nil {
+			t.Errorf("expected equipment not to be nil")
+		}
+
+		want := domain.Equipment{
+			Primary:   domain.Load{Items: []domain.Item{}},
+			Secondary: domain.Load{Items: []domain.Item{}},
+		}
+
+		if !cmp.Equal(*got, want) {
+			t.Errorf("got %+v, want %+v", *got, want)
+		}
+	})
+
+	t.Run("it defaults to no equipment item if not found by equipment id", func(t *testing.T) {
+		one := 1
+		store := &stubStore{equipment: []store.Equipment{{EquipmentID: 1, QtyPrimary: &one}, {EquipmentID: 2, QtyPrimary: &one, QtySecondary: &one}}}
+		state := &stubState{equipment: []state.Equipment{{ID: 1, Name: "A", Weight: 1.1}}}
+		service := NewCharacterService(store, state)
+
+		got, err := service.getCharacterEquipment(uuid.New())
+		if err != nil {
+			t.Errorf("unexpected error, got %v", err)
+		}
+
+		if got == nil {
+			t.Errorf("expected equipment not to be nil")
+		}
+
+		want := domain.Equipment{
+			Primary:   domain.Load{Items: []domain.Item{{ID: 1, Name: "A", Weight: 1.1, Qty: 1}}},
+			Secondary: domain.Load{Items: []domain.Item{}},
+		}
+
+		if !cmp.Equal(*got, want) {
+			t.Errorf("unexpected Equipment: %v", cmp.Diff(*got, want))
+		}
+	})
+}
+
+func TestAddCharacterEquipment(t *testing.T) {
+	t.Run("it returns nil character and nil err when character id does not belong to user", func(t *testing.T) {
+		store := &stubStore{belongs: false}
+		service := NewCharacterService(store, nil)
+		character, err := service.AddCharacterEquipment(uuid.New(), uuid.New(), 1, "primary")
+		if err != nil {
+			t.Errorf("unexpected error want nil, got %v", err)
+		}
+
+		if character != nil {
+			t.Errorf("unexpected character value want nil, got %v", character)
+		}
+	})
+
+	t.Run("it returns error on db error", func(t *testing.T) {
+		store := &stubStore{belongs: true, equipmentErr: fmt.Errorf("sadness")}
+		service := NewCharacterService(store, nil)
+		_, err := service.AddCharacterEquipment(uuid.New(), uuid.New(), 1, "primary")
+		if err == nil {
+			t.Errorf("expected error, got nil")
+		}
+	})
+}
+
+func TestUpdateCharacterEquipment(t *testing.T) {
+	t.Run("it returns nil character and nil err when character id does not belong to user", func(t *testing.T) {
+		store := &stubStore{belongs: false}
+		service := NewCharacterService(store, nil)
+		character, err := service.UpdateCharacterEquipment(uuid.New(), uuid.New(), 1, "primary", 3)
+		if err != nil {
+			t.Errorf("unexpected error want nil, got %v", err)
+		}
+
+		if character != nil {
+			t.Errorf("unexpected character value want nil, got %v", character)
+		}
+	})
+
+	t.Run("it returns error on db error", func(t *testing.T) {
+		store := &stubStore{belongs: true, equipmentErr: fmt.Errorf("sadness")}
+		service := NewCharacterService(store, nil)
+		_, err := service.UpdateCharacterEquipment(uuid.New(), uuid.New(), 1, "primary", 3)
+		if err == nil {
+			t.Errorf("expected error, got nil")
+		}
+	})
+}
+
+func TestDeleteCharacterEquipment(t *testing.T) {
+	t.Run("it returns nil character and nil err when character id does not belong to user", func(t *testing.T) {
+		store := &stubStore{belongs: false}
+		service := NewCharacterService(store, nil)
+		character, err := service.DeleteCharacterEquipment(uuid.New(), uuid.New(), 1, "primary")
+		if err != nil {
+			t.Errorf("unexpected error want nil, got %v", err)
+		}
+
+		if character != nil {
+			t.Errorf("unexpected character value want nil, got %v", character)
+		}
+	})
+
+	t.Run("it returns error on db error", func(t *testing.T) {
+		store := &stubStore{belongs: true, equipmentErr: fmt.Errorf("sadness")}
+		service := NewCharacterService(store, nil)
+		_, err := service.DeleteCharacterEquipment(uuid.New(), uuid.New(), 1, "primary")
+		if err == nil {
+			t.Errorf("expected error, got nil")
 		}
 	})
 }

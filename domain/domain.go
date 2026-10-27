@@ -34,24 +34,67 @@ type RawCharacter struct {
 	HandToHandLearningPoints float32   `json:"hand_to_hand_learning_points"`
 }
 
-type CharacterCombatStats struct {
+type LoadStats struct {
 	BaseSpeed               float32
 	MaxSpeed                int
-	SAL                     int
-	CE                      int
 	HandToHandDamageBonus   float32
-	KnockoutValue           int
 	GunCombatActions        []int
 	HandToHandCombatActions []int
 }
 
-type CharacterEncumbrance struct {
+type CharacterCombatStats struct {
+	SAL           int
+	CE            int
+	KnockoutValue int
+	Primary       LoadStats
+	Total         LoadStats
+}
+
+type Uniform struct {
 	Uniform        string
 	ClothingWeight float32
 }
 
+type Item struct {
+	ID     int
+	Name   string
+	Weight float32
+	Qty    int
+}
+
+type Load struct {
+	Items []Item
+}
+
+type Equipment struct {
+	Primary   Load
+	Secondary Load
+}
+
+type CharacterEncumbrance struct {
+	Uniform   Uniform
+	Equipment Equipment
+}
+
+func (l *Load) calculateLoadWeight() float32 {
+	var weight float32
+
+	for _, e := range l.Items {
+		weight = weight + (e.Weight * float32(e.Qty))
+	}
+
+	return weight
+}
+
+func calculatePrimaryEncumbrance(enc CharacterEncumbrance) float32 {
+	primary := enc.Equipment.Primary.calculateLoadWeight()
+	return enc.Uniform.ClothingWeight + primary
+}
+
 func calculateTotalEncumbrance(enc CharacterEncumbrance) float32 {
-	return enc.ClothingWeight
+	primary := enc.Equipment.Primary.calculateLoadWeight()
+	secondary := enc.Equipment.Secondary.calculateLoadWeight()
+	return enc.Uniform.ClothingWeight + primary + secondary
 }
 
 func calculateCombatStats(dto CharacterDTO, enc CharacterEncumbrance) CharacterCombatStats {
@@ -62,24 +105,33 @@ func calculateCombatStats(dto CharacterDTO, enc CharacterEncumbrance) CharacterC
 		dominantCombatLevel = dto.HandToHandLevel
 	}
 
-	baseSpeed := pccs.CalculateBaseSpeed(dto.Str, calculateTotalEncumbrance(enc))
-	maxSpeed := pccs.CalculateMaxSpeed(dto.Agi, baseSpeed)
+	baseSpeedPrimary := pccs.CalculateBaseSpeed(dto.Str, calculatePrimaryEncumbrance(enc))
+	baseSpeedTotal := pccs.CalculateBaseSpeed(dto.Str, calculateTotalEncumbrance(enc))
+
+	maxSpeedPrimary := pccs.CalculateMaxSpeed(dto.Agi, baseSpeedPrimary)
+	maxSpeedTotal := pccs.CalculateMaxSpeed(dto.Agi, baseSpeedTotal)
+
 	sal := pccs.ParseSkillLevelToSkillFactor(dto.GunCombatLevel)
 	ce := pccs.ParseSkillLevelToSkillFactor(dto.HandToHandLevel)
-	handToHandDamageBonus := pccs.CalculateDamageBonus(maxSpeed, (dto.Agi + ce))
-	knockoutValue := int((0.5 * float32(dto.Wil)) * float32(dominantCombatLevel))
-	gunCombatActions := pccs.GetActionsPerImpulse(maxSpeed, (dto.Int + sal))
-	handToHandCombatActions := pccs.GetActionsPerImpulse(maxSpeed, (dto.Agi + ce))
 
 	return CharacterCombatStats{
-		BaseSpeed:               baseSpeed,
-		MaxSpeed:                maxSpeed,
-		SAL:                     sal,
-		CE:                      ce,
-		HandToHandDamageBonus:   handToHandDamageBonus,
-		KnockoutValue:           knockoutValue,
-		GunCombatActions:        gunCombatActions,
-		HandToHandCombatActions: handToHandCombatActions,
+		SAL:           sal,
+		CE:            ce,
+		KnockoutValue: int((0.5 * float32(dto.Wil)) * float32(dominantCombatLevel)),
+		Primary: LoadStats{
+			BaseSpeed:               baseSpeedPrimary,
+			MaxSpeed:                maxSpeedPrimary,
+			GunCombatActions:        pccs.GetActionsPerImpulse(maxSpeedPrimary, (dto.Int + sal)),
+			HandToHandCombatActions: pccs.GetActionsPerImpulse(maxSpeedPrimary, (dto.Agi + ce)),
+			HandToHandDamageBonus:   pccs.CalculateDamageBonus(maxSpeedPrimary, (dto.Agi + ce)),
+		},
+		Total: LoadStats{
+			BaseSpeed:               baseSpeedTotal,
+			MaxSpeed:                maxSpeedTotal,
+			GunCombatActions:        pccs.GetActionsPerImpulse(maxSpeedTotal, (dto.Int + sal)),
+			HandToHandCombatActions: pccs.GetActionsPerImpulse(maxSpeedTotal, (dto.Agi + ce)),
+			HandToHandDamageBonus:   pccs.CalculateDamageBonus(maxSpeedTotal, (dto.Agi + ce)),
+		},
 	}
 }
 

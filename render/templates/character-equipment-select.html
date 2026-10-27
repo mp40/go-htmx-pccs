@@ -1,0 +1,24 @@
+{{ define "character-equipment-select" }}
+<div class="character-equipment-select">
+  <ul>
+    {{ range .Equipment }}
+    <li>
+      <span>{{ .Name }}</span>
+      <span>{{ .Weight }}</span>
+      <button
+        hx-post="/character/{{ $.CharacterID }}/equipment"
+        hx-vals='{"equipmentId": {{ .ID }}, "load": "{{ $.Load }}"}'
+        hx-target="#character-view"
+        hx-select="#character-view"
+        hx-swap="outerHTML"
+        hx-target-5*=".select-equipment-error"
+        hx-target-4*=".select-equipment-error"
+      >
+        Add
+      </button>
+    </li>
+    {{ end }}
+  </ul>
+  <div class="select-equipment-error"></div>
+</div>
+{{ end }}

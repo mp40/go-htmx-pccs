@@ -29,6 +29,9 @@ type CharacterService interface {
 	GetUserCharacterByID(userID uuid.UUID, characterID uuid.UUID) (*domain.CharacterDTO, error)
 	DeleteUserCharacterByID(userID uuid.UUID, characterID uuid.UUID) error
 	GetUserEnrichedCharacterByID(userID uuid.UUID, characterID uuid.UUID) (*domain.EnrichedCharacterDTO, error)
+	AddCharacterEquipment(userID uuid.UUID, characterID uuid.UUID, equipmentID int, load string) (*domain.EnrichedCharacterDTO, error)
+	UpdateCharacterEquipment(userID uuid.UUID, characterID uuid.UUID, equipmentID int, load string, qty int) (*domain.EnrichedCharacterDTO, error)
+	DeleteCharacterEquipment(userID uuid.UUID, characterID uuid.UUID, equipmentID int, load string) (*domain.EnrichedCharacterDTO, error)
 }
 
 type Identity interface {
@@ -72,6 +75,10 @@ func NewServer(auth Auth, session Session, identity Identity, characterService C
 	router.Handle("GET /account/characters/{id}/edit", getCharacterEditHandler(render, characterService, identity))
 
 	router.Handle("GET /character/{id}", getCharacterHandler(render, characterService, identity))
+	router.Handle("GET /character/{id}/equipment/select", getCharacterEquipmentSelectHandler(render, identity, gearService))
+	router.Handle("POST /character/{id}/equipment", postCharacterEquipmentHandler(render, characterService, identity))
+	router.Handle("PATCH /character/{id}/equipment/{equipmentId}", patchCharacterEquipmentHandler(render, characterService, identity))
+	router.Handle("DELETE /character/{id}/equipment/{equipmentId}", deleteCharacterEquipmentHandler(render, characterService, identity))
 
 	return router
 }

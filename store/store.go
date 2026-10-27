@@ -2,6 +2,7 @@ package store
 
 import (
 	"database/sql"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -29,6 +30,12 @@ type Character struct {
 	HandToHandLearningPoints float32   `json:"hand_to_hand_learning_points"`
 	CreatedAt                int64     `json:"created_at"` // unix timestamp
 	UpdatedAt                int64     `json:"updated_at"` // unix timestamp
+}
+
+type Equipment struct {
+	EquipmentID  int  `json:"equipment_id"`
+	QtyPrimary   *int `json:"qty_primary"`
+	QtySecondary *int `json:"qty_secondary"`
 }
 
 type Store struct {
@@ -110,10 +117,11 @@ func (s *Store) UpdateCharacter(character Character) (*Character, error) {
 func (s *Store) GetCharactersByUserID(userID uuid.UUID) ([]Character, error) {
 	rows, err := s.db.Query("SELECT * FROM characters WHERE user_id = ?", userID)
 	if err != nil {
-		return []Character{}, err
+		return nil, err
 	}
+	defer rows.Close()
 
-	var characters []Character
+	characters := []Character{}
 
 	for rows.Next() {
 		character := Character{}
@@ -121,7 +129,7 @@ func (s *Store) GetCharactersByUserID(userID uuid.UUID) ([]Character, error) {
 		var userIdStr string
 		err := rows.Scan(&idStr, &userIdStr, &character.Name, &character.Str, &character.Int, &character.Wil, &character.Hlt, &character.Agi, &character.Tch, &character.GunCombatLearningPoints, &character.HandToHandLearningPoints, &character.CreatedAt, &character.UpdatedAt)
 		if err != nil {
-			return []Character{}, err
+			return nil, err
 		}
 
 		character.ID, err = uuid.Parse(idStr)
@@ -136,7 +144,29 @@ func (s *Store) GetCharactersByUserID(userID uuid.UUID) ([]Character, error) {
 		characters = append(characters, character)
 	}
 
+	err = rows.Err()
+	if err != nil {
+		return nil, err
+	}
+
 	return characters, nil
+}
+
+func (s *Store) CharacterIDBelongsToUserID(characterID uuid.UUID, userID uuid.UUID) (bool, error) {
+	var count int
+	err := s.db.QueryRow("SELECT COUNT(*) FROM characters WHERE id = ? AND user_id = ?", characterID, userID).Scan(&count)
+	if err != nil {
+		return false, err
+	}
+
+	switch {
+	case count == 1:
+		return true, nil
+	case count == 0:
+		return false, nil
+	default:
+		return false, fmt.Errorf("unexpected count, got: %d", count)
+	}
 }
 
 func (s *Store) GetUserCharacterByID(userID uuid.UUID, characterID uuid.UUID) (*Character, error) {
@@ -192,4 +222,116 @@ func (s *Store) AddUniformIDByCharacterID(uniformID int, characterID uuid.UUID) 
 	)
 
 	return err
+}
+
+func (s *Store) GetEquipmentByCharacterID(characterID uuid.UUID) ([]Equipment, error) {
+	rows, err := s.db.Query("SELECT equipment_id, qty_primary, qty_secondary FROM character_equipment WHERE character_id = ?", characterID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	equipment := []Equipment{}
+
+	for rows.Next() {
+		e := Equipment{}
+		err := rows.Scan(&e.EquipmentID, &e.QtyPrimary, &e.QtySecondary)
+		if err != nil {
+			return nil, err
+		}
+
+		equipment = append(equipment, e)
+	}
+
+	err = rows.Err()
+	if err != nil {
+		return nil, err
+	}
+
+	return equipment, nil
+}
+
+func (s *Store) AddEquipmentIDByCharacterID(equipmentID int, characterID uuid.UUID, load string) error {
+	parsedLoad, err := parseEquipmentLoadType(load)
+	if err != nil {
+		return err
+	}
+
+	_, err = s.db.Exec(
+		fmt.Sprintf("INSERT INTO character_equipment (character_id, equipment_id, %[1]s) VALUES (?, ?, ?) ON CONFLICT (character_id, equipment_id) DO UPDATE SET %[1]s = excluded.%[1]s WHERE COALESCE(character_equipment.%[1]s, 0) = 0", parsedLoad),
+		characterID, equipmentID, 1,
+	)
+
+	return err
+}
+
+func (s *Store) UpsertEquipmentByCharacterID(equipmentID int, characterID uuid.UUID, load string, qty int) error {
+	parsedLoad, err := parseEquipmentLoadType(load)
+	if err != nil {
+		return err
+	}
+
+	_, err = s.db.Exec(
+		fmt.Sprintf("INSERT INTO character_equipment (character_id, equipment_id, %[1]s) VALUES (?, ?, ?) ON CONFLICT (character_id, equipment_id) DO UPDATE SET %[1]s = excluded.%[1]s", parsedLoad),
+		characterID, equipmentID, qty,
+	)
+
+	return err
+}
+
+func (s *Store) DeleteEquipmentByCharacterID(equipmentID int, characterID uuid.UUID, load string) error {
+	parsedLoad, err := parseEquipmentLoadType(load)
+	if err != nil {
+		return err
+	}
+	otherLoad, err := getOppositeLoadType(load)
+	if err != nil {
+		return err
+	}
+
+	tx, err := s.db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	_, err = tx.Exec(
+		fmt.Sprintf("DELETE FROM character_equipment WHERE character_id = ? AND equipment_id = ? AND %s IS NULL;", otherLoad),
+		characterID, equipmentID,
+	)
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.Exec(
+		fmt.Sprintf("UPDATE character_equipment SET %s = NULL WHERE character_id = ? AND equipment_id = ?", parsedLoad),
+		characterID, equipmentID,
+	)
+	if err != nil {
+		return err
+	}
+
+	return tx.Commit()
+}
+
+func parseEquipmentLoadType(load string) (string, error) {
+	switch {
+	case load == "primary":
+		return "qty_primary", nil
+	case load == "secondary":
+		return "qty_secondary", nil
+	default:
+		return "", fmt.Errorf("invalid load type, got: %s", load)
+	}
+}
+
+func getOppositeLoadType(load string) (string, error) {
+	switch {
+	case load == "primary":
+		return "qty_secondary", nil
+	case load == "secondary":
+		return "qty_primary", nil
+	default:
+		return "", fmt.Errorf("invalid load type, got: %s", load)
+	}
 }

@@ -27,10 +27,16 @@ type characterStore interface {
 	DeleteUserCharacterByID(userID uuid.UUID, characterID uuid.UUID) error
 	GetUniformIDByCharacterID(characterID uuid.UUID) (*int, error)
 	AddUniformIDByCharacterID(uniformID int, characterID uuid.UUID) error
+	GetEquipmentByCharacterID(characterID uuid.UUID) ([]store.Equipment, error)
+	AddEquipmentIDByCharacterID(equipmentID int, characterID uuid.UUID, load string) error
+	UpsertEquipmentByCharacterID(equipmentID int, characterID uuid.UUID, load string, qty int) error
+	CharacterIDBelongsToUserID(characterID uuid.UUID, userID uuid.UUID) (bool, error)
+	DeleteEquipmentByCharacterID(equipmentID int, characterID uuid.UUID, load string) error
 }
 
 type characterState interface {
 	GetUniformByID(uniformID int) (*state.Uniform, error)
+	GetEquipmentByIDs(equipmentIDs []int) ([]state.Equipment, error)
 }
 
 func NewCharacterService(store characterStore, state characterState) *CharacterService {
@@ -129,6 +135,29 @@ func (cs *CharacterService) GetUserEnrichedCharacterByID(userID uuid.UUID, chara
 		return nil, err
 	}
 
+	uniform, err := cs.getCharacterUniform(characterID)
+	if err != nil {
+		return nil, err
+	}
+
+	equipment, err := cs.getCharacterEquipment(characterID)
+	if err != nil {
+		return nil, err
+	}
+
+	dto := mapStoreCharacterToDomainCharacter(*character)
+
+	encumbrance := domain.CharacterEncumbrance{
+		Uniform:   *uniform,
+		Equipment: *equipment,
+	}
+
+	enrichedCharacter := domain.EnrichCharacter(dto, encumbrance)
+
+	return &enrichedCharacter, nil
+}
+
+func (cs *CharacterService) getCharacterUniform(characterID uuid.UUID) (*domain.Uniform, error) {
 	uniformID, err := cs.store.GetUniformIDByCharacterID(characterID)
 	if err != nil {
 		return nil, err
@@ -145,12 +174,81 @@ func (cs *CharacterService) GetUserEnrichedCharacterByID(userID uuid.UUID, chara
 		}
 	}
 
-	dto := mapStoreCharacterToDomainCharacter(*character)
-	encumbrance := mapStateUniformToDomainEncumbrance(u)
+	uniform := mapStateUniformToDomainEncumbrance(u)
 
-	enrichedCharacter := domain.EnrichCharacter(dto, encumbrance)
+	return &uniform, nil
+}
 
-	return &enrichedCharacter, nil
+func (cs *CharacterService) getCharacterEquipment(characterID uuid.UUID) (*domain.Equipment, error) {
+	characterEquipment, err := cs.store.GetEquipmentByCharacterID(characterID)
+	if err != nil {
+		return nil, err
+	}
+
+	ids := []int{}
+	for _, e := range characterEquipment {
+		ids = append(ids, e.EquipmentID)
+	}
+
+	stateEquipment, err := cs.state.GetEquipmentByIDs(ids)
+	if err != nil {
+		return nil, err
+	}
+
+	equipment := mapCharacterEquipment(stateEquipment, characterEquipment)
+
+	return &equipment, nil
+}
+
+func (cs *CharacterService) AddCharacterEquipment(userID uuid.UUID, characterID uuid.UUID, equipmentID int, load string) (*domain.EnrichedCharacterDTO, error) {
+	characterBlongsToUser, err := cs.store.CharacterIDBelongsToUserID(characterID, userID)
+	if err != nil {
+		return nil, err
+	}
+	if !characterBlongsToUser {
+		return nil, nil
+	}
+
+	err = cs.store.AddEquipmentIDByCharacterID(equipmentID, characterID, load)
+	if err != nil {
+		return nil, err
+	}
+
+	return cs.GetUserEnrichedCharacterByID(userID, characterID)
+}
+
+func (cs *CharacterService) UpdateCharacterEquipment(userID uuid.UUID, characterID uuid.UUID, equipmentID int, load string, qty int) (*domain.EnrichedCharacterDTO, error) {
+	characterBlongsToUser, err := cs.store.CharacterIDBelongsToUserID(characterID, userID)
+	if err != nil {
+		return nil, err
+	}
+	if !characterBlongsToUser {
+		return nil, nil
+	}
+
+	err = cs.store.UpsertEquipmentByCharacterID(equipmentID, characterID, load, qty)
+	if err != nil {
+		return nil, err
+	}
+
+	return cs.GetUserEnrichedCharacterByID(userID, characterID)
+}
+
+func (cs *CharacterService) DeleteCharacterEquipment(userID uuid.UUID, characterID uuid.UUID, equipmentID int, load string) (*domain.EnrichedCharacterDTO, error) {
+	characterBlongsToUser, err := cs.store.CharacterIDBelongsToUserID(characterID, userID)
+	if err != nil {
+		return nil, err
+	}
+	if !characterBlongsToUser {
+		return nil, nil
+	}
+
+	err = cs.store.DeleteEquipmentByCharacterID(equipmentID, characterID, load)
+	if err != nil {
+		return nil, err
+	}
+
+	return cs.GetUserEnrichedCharacterByID(userID, characterID)
 }
 
 var names = []string{"Leo", "Roy", "Sam", "Joe", "Ben", "Ray", "Avi", "Ian", "Dan", "Tom"}
@@ -184,8 +282,8 @@ func mapStoreCharacterToDomainCharacter(c store.Character) domain.CharacterDTO {
 	return dto
 }
 
-func mapStateUniformToDomainEncumbrance(uniform *state.Uniform) domain.CharacterEncumbrance {
-	encumbrance := domain.CharacterEncumbrance{
+func mapStateUniformToDomainEncumbrance(uniform *state.Uniform) domain.Uniform {
+	encumbrance := domain.Uniform{
 		Uniform:        "None",
 		ClothingWeight: 0,
 	}
@@ -197,4 +295,30 @@ func mapStateUniformToDomainEncumbrance(uniform *state.Uniform) domain.Character
 	encumbrance.ClothingWeight = uniform.Weight
 
 	return encumbrance
+}
+
+func mapCharacterEquipment(stateEquipment []state.Equipment, characterEquipment []store.Equipment) domain.Equipment {
+	primaryItems := []domain.Item{}
+	secondaryItems := []domain.Item{}
+
+	for _, ce := range characterEquipment {
+		var w float32
+		var n string
+		for _, se := range stateEquipment {
+			if se.ID == ce.EquipmentID {
+				w = se.Weight
+				n = se.Name
+			} else {
+				continue
+			}
+			if ce.QtyPrimary != nil {
+				primaryItems = append(primaryItems, domain.Item{ID: ce.EquipmentID, Name: n, Qty: *ce.QtyPrimary, Weight: w})
+			}
+			if ce.QtySecondary != nil {
+				secondaryItems = append(secondaryItems, domain.Item{ID: ce.EquipmentID, Name: n, Qty: *ce.QtySecondary, Weight: w})
+			}
+		}
+	}
+
+	return domain.Equipment{Primary: domain.Load{Items: primaryItems}, Secondary: domain.Load{Items: secondaryItems}}
 }
