@@ -292,14 +292,23 @@ func TestGetUserEnrichedCharacterByID(t *testing.T) {
 		}
 
 		wantCombatStats := domain.CharacterCombatStats{
-			BaseSpeed:               2.5,
-			MaxSpeed:                5,
-			SAL:                     7,
-			CE:                      5,
-			HandToHandDamageBonus:   1,
-			KnockoutValue:           10,
-			GunCombatActions:        []int{2, 1, 1, 1},
-			HandToHandCombatActions: []int{1, 1, 1, 1},
+			SAL:           7,
+			CE:            5,
+			KnockoutValue: 10,
+			Primary: domain.LoadStats{
+				BaseSpeed:               2.5,
+				MaxSpeed:                5,
+				HandToHandDamageBonus:   1,
+				GunCombatActions:        []int{2, 1, 1, 1},
+				HandToHandCombatActions: []int{1, 1, 1, 1},
+			},
+			Total: domain.LoadStats{
+				BaseSpeed:               2.5,
+				MaxSpeed:                5,
+				HandToHandDamageBonus:   1,
+				GunCombatActions:        []int{2, 1, 1, 1},
+				HandToHandCombatActions: []int{1, 1, 1, 1},
+			},
 		}
 
 		wantUniform := domain.Uniform{

@@ -47,8 +47,8 @@ func TestDeleteCharacterEquipmentHandler(t *testing.T) {
 		identity := stubDeleteCharacterEquipmentIdentity{userID: &userID}
 
 		character := domain.EnrichedCharacterDTO{}
-		character.GunCombatActions = []int{1, 1, 1, 1}
-		character.HandToHandCombatActions = []int{1, 0, 1, 0}
+		character.Primary.GunCombatActions = []int{1, 1, 1, 1}
+		character.Primary.HandToHandCombatActions = []int{1, 0, 1, 0}
 		character.Name = "TEST-CHARACTER"
 		character.Equipment.Secondary.Items = []domain.Item{}
 		characterService := &stubDeleteCharacterEquipmentCharacterService{character: &character}

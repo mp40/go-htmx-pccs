@@ -233,14 +233,23 @@ func TestCalculateCharacterCombatData(t *testing.T) {
 		got := calculateCombatStats(dto, enc)
 
 		want := CharacterCombatStats{
-			BaseSpeed:               3,
-			MaxSpeed:                7,
-			SAL:                     10,
-			CE:                      7,
-			KnockoutValue:           20,
-			HandToHandDamageBonus:   2.5,
-			GunCombatActions:        []int{2, 1, 2, 2},
-			HandToHandCombatActions: []int{2, 1, 2, 2},
+			SAL:           10,
+			CE:            7,
+			KnockoutValue: 20,
+			Primary: LoadStats{
+				BaseSpeed:               3,
+				MaxSpeed:                7,
+				HandToHandDamageBonus:   2.5,
+				GunCombatActions:        []int{2, 1, 2, 2},
+				HandToHandCombatActions: []int{2, 1, 2, 2},
+			},
+			Total: LoadStats{
+				BaseSpeed:               3,
+				MaxSpeed:                7,
+				HandToHandDamageBonus:   2.5,
+				GunCombatActions:        []int{2, 1, 2, 2},
+				HandToHandCombatActions: []int{2, 1, 2, 2},
+			},
 		}
 
 		if !cmp.Equal(got, want) {
@@ -278,14 +287,23 @@ func TestCalculateCharacterCombatData(t *testing.T) {
 		got := calculateCombatStats(dto, enc)
 
 		want := CharacterCombatStats{
-			BaseSpeed:               3,
-			MaxSpeed:                6,
-			SAL:                     9,
-			CE:                      5,
-			KnockoutValue:           13,
-			HandToHandDamageBonus:   1.5,
-			GunCombatActions:        []int{2, 1, 2, 1},
-			HandToHandCombatActions: []int{2, 1, 1, 1},
+			SAL:           9,
+			CE:            5,
+			KnockoutValue: 13,
+			Primary: LoadStats{
+				BaseSpeed:               3,
+				MaxSpeed:                6,
+				HandToHandDamageBonus:   1.5,
+				GunCombatActions:        []int{2, 1, 2, 1},
+				HandToHandCombatActions: []int{2, 1, 1, 1},
+			},
+			Total: LoadStats{
+				BaseSpeed:               3,
+				MaxSpeed:                6,
+				HandToHandDamageBonus:   1.5,
+				GunCombatActions:        []int{2, 1, 2, 1},
+				HandToHandCombatActions: []int{2, 1, 1, 1},
+			},
 		}
 
 		if !cmp.Equal(got, want) {
@@ -323,14 +341,23 @@ func TestCalculateCharacterCombatData(t *testing.T) {
 		got := calculateCombatStats(dto, enc)
 
 		want := CharacterCombatStats{
-			BaseSpeed:               3.5,
-			MaxSpeed:                8,
-			SAL:                     16,
-			CE:                      11,
-			KnockoutValue:           75,
-			HandToHandDamageBonus:   4,
-			GunCombatActions:        []int{4, 3, 3, 3},
-			HandToHandCombatActions: []int{3, 2, 3, 3},
+			SAL:           16,
+			CE:            11,
+			KnockoutValue: 75,
+			Primary: LoadStats{
+				BaseSpeed:               3.5,
+				MaxSpeed:                8,
+				HandToHandDamageBonus:   4,
+				GunCombatActions:        []int{4, 3, 3, 3},
+				HandToHandCombatActions: []int{3, 2, 3, 3},
+			},
+			Total: LoadStats{
+				BaseSpeed:               3.5,
+				MaxSpeed:                8,
+				HandToHandDamageBonus:   4,
+				GunCombatActions:        []int{4, 3, 3, 3},
+				HandToHandCombatActions: []int{3, 2, 3, 3},
+			},
 		}
 
 		if !cmp.Equal(got, want) {
@@ -368,18 +395,143 @@ func TestCalculateCharacterCombatData(t *testing.T) {
 		got := calculateCombatStats(dto, enc)
 
 		want := CharacterCombatStats{
-			BaseSpeed:               3,
-			MaxSpeed:                8,
-			SAL:                     0,
-			CE:                      13,
-			KnockoutValue:           35,
-			HandToHandDamageBonus:   5,
-			GunCombatActions:        []int{1, 1, 1, 1},
-			HandToHandCombatActions: []int{3, 3, 3, 3},
+			SAL:           0,
+			CE:            13,
+			KnockoutValue: 35,
+			Primary: LoadStats{
+				BaseSpeed:               3,
+				MaxSpeed:                8,
+				HandToHandDamageBonus:   5,
+				GunCombatActions:        []int{1, 1, 1, 1},
+				HandToHandCombatActions: []int{3, 3, 3, 3},
+			},
+			Total: LoadStats{
+				BaseSpeed:               3,
+				MaxSpeed:                8,
+				HandToHandDamageBonus:   5,
+				GunCombatActions:        []int{1, 1, 1, 1},
+				HandToHandCombatActions: []int{3, 3, 3, 3},
+			},
 		}
 
 		if !cmp.Equal(got, want) {
 			t.Errorf("got %+v, want %+v", got, want)
+		}
+	})
+
+	t.Run("it calculates combat data of grunt in uniform with only primary load", func(t *testing.T) {
+		raw := RawCharacter{
+			Str:                      14,
+			Int:                      10,
+			Wil:                      10,
+			Hlt:                      10,
+			Agi:                      12,
+			Tch:                      10,
+			GunCombatLearningPoints:  16,
+			HandToHandLearningPoints: 4,
+		}
+
+		dto := CharacterDTO{
+			RawCharacter:    raw,
+			GunCombatLevel:  4,
+			HandToHandLevel: 2,
+		}
+
+		uniform := Uniform{
+			Uniform:        "Normal",
+			ClothingWeight: 5,
+		}
+
+		enc := CharacterEncumbrance{
+			Uniform: uniform,
+			Equipment: Equipment{
+				Primary:   Load{Items: []Item{{ID: 1, Name: "A", Weight: 0.7, Qty: 1}, {ID: 2, Name: "B", Weight: 0.4, Qty: 4}, {ID: 3, Name: "C", Weight: 2.86, Qty: 1}}},
+				Secondary: Load{Items: []Item{}},
+			},
+		}
+
+		got := calculateCombatStats(dto, enc)
+
+		want := CharacterCombatStats{
+			SAL:           10,
+			CE:            7,
+			KnockoutValue: 20,
+			Primary: LoadStats{
+				BaseSpeed:               2.5,
+				MaxSpeed:                5,
+				HandToHandDamageBonus:   1.5,
+				GunCombatActions:        []int{2, 1, 1, 1},
+				HandToHandCombatActions: []int{2, 1, 1, 1},
+			},
+			Total: LoadStats{
+				BaseSpeed:               2.5,
+				MaxSpeed:                5,
+				HandToHandDamageBonus:   1.5,
+				GunCombatActions:        []int{2, 1, 1, 1},
+				HandToHandCombatActions: []int{2, 1, 1, 1},
+			},
+		}
+
+		if !cmp.Equal(got, want) {
+			t.Errorf("got %+v, want %+v", got, want)
+		}
+	})
+
+	t.Run("it calculates combat data of grunt in uniform with primary and secondary load", func(t *testing.T) {
+		raw := RawCharacter{
+			Str:                      14,
+			Int:                      10,
+			Wil:                      10,
+			Hlt:                      10,
+			Agi:                      12,
+			Tch:                      10,
+			GunCombatLearningPoints:  16,
+			HandToHandLearningPoints: 4,
+		}
+
+		dto := CharacterDTO{
+			RawCharacter:    raw,
+			GunCombatLevel:  4,
+			HandToHandLevel: 2,
+		}
+
+		uniform := Uniform{
+			Uniform:        "Normal",
+			ClothingWeight: 5,
+		}
+
+		enc := CharacterEncumbrance{
+			Uniform: uniform,
+			Equipment: Equipment{
+				Primary:   Load{Items: []Item{{ID: 1, Name: "A", Weight: 0.7, Qty: 1}, {ID: 2, Name: "B", Weight: 0.4, Qty: 4}, {ID: 3, Name: "C", Weight: 2.86, Qty: 1}}},
+				Secondary: Load{Items: []Item{{ID: 3, Name: "C", Weight: 2.86, Qty: 1}, {ID: 4, Name: "D", Weight: 23.5, Qty: 1}}},
+			},
+		}
+
+		got := calculateCombatStats(dto, enc)
+
+		want := CharacterCombatStats{
+			SAL:           10,
+			CE:            7,
+			KnockoutValue: 20,
+			Primary: LoadStats{
+				BaseSpeed:               2.5,
+				MaxSpeed:                5,
+				HandToHandDamageBonus:   1.5,
+				GunCombatActions:        []int{2, 1, 1, 1},
+				HandToHandCombatActions: []int{2, 1, 1, 1},
+			},
+			Total: LoadStats{
+				BaseSpeed:               2,
+				MaxSpeed:                4,
+				HandToHandDamageBonus:   1,
+				GunCombatActions:        []int{1, 1, 1, 1},
+				HandToHandCombatActions: []int{1, 1, 1, 1},
+			},
+		}
+
+		if !cmp.Equal(got, want) {
+			t.Errorf("unexpected stats: %v", cmp.Diff(got, want))
 		}
 	})
 }

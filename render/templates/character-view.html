@@ -39,7 +39,7 @@
       </tr>
       <tr>
         <td>Hand to Hand DB:</td>
-        <td>{{ .Character.HandToHandDamageBonus}}</td>
+        <td>{{ .Character.Primary.HandToHandDamageBonus}}</td>
       </tr>
       <tr>
         <td>Knockout Value:</td>
@@ -56,17 +56,17 @@
       </tr>
       <tr>
         <td>Gun Combat</td>
-        <td>{{ index .Character.GunCombatActions 0 }}</td>
-        <td>{{ index .Character.GunCombatActions 1 }}</td>
-        <td>{{ index .Character.GunCombatActions 2 }}</td>
-        <td>{{ index .Character.GunCombatActions 3 }}</td>
+        <td>{{ index .Character.Primary.GunCombatActions 0 }}</td>
+        <td>{{ index .Character.Primary.GunCombatActions 1 }}</td>
+        <td>{{ index .Character.Primary.GunCombatActions 2 }}</td>
+        <td>{{ index .Character.Primary.GunCombatActions 3 }}</td>
       </tr>
       <tr>
         <td>Hand to Hand</td>
-        <td>{{ index .Character.HandToHandCombatActions 0 }}</td>
-        <td>{{ index .Character.HandToHandCombatActions 1 }}</td>
-        <td>{{ index .Character.HandToHandCombatActions 2 }}</td>
-        <td>{{ index .Character.HandToHandCombatActions 3 }}</td>
+        <td>{{ index .Character.Primary.HandToHandCombatActions 0 }}</td>
+        <td>{{ index .Character.Primary.HandToHandCombatActions 1 }}</td>
+        <td>{{ index .Character.Primary.HandToHandCombatActions 2 }}</td>
+        <td>{{ index .Character.Primary.HandToHandCombatActions 3 }}</td>
       </tr>
     </table>
     <div class="equipment">
