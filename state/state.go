@@ -6,6 +6,24 @@ import (
 	"strings"
 )
 
+type Firearm struct {
+	ID                 int      `json:"id"`
+	Name               string   `json:"name"`
+	BaseWeight         float32  `json:"base_weight"`
+	Length             float32  `json:"length"`
+	LengthStockFolded  *float32 `json:"length_stock_folded"`
+	InternalCapacity   *int     `json:"internal_capacity"`
+	RoundWeight        *float32 `json:"round_weight"`
+	ReloadTime         int      `json:"reload_time"`
+	ManualCycleTime    *int     `json:"manual_cycle_time"`
+	SemiAutomatic      bool     `json:"semi_automatic"`
+	BurstRounds        *int     `json:"burst_rounds"`
+	FullAutoRateOfFire *int     `json:"full_auto_rof"`
+	KnockDown          int      `json:"knock_down"`
+	SAB                int      `json:"sab"`
+	AimTimeID          int      `json:"aim_time_id"`
+}
+
 type Equipment struct {
 	ID     int     `json:"id"`
 	Name   string  `json:"name"`
@@ -24,6 +42,33 @@ type State struct {
 
 func NewStateService(db *sql.DB) *State {
 	return &State{db: db}
+}
+
+func (s *State) GetFirearms() ([]Firearm, error) {
+	rows, err := s.db.Query("SELECT id, name, base_weight, length, length_stock_folded, internal_capacity, round_weight, reload_time, manual_cycle_time, semi_automatic, burst_rounds, full_auto_rof, knock_down, sab, aim_time_id FROM firearm")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	firearms := []Firearm{}
+
+	for rows.Next() {
+		f := Firearm{}
+		err := rows.Scan(&f.ID, &f.Name, &f.BaseWeight, &f.Length, &f.LengthStockFolded, &f.InternalCapacity, &f.RoundWeight, &f.ReloadTime, &f.ManualCycleTime, &f.SemiAutomatic, &f.BurstRounds, &f.FullAutoRateOfFire, &f.KnockDown, &f.SAB, &f.AimTimeID)
+		if err != nil {
+			return nil, err
+		}
+
+		firearms = append(firearms, f)
+	}
+
+	err = rows.Err()
+	if err != nil {
+		return nil, err
+	}
+
+	return firearms, nil
 }
 
 func (s *State) GetEquipment() ([]Equipment, error) {

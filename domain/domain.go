@@ -76,6 +76,27 @@ type CharacterEncumbrance struct {
 	Equipment Equipment
 }
 
+type FirearmDTO struct {
+	ID                 int      `json:"id"`
+	Name               string   `json:"name"`
+	BaseWeight         float32  `json:"base_weight"`
+	Length             float32  `json:"length"`
+	LengthStockFolded  *float32 `json:"length_stock_folded"`
+	InternalCapacity   *int     `json:"internal_capacity"`
+	RoundWeight        *float32 `json:"round_weight"`
+	ReloadTime         int      `json:"reload_time"`
+	ManualCycleTime    *int     `json:"manual_cycle_time"`
+	SemiAutomatic      bool     `json:"semi_automatic"`
+	BurstRounds        *int     `json:"burst_rounds"`
+	FullAutoRateOfFire *int     `json:"full_auto_rof"`
+	KnockDown          int      `json:"knock_down"`
+	SAB                int      `json:"sab"`
+}
+
+type EnrichedFirearmDTO struct {
+	FirearmDTO
+}
+
 func (l *Load) calculateLoadWeight() float32 {
 	var weight float32
 

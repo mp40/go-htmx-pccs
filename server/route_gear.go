@@ -6,12 +6,13 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/mp40/go-htmx-pccs/domain"
 	"github.com/mp40/go-htmx-pccs/state"
 )
 
 type getGearPageRender interface {
-	RenderGearPage(w io.Writer, signedIn bool, equipment []state.Equipment) error
-	RenderGearFragment(w io.Writer, equipment []state.Equipment) error
+	RenderGearPage(w io.Writer, signedIn bool, equipment []state.Equipment, firearms []domain.FirearmDTO) error
+	RenderGearFragment(w io.Writer, equipment []state.Equipment, firearms []domain.FirearmDTO) error
 }
 
 type getGearPageIdentity interface {
@@ -20,6 +21,7 @@ type getGearPageIdentity interface {
 
 type getGearPageGearService interface {
 	GetEquipment() ([]state.Equipment, error)
+	GetFirearms() ([]domain.FirearmDTO, error)
 }
 
 func getGearHandler(render getGearPageRender, identity getGearPageIdentity, gearService getGearPageGearService) http.Handler {
@@ -36,16 +38,24 @@ func getGearHandler(render getGearPageRender, identity getGearPageIdentity, gear
 			// in future maybe also error msg for UI
 		}
 
+		firearms, err := gearService.GetFirearms()
+		if err != nil {
+			slog.Error("state get equipment", "err", err)
+			// TODO decide what to do on firearm error
+			// for now empty list is OK
+			// in future maybe also error msg for UI
+		}
+
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		if isHtmx {
-			err := render.RenderGearFragment(w, equipment)
+			err := render.RenderGearFragment(w, equipment, firearms)
 			if err != nil {
 				slog.Error("server error rendering", "err", err)
 				w.WriteHeader(http.StatusInternalServerError)
 				return
 			}
 		} else {
-			err := render.RenderGearPage(w, signedIn, equipment)
+			err := render.RenderGearPage(w, signedIn, equipment, firearms)
 			if err != nil {
 				slog.Error("server error rendering", "err", err)
 				w.WriteHeader(http.StatusInternalServerError)

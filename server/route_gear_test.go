@@ -7,6 +7,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/mp40/go-htmx-pccs/domain"
 	"github.com/mp40/go-htmx-pccs/identity"
 	"github.com/mp40/go-htmx-pccs/render"
 	"github.com/mp40/go-htmx-pccs/state"
@@ -14,11 +15,16 @@ import (
 
 type stubGearPageGearService struct {
 	equipment []state.Equipment
+	firearms  []domain.FirearmDTO
 	err       error
 }
 
 func (g *stubGearPageGearService) GetEquipment() ([]state.Equipment, error) {
 	return g.equipment, g.err
+}
+
+func (g *stubGearPageGearService) GetFirearms() ([]domain.FirearmDTO, error) {
+	return g.firearms, g.err
 }
 
 func TestGetGearHandler_Route(t *testing.T) {
@@ -31,7 +37,9 @@ func TestGetGearHandler_Route(t *testing.T) {
 
 		gear := stubGearPageGearService{}
 		equipment := []state.Equipment{{ID: 1, Name: "TEST EQUIPMENT", Weight: 0.5}}
+		firearms := []domain.FirearmDTO{{ID: 1, Name: "TEST FIREARM", BaseWeight: 8.5}}
 		gear.equipment = equipment
+		gear.firearms = firearms
 
 		server := NewServer(nil, nil, identity, nil, &gear, r)
 
@@ -63,6 +71,9 @@ func TestGetGearHandler_Route(t *testing.T) {
 		if !strings.Contains(string(body), "TEST EQUIPMENT") {
 			t.Errorf("want equipment render, got: %s", body)
 		}
+		if !strings.Contains(string(body), "TEST FIREARM") {
+			t.Errorf("want firearm render, got: %s", body)
+		}
 	})
 
 	t.Run("it should return 200 and partial on successful HTMX GET request", func(t *testing.T) {
@@ -74,7 +85,9 @@ func TestGetGearHandler_Route(t *testing.T) {
 
 		gear := stubGearPageGearService{}
 		equipment := []state.Equipment{{ID: 1, Name: "TEST EQUIPMENT", Weight: 0.5}}
+		firearms := []domain.FirearmDTO{{ID: 1, Name: "TEST FIREARM", BaseWeight: 8.5}}
 		gear.equipment = equipment
+		gear.firearms = firearms
 
 		server := NewServer(nil, nil, identity, nil, &gear, r)
 
@@ -106,6 +119,9 @@ func TestGetGearHandler_Route(t *testing.T) {
 
 		if !strings.Contains(string(body), "TEST EQUIPMENT") {
 			t.Errorf("want equipment render, got: %s", body)
+		}
+		if !strings.Contains(string(body), "TEST FIREARM") {
+			t.Errorf("want firearm render, got: %s", body)
 		}
 	})
 }
