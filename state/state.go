@@ -134,7 +134,7 @@ func (s *State) GetFirearmByID(firearmID int) (*Firearm, error) {
 
 func (s *State) GetFirearmAimTimesByID(aimTimeID int) (*AimTime, error) {
 	at := AimTime{}
-	err := s.db.QueryRow("SELECT id, at_1, at_2, at_3, at_4, at_5, at_6, at_7, at_8, at_9, at_10, at_11, at_12 FROM aim_time WHERE id = ? ", aimTimeID).
+	err := s.db.QueryRow("SELECT id, at_1, at_2, at_3, at_4, at_5, at_6, at_7, at_8, at_9, at_10, at_11, at_12 FROM aim_time WHERE id = ?", aimTimeID).
 		Scan(&at.ID, &at.AimTime1, &at.AimTime2, &at.AimTime3, &at.AimTime4, &at.AimTime5, &at.AimTime6, &at.AimTime7, &at.AimTime8, &at.AimTime9, &at.AimTime10, &at.AimTime11, &at.AimTime12)
 	if err == sql.ErrNoRows {
 		return nil, nil

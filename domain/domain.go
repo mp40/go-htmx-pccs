@@ -76,9 +76,19 @@ type CharacterEncumbrance struct {
 	Equipment Equipment
 }
 
+type EnrichedFirearmDTO struct {
+	FirearmDTO
+	AimTimes      []int
+	RangeBrackets []int
+	Ballistics
+	Ammunition         []Ammunition
+	AvailableMagazines []Magazine
+}
+
 type FirearmDTO struct {
 	ID                 int      `json:"id"`
 	Name               string   `json:"name"`
+	Calibre            string   `json:"calibre"`
 	BaseWeight         float32  `json:"base_weight"`
 	Length             float32  `json:"length"`
 	LengthStockFolded  *float32 `json:"length_stock_folded"`
@@ -93,8 +103,33 @@ type FirearmDTO struct {
 	SAB                int      `json:"sab"`
 }
 
-type EnrichedFirearmDTO struct {
-	FirearmDTO
+type Magazine struct {
+	ID       int
+	Name     string
+	Type     string
+	Capacity int
+	Weight   float32
+}
+
+type Ballistics struct {
+	BalisticAccuracy []int
+	TimeOfFlight     []int
+	MinimumArc       []float32
+}
+
+type Ammunition struct {
+	Type          string
+	RangeBrackets []int
+	Pen           []float32
+	DC            []int
+	*Pellet
+}
+
+type Pellet struct {
+	SALM                []int
+	BasePelletHitChance []*int
+	BasePelletHits      []*int
+	PelletRadius        []float32
 }
 
 func (l *Load) calculateLoadWeight() float32 {
