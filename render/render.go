@@ -247,9 +247,9 @@ func (r *Render) RenderShotgunPelletHitsFragment(w io.Writer, hits []int) error 
 	return r.execute(w, "pellet-hits", data)
 }
 
-func (r *Render) RenderGearPage(w io.Writer, signedIn bool, equipment []state.Equipment) error {
+func (r *Render) RenderGearPage(w io.Writer, signedIn bool, equipment []state.Equipment, firearms []domain.FirearmDTO) error {
 	var page bytes.Buffer
-	err := r.RenderGearFragment(&page, equipment)
+	err := r.RenderGearFragment(&page, equipment, firearms)
 	if err != nil {
 		return err
 	}
@@ -265,11 +265,13 @@ func (r *Render) RenderGearPage(w io.Writer, signedIn bool, equipment []state.Eq
 	return r.execute(w, "index", data)
 }
 
-func (r *Render) RenderGearFragment(w io.Writer, equipment []state.Equipment) error {
+func (r *Render) RenderGearFragment(w io.Writer, equipment []state.Equipment, firearms []domain.FirearmDTO) error {
 	data := struct {
 		Equipment []state.Equipment
+		Firearms  []domain.FirearmDTO
 	}{
 		Equipment: equipment,
+		Firearms:  firearms,
 	}
 	return r.execute(w, "gear", data)
 }
