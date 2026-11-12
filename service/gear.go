@@ -82,7 +82,6 @@ func (g *GearService) GetEnrichedFirearmByID(id int) (*domain.EnrichedFirearmDTO
 
 	enriched, err := mapStateToEnrichedFirearm(*firearm, *aims, ballistics, ammo, mags)
 	if err != nil {
-		// fmt.Printf("err: %v\n", err)
 		return nil, err
 	}
 
@@ -121,13 +120,23 @@ func mapStateToEnrichedFirearm(rawFirearm state.Firearm, rawAims state.AimTime, 
 	enriched := domain.EnrichedFirearmDTO{
 		FirearmDTO:         firearmDTO,
 		AimTimes:           mapAimTimesToIntSlice(rawAims),
-		RangeBrackets:      []int{10, 20, 40, 70, 100, 200, 300, 400},
+		RangeBrackets:      mapRangeBrackets(rawBallistics),
 		Ballistics:         ballistics,
 		Ammunition:         mapAmmo(rawAmmo),
 		AvailableMagazines: mapMags(rawMags),
 	}
 
 	return enriched, nil
+}
+
+func mapRangeBrackets(rawBallistics []state.Ballistics) []int {
+	ranges := []int{}
+
+	for _, r := range rawBallistics {
+		ranges = append(ranges, r.Range)
+	}
+
+	return ranges
 }
 
 func mapAimTimesToIntSlice(rawAims state.AimTime) []int {
@@ -182,6 +191,16 @@ func mapAmmo(rawAmmo []state.Ammunition) []domain.Ammunition {
 		}
 		a[index].Pen = append(a[index].Pen, r.Pen)
 		a[index].DC = append(a[index].DC, r.DC)
+
+		if r.SALM != nil {
+			if a[index].Pellet == nil {
+				a[index].Pellet = &domain.Pellet{}
+			}
+			a[index].SALM = append(a[index].SALM, *r.SALM)
+			a[index].BasePelletHitChance = append(a[index].BasePelletHitChance, r.BasePelletHitChance)
+			a[index].BasePelletHits = append(a[index].BasePelletHits, r.PelletHits)
+			a[index].PelletRadius = append(a[index].PelletRadius, *r.PelletRadius)
+		}
 	}
 
 	return a

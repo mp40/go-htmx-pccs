@@ -175,6 +175,93 @@ func TestGetEnrichedFirearmByID(t *testing.T) {
 			t.Errorf("unexpected enriched stats: %v", cmp.Diff(*got, want))
 		}
 	})
+
+	t.Run("it returns an enriched shotgun on success", func(t *testing.T) {
+		state := &stubGearState{
+			firearm: &state.Firearm{Name: "TEST SHOTGUN"},
+			aimTime: &state.AimTime{AimTime1: 20, AimTime2: 15, AimTime3: 10, AimTime4: 5},
+			ballistics: []state.Ballistics{
+				{Range: 1, BA: 61, TOF: 0},
+				{Range: 2, BA: 52, TOF: 0},
+				{Range: 4, BA: 42, TOF: 0},
+				{Range: 6, BA: 36, TOF: 0},
+				{Range: 8, BA: 32, TOF: 0},
+				{Range: 10, BA: 29, TOF: 0},
+				{Range: 15, BA: 23, TOF: 1},
+				{Range: 20, BA: 19, TOF: 1},
+				{Range: 30, BA: 13, TOF: 1},
+				{Range: 40, BA: 9, TOF: 2},
+				{Range: 80, BA: -1, TOF: 4},
+			},
+			ammunition: []state.Ammunition{
+				{Type: "SHOT", Range: 1, Pen: 1.6, DC: 10, SALM: intToPointer(-13), BasePelletHitChance: nil, PelletHits: nil, PelletRadius: floatToPointer(0)},
+				{Type: "SHOT", Range: 2, Pen: 1.6, DC: 4, SALM: intToPointer(-8), BasePelletHitChance: nil, PelletHits: intToPointer(11), PelletRadius: floatToPointer(0)},
+				{Type: "SHOT", Range: 4, Pen: 1.6, DC: 3, SALM: intToPointer(-3), BasePelletHitChance: nil, PelletHits: intToPointer(10), PelletRadius: floatToPointer(0)},
+				{Type: "SHOT", Range: 6, Pen: 1.5, DC: 3, SALM: intToPointer(0), BasePelletHitChance: nil, PelletHits: intToPointer(8), PelletRadius: floatToPointer(0.1)},
+				{Type: "SHOT", Range: 8, Pen: 1.4, DC: 3, SALM: intToPointer(2), BasePelletHitChance: nil, PelletHits: intToPointer(5), PelletRadius: floatToPointer(0.1)},
+				{Type: "SHOT", Range: 10, Pen: 1.4, DC: 4, SALM: intToPointer(4), BasePelletHitChance: nil, PelletHits: intToPointer(3), PelletRadius: floatToPointer(0.1)},
+				{Type: "SHOT", Range: 15, Pen: 1.3, DC: 3, SALM: intToPointer(7), BasePelletHitChance: nil, PelletHits: intToPointer(1), PelletRadius: floatToPointer(0.2)},
+				{Type: "SHOT", Range: 20, Pen: 1.2, DC: 2, SALM: intToPointer(9), BasePelletHitChance: intToPointer(74), PelletHits: nil, PelletRadius: floatToPointer(0.3)},
+				{Type: "SHOT", Range: 30, Pen: 1.1, DC: 2, SALM: intToPointer(11), BasePelletHitChance: intToPointer(32), PelletHits: nil, PelletRadius: floatToPointer(0.4)},
+				{Type: "SHOT", Range: 40, Pen: 0.9, DC: 2, SALM: intToPointer(14), BasePelletHitChance: intToPointer(17), PelletHits: nil, PelletRadius: floatToPointer(0.6)},
+				{Type: "SHOT", Range: 80, Pen: 0.5, DC: 1, SALM: intToPointer(19), BasePelletHitChance: intToPointer(3), PelletHits: nil, PelletRadius: floatToPointer(1.2)},
+				{Type: "SLUG", Range: 1, Pen: 3.6, DC: 9},
+				{Type: "SLUG", Range: 2, Pen: 3.6, DC: 9},
+				{Type: "SLUG", Range: 4, Pen: 3.5, DC: 9},
+				{Type: "SLUG", Range: 6, Pen: 3.5, DC: 9},
+				{Type: "SLUG", Range: 8, Pen: 3.4, DC: 9},
+				{Type: "SLUG", Range: 10, Pen: 3.4, DC: 9},
+				{Type: "SLUG", Range: 15, Pen: 3.2, DC: 9},
+				{Type: "SLUG", Range: 20, Pen: 3.1, DC: 9},
+				{Type: "SLUG", Range: 30, Pen: 2.8, DC: 8},
+				{Type: "SLUG", Range: 40, Pen: 2.6, DC: 8},
+				{Type: "SLUG", Range: 80, Pen: 1.8, DC: 6},
+			},
+			magazines: []state.Magazine{},
+		}
+		service := NewGearService(state)
+
+		got, err := service.GetEnrichedFirearmByID(1)
+		if err != nil {
+			t.Errorf("unexpected error, got %v", err)
+		}
+		if got == nil {
+			t.Errorf("firearm is <nil>")
+		}
+
+		want := domain.EnrichedFirearmDTO{
+			FirearmDTO:    domain.FirearmDTO{Name: "TEST SHOTGUN"},
+			AimTimes:      []int{20, 15, 10, 5},
+			RangeBrackets: []int{1, 2, 4, 6, 8, 10, 15, 20, 30, 40, 80},
+			Ballistics: domain.Ballistics{
+				BalisticAccuracy: []int{61, 52, 42, 36, 32, 29, 23, 19, 13, 9, -1},
+				TimeOfFlight:     []int{0, 0, 0, 0, 0, 0, 1, 1, 1, 2, 4},
+			},
+			Ammunition: []domain.Ammunition{
+				{
+					Type: "SHOT",
+					Pen:  []float32{1.6, 1.6, 1.6, 1.5, 1.4, 1.4, 1.3, 1.2, 1.1, 0.9, 0.5},
+					DC:   []int{10, 4, 3, 3, 3, 4, 3, 2, 2, 2, 1},
+					Pellet: &domain.Pellet{
+						SALM:                []int{-13, -8, -3, 0, 2, 4, 7, 9, 11, 14, 19},
+						BasePelletHitChance: []*int{nil, nil, nil, nil, nil, nil, nil, intToPointer(74), intToPointer(32), intToPointer(17), intToPointer(3)},
+						BasePelletHits:      []*int{nil, intToPointer(11), intToPointer(10), intToPointer(8), intToPointer(5), intToPointer(3), intToPointer(1), nil, nil, nil, nil},
+						PelletRadius:        []float32{0, 0, 0, 0.1, 0.1, 0.1, 0.2, 0.3, 0.4, 0.6, 1.2},
+					},
+				},
+				{
+					Type: "SLUG",
+					Pen:  []float32{3.6, 3.6, 3.5, 3.5, 3.4, 3.4, 3.2, 3.1, 2.8, 2.6, 1.8},
+					DC:   []int{9, 9, 9, 9, 9, 9, 9, 9, 8, 8, 6},
+				},
+			},
+			AvailableMagazines: []domain.Magazine{},
+		}
+
+		if !cmp.Equal(*got, want) {
+			t.Errorf("unexpected enriched stats: %v", cmp.Diff(*got, want))
+		}
+	})
 }
 
 func TestMapAimTimesToIntSlice(t *testing.T) {

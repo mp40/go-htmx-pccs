@@ -56,7 +56,7 @@ type Ammunition struct {
 	Type                string   `json:"type"`
 	Pen                 float32  `json:"pen"`
 	DC                  int      `json:"dc"`
-	SALM                int      `json:"salm"`
+	SALM                *int     `json:"salm"`
 	BasePelletHitChance *int     `json:"bphc"`
 	PelletHits          *int     `json:"bphc_hits"`
 	PelletRadius        *float32 `json:"pr"`
@@ -172,7 +172,7 @@ func (s *State) GetFirearmBallistics(firearmID int) ([]Ballistics, error) {
 }
 
 func (s *State) GetFirearmAmmo(firearmID int) ([]Ammunition, error) {
-	rows, err := s.db.Query("SELECT fa.id, fa.firearm_id, fa.type, r.range_hexes, r.pen, r.dc, r.salm, r.bphc, r.bphc_hits, r.pr FROM firearm_ammo fa INNER JOIN firearm_ammo_range r ON fa.id = r.firearm_ammo_id WHERE fa.firearm_id = ?", firearmID)
+	rows, err := s.db.Query("SELECT fa.id, fa.firearm_id, fa.type, r.range_hexes, r.pen, r.dc, r.salm, r.bphc, r.bphc_hits, r.pr FROM firearm_ammo fa INNER JOIN firearm_ammo_range r ON fa.id = r.firearm_ammo_id WHERE fa.firearm_id = ? ORDER BY id, range_hexes", firearmID)
 	if err != nil {
 		return nil, err
 	}
