@@ -42,6 +42,7 @@ type Identity interface {
 type GearService interface {
 	GetEquipment() ([]state.Equipment, error)
 	GetFirearms() ([]domain.FirearmDTO, error)
+	GetEnrichedFirearmByID(id int) (*domain.EnrichedFirearmDTO, error)
 }
 
 func NewServer(auth Auth, session Session, identity Identity, characterService CharacterService, gearService GearService, render *render.Render) http.Handler {

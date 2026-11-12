@@ -27,6 +27,10 @@ func (g *stubGearPageGearService) GetFirearms() ([]domain.FirearmDTO, error) {
 	return g.firearms, g.err
 }
 
+func (g *stubGearPageGearService) GetEnrichedFirearmByID(id int) (*domain.EnrichedFirearmDTO, error) {
+	panic("method not used in test")
+}
+
 func TestGetGearHandler_Route(t *testing.T) {
 	t.Run("it should return 200 and full page on successful GET request", func(t *testing.T) {
 		r, err := render.NewRenderService()

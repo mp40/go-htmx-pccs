@@ -276,6 +276,15 @@ func (r *Render) RenderGearFragment(w io.Writer, equipment []state.Equipment, fi
 	return r.execute(w, "gear", data)
 }
 
+func (r *Render) RenderEnrichedFirearm(w io.Writer, firearm domain.EnrichedFirearmDTO) error {
+	data := struct {
+		Firearm domain.EnrichedFirearmDTO
+	}{
+		Firearm: firearm,
+	}
+	return r.execute(w, "firearm-card", data)
+}
+
 func (r *Render) RenderSignInModal(w io.Writer) error {
 	return r.execute(w, "sign-in-modal", nil)
 }

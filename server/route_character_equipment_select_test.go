@@ -27,6 +27,10 @@ func (g *stubRouteCharacterEquipmentSelectGearService) GetFirearms() ([]domain.F
 	panic("method not used in test")
 }
 
+func (g *stubRouteCharacterEquipmentSelectGearService) GetEnrichedFirearmByID(id int) (*domain.EnrichedFirearmDTO, error) {
+	panic("method not used in test")
+}
+
 type stubRouteCharacterEquipmentSelectIndentity struct {
 	userID     *uuid.UUID
 	isSignedIn bool
