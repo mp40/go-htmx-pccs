@@ -1,6 +1,11 @@
 package service
 
-import "github.com/mp40/go-htmx-pccs/state"
+import (
+	"fmt"
+
+	"github.com/mp40/go-htmx-pccs/domain"
+	"github.com/mp40/go-htmx-pccs/state"
+)
 
 type GearService struct {
 	state equipmentState
@@ -8,6 +13,12 @@ type GearService struct {
 
 type equipmentState interface {
 	GetEquipment() ([]state.Equipment, error)
+	GetFirearms() ([]state.Firearm, error)
+	GetFirearmByID(ID int) (*state.Firearm, error)
+	GetFirearmAimTimesByID(aimTimeID int) (*state.AimTime, error)
+	GetFirearmBallistics(firearmID int) ([]state.Ballistics, error)
+	GetFirearmAmmo(firearmID int) ([]state.Ammunition, error)
+	GetFirearmMagazines(firearmID int) ([]state.Magazine, error)
 }
 
 func NewGearService(state equipmentState) *GearService {
@@ -19,4 +30,188 @@ func NewGearService(state equipmentState) *GearService {
 func (g *GearService) GetEquipment() ([]state.Equipment, error) {
 	equipment, err := g.state.GetEquipment()
 	return equipment, err
+}
+
+func (g *GearService) GetFirearms() ([]domain.FirearmDTO, error) {
+	rawFirearms, err := g.state.GetFirearms()
+	if err != nil {
+		return []domain.FirearmDTO{}, err
+	}
+
+	mapped := []domain.FirearmDTO{}
+
+	for _, f := range rawFirearms {
+		mapped = append(mapped, mapStateFirearmToDomainFirearm(f))
+	}
+
+	return mapped, nil
+}
+
+func (g *GearService) GetEnrichedFirearmByID(id int) (*domain.EnrichedFirearmDTO, error) {
+	firearm, err := g.state.GetFirearmByID(id)
+	if err != nil {
+		return nil, err
+	}
+	if firearm == nil {
+		return nil, nil
+	}
+
+	aims, err := g.state.GetFirearmAimTimesByID(firearm.AimTimeID)
+	if err != nil {
+		return nil, err
+	}
+	if aims == nil {
+		return nil, nil
+	}
+
+	ballistics, err := g.state.GetFirearmBallistics(id)
+	if err != nil {
+		return nil, err
+	}
+
+	ammo, err := g.state.GetFirearmAmmo(id)
+	if err != nil {
+		return nil, err
+	}
+
+	mags, err := g.state.GetFirearmMagazines(id)
+	if err != nil {
+		return nil, err
+	}
+
+	enriched, err := mapStateToEnrichedFirearm(*firearm, *aims, ballistics, ammo, mags)
+	if err != nil {
+		return nil, err
+	}
+
+	return &enriched, nil
+}
+
+func mapStateFirearmToDomainFirearm(raw state.Firearm) domain.FirearmDTO {
+	mapped := domain.FirearmDTO{
+		ID:                 raw.ID,
+		Name:               raw.Name,
+		Calibre:            raw.Calibre,
+		BaseWeight:         raw.BaseWeight,
+		Length:             raw.Length,
+		LengthStockFolded:  raw.LengthStockFolded,
+		InternalCapacity:   raw.InternalCapacity,
+		RoundWeight:        raw.RoundWeight,
+		ReloadTime:         raw.ReloadTime,
+		ManualCycleTime:    raw.ManualCycleTime,
+		SemiAutomatic:      raw.SemiAutomatic,
+		BurstRounds:        raw.BurstRounds,
+		FullAutoRateOfFire: raw.FullAutoRateOfFire,
+		KnockDown:          raw.KnockDown,
+		SAB:                raw.SAB,
+	}
+	return mapped
+}
+
+func mapStateToEnrichedFirearm(rawFirearm state.Firearm, rawAims state.AimTime, rawBallistics []state.Ballistics, rawAmmo []state.Ammunition, rawMags []state.Magazine) (domain.EnrichedFirearmDTO, error) {
+	firearmDTO := mapStateFirearmToDomainFirearm(rawFirearm)
+
+	ballistics, err := mapBallistics(rawBallistics)
+	if err != nil {
+		return domain.EnrichedFirearmDTO{}, err
+	}
+
+	enriched := domain.EnrichedFirearmDTO{
+		FirearmDTO:         firearmDTO,
+		AimTimes:           mapAimTimesToIntSlice(rawAims),
+		RangeBrackets:      mapRangeBrackets(rawBallistics),
+		Ballistics:         ballistics,
+		Ammunition:         mapAmmo(rawAmmo),
+		AvailableMagazines: mapMags(rawMags),
+	}
+
+	return enriched, nil
+}
+
+func mapRangeBrackets(rawBallistics []state.Ballistics) []int {
+	ranges := []int{}
+
+	for _, r := range rawBallistics {
+		ranges = append(ranges, r.Range)
+	}
+
+	return ranges
+}
+
+func mapAimTimesToIntSlice(rawAims state.AimTime) []int {
+	aims := []int{rawAims.AimTime1, rawAims.AimTime2, rawAims.AimTime3, rawAims.AimTime4}
+
+	optional := []*int{
+		rawAims.AimTime5, rawAims.AimTime6, rawAims.AimTime7, rawAims.AimTime8,
+		rawAims.AimTime9, rawAims.AimTime10, rawAims.AimTime11, rawAims.AimTime12,
+	}
+	for _, at := range optional {
+		if at == nil {
+			break
+		}
+		aims = append(aims, *at)
+	}
+
+	return aims
+}
+
+func mapBallistics(rawBallistics []state.Ballistics) (domain.Ballistics, error) {
+	b := domain.Ballistics{}
+
+	for _, r := range rawBallistics {
+		b.BallisticAccuracy = append(b.BallisticAccuracy, r.BA)
+		b.TimeOfFlight = append(b.TimeOfFlight, r.TOF)
+
+		if r.MA != nil {
+			b.MinimumArc = append(b.MinimumArc, *r.MA)
+		}
+	}
+
+	if len(b.MinimumArc) > 0 && len(b.MinimumArc) != len(b.BallisticAccuracy) {
+		return b, fmt.Errorf("unexpected ballistic data")
+	}
+
+	return b, nil
+}
+
+func mapAmmo(rawAmmo []state.Ammunition) []domain.Ammunition {
+	a := []domain.Ammunition{}
+	lastType := ""
+	index := -1
+	for _, r := range rawAmmo {
+		if lastType != r.Type {
+			a = append(a, domain.Ammunition{Type: r.Type})
+			lastType = r.Type
+			index++
+		}
+		a[index].Pen = append(a[index].Pen, r.Pen)
+		a[index].DC = append(a[index].DC, r.DC)
+
+		if r.SALM != nil {
+			if a[index].Pellet == nil {
+				a[index].Pellet = &domain.Pellet{}
+			}
+			a[index].SALM = append(a[index].SALM, *r.SALM)
+			a[index].BasePelletHitChance = append(a[index].BasePelletHitChance, r.BasePelletHitChance)
+			a[index].BasePelletHits = append(a[index].BasePelletHits, r.PelletHits)
+			a[index].PelletRadius = append(a[index].PelletRadius, *r.PelletRadius)
+		}
+	}
+
+	return a
+}
+
+func mapMags(rawMags []state.Magazine) []domain.Magazine {
+	mags := []domain.Magazine{}
+	for _, r := range rawMags {
+		m := domain.Magazine{
+			ID:       r.ID,
+			Name:     r.Name,
+			Type:     r.FeedType,
+			Capacity: r.Capacity,
+			Weight:   r.Weight,
+		}
+		mags = append(mags, m)
+	}
+	return mags
 }

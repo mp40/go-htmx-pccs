@@ -41,6 +41,8 @@ type Identity interface {
 
 type GearService interface {
 	GetEquipment() ([]state.Equipment, error)
+	GetFirearms() ([]domain.FirearmDTO, error)
+	GetEnrichedFirearmByID(id int) (*domain.EnrichedFirearmDTO, error)
 }
 
 func NewServer(auth Auth, session Session, identity Identity, characterService CharacterService, gearService GearService, render *render.Render) http.Handler {
@@ -60,6 +62,7 @@ func NewServer(auth Auth, session Session, identity Identity, characterService C
 	router.Handle("GET /tools/shotguns/spread", getToolsShotgunSpreadHandler(render))
 
 	router.Handle("GET /gear", getGearHandler(render, identity, gearService))
+	router.Handle("GET /gear/firearm/{id}", getGearFirearmHandler(render, gearService))
 
 	router.Handle("GET /account/sign-in", getSignInHandler(render))
 	router.Handle("POST /account/sign-in", postSignInHandler(render, auth, session))

@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
+	"github.com/mp40/go-htmx-pccs/domain"
 	"github.com/mp40/go-htmx-pccs/render"
 	"github.com/mp40/go-htmx-pccs/state"
 )
@@ -20,6 +21,14 @@ type stubRouteCharacterEquipmentSelectGearService struct {
 
 func (g *stubRouteCharacterEquipmentSelectGearService) GetEquipment() ([]state.Equipment, error) {
 	return g.equipment, g.err
+}
+
+func (g *stubRouteCharacterEquipmentSelectGearService) GetFirearms() ([]domain.FirearmDTO, error) {
+	panic("method not used in test")
+}
+
+func (g *stubRouteCharacterEquipmentSelectGearService) GetEnrichedFirearmByID(id int) (*domain.EnrichedFirearmDTO, error) {
+	panic("method not used in test")
 }
 
 type stubRouteCharacterEquipmentSelectIndentity struct {

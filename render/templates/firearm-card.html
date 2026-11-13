@@ -1,0 +1,152 @@
+{{ define "firearm-card" }}
+<article class="firearm-card">
+  <header>
+    <h3>{{.Firearm.Name}}</h3>
+    <span>{{.Firearm.Calibre}}</span>
+  </header>
+
+  <div class="firearm">
+    <div class="firearm-panel firearm-data">
+      <div class="firearm-panel-head">Data</div>
+      <div>
+        <span>L</span>
+        <span
+          >{{.Firearm.Length}}{{with
+          .Firearm.LengthStockFolded}}/{{.}}{{end}}</span
+        >
+      </div>
+      <div><span>BW</span><span>{{.Firearm.BaseWeight}}</span></div>
+      <div><span>RT</span><span>{{.Firearm.ReloadTime}}</span></div>
+      <div>
+        <span>ROF</span>
+        <span>
+          {{- if
+          .Firearm.ManualCycleTime}}{{.Firearm.ManualCycleTime}}{{else}}*{{end
+          -}} {{- if .Firearm.BurstRounds}}*{{end -}} {{- if
+          .Firearm.FullAutoRateOfFire}}{{.Firearm.FullAutoRateOfFire}}{{end -}}
+        </span>
+      </div>
+      <div>
+        <span>Cap</span>
+        <span
+          >{{if
+          .Firearm.InternalCapacity}}{{.Firearm.InternalCapacity}}{{else}}-{{end}}</span
+        >
+      </div>
+      <div>
+        <span>AW</span>
+        <span
+          >{{if .Firearm.RoundWeight}}{{.Firearm.RoundWeight}}<br />Rnd{{else}}-{{end}}</span
+        >
+      </div>
+      <div><span>KD</span><span>{{.Firearm.KnockDown}}</span></div>
+      <div><span>SAB</span><span>{{.Firearm.SAB}}</span></div>
+    </div>
+
+    <div class="firearm-panel firearm-aim">
+      <div class="firearm-panel-head">Aim Time</div>
+      {{range $i, $alm := .Firearm.AimTimes}}
+      <div><span>{{add $i 1}}</span><span>{{$alm}}</span></div>
+      {{end}}
+    </div>
+
+    <div
+      class="firearm-panel firearm-ballistics"
+      style="--cols: {{add (len .Firearm.RangeBrackets) 2}}"
+    >
+      <table>
+        <thead>
+          <tr>
+            <th colspan="2"></th>
+            {{range .Firearm.RangeBrackets}}
+            <th>{{.}}</th>
+            {{end}}
+          </tr>
+        </thead>
+        {{range .Firearm.Ammunition}}
+        <tbody>
+          <tr>
+            <th scope="rowgroup" rowspan="{{if .Pellet}}5{{else}}2{{end}}">
+              {{.Type}}
+            </th>
+            <th scope="row">PEN</th>
+            {{range .Pen}}
+            <td>{{.}}</td>
+            {{end}}
+          </tr>
+          <tr>
+            <th scope="row">DC</th>
+            {{range .DC}}
+            <td>{{.}}</td>
+            {{end}}
+          </tr>
+          {{with $p := .Pellet}}
+          <tr>
+            <th scope="row">SALM</th>
+            {{range $p.SALM}}
+            <td>{{.}}</td>
+            {{end}}
+          </tr>
+          <tr>
+            <th scope="row">BPHC</th>
+            {{range $i, $c := $p.BasePelletHitChance}}
+            <td>
+              {{- with $c}}{{.}}{{else}}{{with index $p.BasePelletHits
+              $i}}*{{.}}{{else}} {{end}}{{end -}}
+            </td>
+            {{end}}
+          </tr>
+          <tr>
+            <th scope="row">PR</th>
+            {{range $p.PelletRadius}}
+            <td>{{.}}</td>
+            {{end}}
+          </tr>
+          {{end}}
+        </tbody>
+        {{end}}
+      </table>
+      <table class="firearm-ballistics-bottom">
+        <tbody>
+          {{if .Firearm.MinimumArc}}
+          <tr>
+            <td></td>
+            <th scope="row">MA</th>
+            {{range .Firearm.MinimumArc}}
+            <td>{{.}}</td>
+            {{end}}
+          </tr>
+          {{end}}
+          <tr>
+            <td></td>
+            <th scope="row">BA</th>
+            {{range .Firearm.BallisticAccuracy}}
+            <td>{{.}}</td>
+            {{end}}
+          </tr>
+          <tr>
+            <td></td>
+            <th scope="row">TOF</th>
+            {{range .Firearm.TimeOfFlight}}
+            <td>{{.}}</td>
+            {{end}}
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="firearm-additional-data">
+    <div>
+      {{if .Firearm.AvailableMagazines}}
+      <div>Available Reloads</div>
+      {{range .Firearm.AvailableMagazines}}
+      <div>Type: {{.Type}}, Cap: {{.Capacity}}, Lbs: {{.Weight}}</div>
+      {{end}} {{end}}
+    </div>
+    <div>
+      {{- if and (not .Firearm.SemiAutomatic) .Firearm.FullAutoRateOfFire}} Full
+      Auto Only {{- end}}
+    </div>
+  </div>
+</article>
+{{ end }}
