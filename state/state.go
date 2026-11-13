@@ -156,7 +156,7 @@ func (s *State) GetFirearmBallistics(firearmID int) ([]Ballistics, error) {
 	ballistics := []Ballistics{}
 	for rows.Next() {
 		b := Ballistics{}
-		err := rows.Scan(&b.FirearmID, &b.Range, &b.MA, &b.BA, &b.TOF)
+		err := rows.Scan(&b.FirearmID, &b.Range, &b.BA, &b.TOF, &b.MA)
 		if err != nil {
 			return nil, err
 		}

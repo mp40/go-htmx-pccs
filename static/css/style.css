@@ -622,3 +622,134 @@ body {
   vertical-align: middle;
   flex-shrink: 0;
 }
+
+.firearms-list {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.firearms-list > button {
+  color: inherit;
+  display: flex;
+  width: 18rem;
+  margin-right: 1rem;
+  padding: 0;
+  font: inherit;
+  font-size: smaller;
+  text-align: left;
+  background: none;
+  border: none;
+  border-bottom: 1px dotted transparent;
+  cursor: pointer;
+}
+
+.firearms-list > button:hover,
+.firearms-list > button:focus-visible {
+  border-bottom-color: var(--panzer-grey);
+}
+
+.firearms-list > button > span:first-of-type {
+  flex: 1;
+}
+
+.dialog-modal.firearm-card-dialog {
+  margin: auto;
+  max-width: min(46rem, calc(100vw - 2rem));
+  max-height: calc(100vh - 2rem);
+  overflow: auto;
+}
+
+.firearm-card {
+  font-size: smaller;
+}
+
+.firearm-card > header {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+  padding-right: 1.5rem;
+}
+
+.firearm-card > header > h3 {
+  margin: 0;
+}
+
+.firearm-card > header > span {
+  color: var(--london-grey);
+}
+
+.firearm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  width: fit-content;
+  max-width: 100%;
+  border: 1px solid var(--panzer-grey);
+}
+
+.firearm-panel {
+  border-right: 1px solid var(--panzer-grey);
+}
+
+.firearm-panel:last-child {
+  border-right: none;
+}
+
+.firearm-panel-head,
+.firearm-ballistics thead th {
+  font-weight: bold;
+  text-align: center;
+  padding: 0.1rem 0.4rem;
+  border-bottom: 1px solid var(--panzer-grey);
+}
+
+.firearm-data > div:not(.firearm-panel-head),
+.firearm-aim > div:not(.firearm-panel-head) {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0 0.4rem;
+}
+
+.firearm-data > div > span:last-child,
+.firearm-aim > div > span:last-child {
+  text-align: right;
+}
+
+.firearm-data > div:nth-of-type(2n + 4) {
+  margin-top: 0.6rem;
+}
+
+.firearm-ballistics {
+  display: flex;
+  flex-direction: column;
+  overflow-x: auto;
+}
+
+.firearm-ballistics table {
+  border-collapse: collapse;
+  table-layout: fixed;
+  width: calc(var(--cols) * 3em);
+}
+
+.firearm-ballistics .firearm-ballistics-bottom {
+  margin-top: auto;
+}
+
+.firearm-ballistics th,
+.firearm-ballistics td {
+  padding: 0 0.4rem;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.firearm-ballistics thead th {
+  text-align: center;
+}
+
+.firearm-ballistics tbody th {
+  font-weight: normal;
+  text-align: left;
+  vertical-align: top;
+}
