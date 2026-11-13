@@ -36,6 +36,7 @@ CREATE TABLE firearm (
     semi_automatic      BOOLEAN NOT NULL CHECK (semi_automatic IN (0, 1)),
     burst_rounds        INTEGER,
     full_auto_rof       INTEGER,
+    bipod               BOOLEAN NOT NULL DEFAULT FALSE CHECK (bipod IN (0, 1)), -- built-in bipod
     knock_down          INTEGER NOT NULL,
     sab                 INTEGER NOT NULL,
     aim_time_id         INTEGER NOT NULL REFERENCES aim_time(id)
@@ -85,45 +86,64 @@ CREATE TABLE firearm_magazine (
     PRIMARY KEY (firearm_id, magazine_id)
 );
 
-INSERT INTO firearm (id, name, calibre, base_weight, length, length_stock_folded, internal_capacity, round_weight, reload_time, manual_cycle_time, semi_automatic, burst_rounds, full_auto_rof, knock_down, sab, aim_time_id) VALUES
-    (1,  'M1911A1',      '.45 ACP',           2.3,  9, NULL, NULL, NULL, 4, NULL, TRUE, NULL, NULL, 5, 5, 1),
-    (2,  'FN Mk 1',      '9×19mm Parabellum', 1.8,  8, NULL, NULL, NULL, 4, NULL, TRUE, NULL, NULL, 3, 4, 2),
-    (3,  'Tokarev TT33', '7.62×25mm Tokarev', 1.61, 8, NULL, NULL, NULL, 4, NULL, TRUE, NULL, NULL, 3, 4, 2),
-    (4,  'MAB PA15',     '9×19mm Parabellum', 2.2,  8, NULL, NULL, NULL, 4, NULL, TRUE, NULL, NULL, 3, 4, 1),
-    (5,  'M92F',         '9×19mm Parabellum', 1.8,  9, NULL, NULL, NULL, 4, NULL, TRUE, NULL, NULL, 3, 4, 2),
-    (6,  'Colt Commando', '.38 Special',      1.25, 7, NULL, 6, NULL, 7,  1, FALSE, NULL, NULL, 3, 4, 3),
-    (7,  'Lebel M1892',   '8mm Mle 1892',     1.92, 9, NULL, 6, NULL, 12, 1, FALSE, NULL, NULL, 2, 3, 2),
-    (8,  'MAC 10', '.45 ACP', 6.2, 22, 11, NULL, NULL, 7, NULL, TRUE, NULL, 10, 5, 4, 4),
-    (9,  'Sten Mk2', '9×19mm Parabellum', 5.9, 30, NULL, NULL, NULL, 9, NULL, TRUE, NULL, 5, 3, 3, 4),
-    (10, 'Mini Uzi', '9×19mm Parabellum', 6, 24, 14, NULL, NULL, 7, NULL, TRUE, NULL, 8, 3, 3, 4),
-    (11, 'Uzi', '9×19mm Parabellum', 7.7, 26, 19, NULL, NULL, 8, NULL, TRUE, NULL, 5, 4, 3, 5),
-    (12, 'M3A1', '.45 ACP', 7.4, 30, 23, NULL, NULL, 8, NULL, FALSE, NULL, 4, 5, 3, 5),
-    (13, 'Beretta M12S', '9×19mm Parabellum', 7.1, 26, 17, NULL, NULL, 8, NULL, TRUE, NULL, 5, 3, 3, 4),
-    (14, 'MP5', '9×19mm Parabellum', 5.6, 27, 19, NULL, NULL, 8, NULL, TRUE, NULL, 7, 4, 3, 6),
-    (15, 'Kar 98k', '7.92×57mm Mauser', 8.54, 44, NULL, 5, NULL, 8, 3, FALSE, NULL, NULL, 10, 7, 7),
-    (16, 'MAS 36', '7.5×54mm MAS', 8.29, 40, NULL, 5, NULL, 8, 3, FALSE, NULL, NULL, 9, 6, 7),
-    (17, 'Karabin M1938', '7.62×54mmR', 7.73, 40, NULL, 5, NULL, 8, 3, FALSE, NULL, NULL, 12, 7, 8),
-    (18, 'Fucile Mod 91', '6.5×52mm Carcano', 8.36, 51, NULL, 6, NULL, 8, 3, FALSE, NULL, NULL, 7, 5, 7),
-    (19, 'Rifle #4 Mk1', '.303 British', 8.7, 44, NULL, 10, NULL, 8, 3, FALSE, NULL, NULL, 10, 6, 9),
-    (20, 'M1 Carbine', '.30 Carbine', 5.2, 36, NULL, NULL, NULL, 8, NULL, TRUE, NULL, NULL, 5, 4, 10),
-    (21, 'M2 Carbine', '.30 Carbine', 5.2, 36, NULL, NULL, NULL, 8, NULL, TRUE, NULL, 8, 5, 4, 10),
-    (22, 'SKS', '7.62×39mm', 7.98, 40, NULL, 10, NULL, 9, NULL, TRUE, NULL, NULL, 7, 5, 11),
-    (23, 'AKM', '7.62×39mm', 6.9, 35, NULL, NULL, NULL, 8, NULL, TRUE, NULL, 5, 7, 5, 12),
-    (24, 'FN FAL', '7.62×51mm NATO', 9.4, 43, NULL, NULL, NULL, 8, NULL, TRUE, NULL, 6, 10, 5, 13),
-    (25, 'M16', '5.56×45mm NATO', 8.0, 39, NULL, NULL, NULL, 8, NULL, TRUE, NULL, 7, 4, 3, 14),
-    (26, 'M16A1', '5.56×45mm NATO', 7.0, 39, NULL, NULL, NULL, 8, NULL, TRUE, NULL, 7, 4, 3, 14),
-    (27, 'CAR 16', '5.56×45mm NATO', 6.1, 31, 28, NULL, NULL, 8, NULL, TRUE, NULL, 7, 4, 3, 15),
-    (28, 'FN FNC', '5.56×45mm NATO', 8.4, 39, 30, NULL, NULL, 8, NULL, TRUE, 3, 6, 4, 3, 7),
-    (29, 'Remington M870', '12 Gauge', 7.89, 42, NULL, 7, 0.13, 30, 2, FALSE, NULL, NULL, 25, 12, 16),
-    (30, 'Ithaca LAPD', '12 Gauge', 6.55, 38, NULL, 5, 0.13, 22, 2, FALSE, NULL, NULL, 15, 9, 17);
+INSERT INTO firearm (id, name, calibre, base_weight, length, length_stock_folded, internal_capacity, round_weight, reload_time, manual_cycle_time, semi_automatic, burst_rounds, full_auto_rof, bipod, knock_down, sab, aim_time_id) VALUES
+    (1,  'M1911A1',      '.45 ACP',           2.3,  9, NULL, NULL, NULL, 4, NULL, TRUE, NULL, NULL, FALSE, 5, 5, 1),
+    (2,  'FN Mk 1',      '9×19mm Parabellum', 1.8,  8, NULL, NULL, NULL, 4, NULL, TRUE, NULL, NULL, FALSE, 3, 4, 2),
+    (3,  'Tokarev TT33', '7.62×25mm Tokarev', 1.61, 8, NULL, NULL, NULL, 4, NULL, TRUE, NULL, NULL, FALSE, 3, 4, 2),
+    (4,  'MAB PA15',     '9×19mm Parabellum', 2.2,  8, NULL, NULL, NULL, 4, NULL, TRUE, NULL, NULL, FALSE, 3, 4, 1),
+    (5,  'M92F',         '9×19mm Parabellum', 1.8,  9, NULL, NULL, NULL, 4, NULL, TRUE, NULL, NULL, FALSE, 3, 4, 2),
+    (6,  'Colt Commando', '.38 Special',      1.25, 7, NULL, 6, NULL, 7,  1, FALSE, NULL, NULL, FALSE, 3, 4, 3),
+    (7,  'Lebel M1892',   '8mm Mle 1892',     1.92, 9, NULL, 6, NULL, 12, 1, FALSE, NULL, NULL, FALSE, 2, 3, 2),
+    (8,  'MAC 10', '.45 ACP', 6.2, 22, 11, NULL, NULL, 7, NULL, TRUE, NULL, 10, FALSE, 5, 4, 4),
+    (9,  'Sten Mk2', '9×19mm Parabellum', 5.9, 30, NULL, NULL, NULL, 9, NULL, TRUE, NULL, 5, FALSE, 3, 3, 4),
+    (10, 'Mini Uzi', '9×19mm Parabellum', 6, 24, 14, NULL, NULL, 7, NULL, TRUE, NULL, 8, FALSE, 3, 3, 4),
+    (11, 'Uzi', '9×19mm Parabellum', 7.7, 26, 19, NULL, NULL, 8, NULL, TRUE, NULL, 5, FALSE, 4, 3, 5),
+    (12, 'M3A1', '.45 ACP', 7.4, 30, 23, NULL, NULL, 8, NULL, FALSE, NULL, 4, FALSE, 5, 3, 5),
+    (13, 'Beretta M12S', '9×19mm Parabellum', 7.1, 26, 17, NULL, NULL, 8, NULL, TRUE, NULL, 5, FALSE, 3, 3, 4),
+    (14, 'MP5', '9×19mm Parabellum', 5.6, 27, 19, NULL, NULL, 8, NULL, TRUE, NULL, 7, FALSE, 4, 3, 6),
+    (15, 'Kar 98k', '7.92×57mm Mauser', 8.54, 44, NULL, 5, NULL, 8, 3, FALSE, NULL, NULL, FALSE, 10, 7, 7),
+    (16, 'MAS 36', '7.5×54mm MAS', 8.29, 40, NULL, 5, NULL, 8, 3, FALSE, NULL, NULL, FALSE, 9, 6, 7),
+    (17, 'Karabin M1938', '7.62×54mmR', 7.73, 40, NULL, 5, NULL, 8, 3, FALSE, NULL, NULL, FALSE, 12, 7, 8),
+    (18, 'Fucile Mod 91', '6.5×52mm Carcano', 8.36, 51, NULL, 6, NULL, 8, 3, FALSE, NULL, NULL, FALSE, 7, 5, 7),
+    (19, 'Rifle #4 Mk1', '.303 British', 8.7, 44, NULL, 10, NULL, 8, 3, FALSE, NULL, NULL, FALSE, 10, 6, 9),
+    (20, 'M1 Carbine', '.30 Carbine', 5.2, 36, NULL, NULL, NULL, 8, NULL, TRUE, NULL, NULL, FALSE, 5, 4, 10),
+    (21, 'M2 Carbine', '.30 Carbine', 5.2, 36, NULL, NULL, NULL, 8, NULL, TRUE, NULL, 8, FALSE, 5, 4, 10),
+    (22, 'SKS', '7.62×39mm', 7.98, 40, NULL, 10, NULL, 9, NULL, TRUE, NULL, NULL, FALSE, 7, 5, 11),
+    (23, 'AKM', '7.62×39mm', 6.9, 35, NULL, NULL, NULL, 8, NULL, TRUE, NULL, 5, FALSE, 7, 5, 12),
+    (24, 'FN FAL', '7.62×51mm NATO', 9.4, 43, NULL, NULL, NULL, 8, NULL, TRUE, NULL, 6, FALSE, 10, 5, 13),
+    (25, 'M16', '5.56×45mm NATO', 8.0, 39, NULL, NULL, NULL, 8, NULL, TRUE, NULL, 7, FALSE, 4, 3, 14),
+    (26, 'M16A1', '5.56×45mm NATO', 7.0, 39, NULL, NULL, NULL, 8, NULL, TRUE, NULL, 7, FALSE, 4, 3, 14),
+    (27, 'CAR 16', '5.56×45mm NATO', 6.1, 31, 28, NULL, NULL, 8, NULL, TRUE, NULL, 7, FALSE, 4, 3, 15),
+    (28, 'FN FNC', '5.56×45mm NATO', 8.4, 39, 30, NULL, NULL, 8, NULL, TRUE, 3, 6, FALSE, 4, 3, 7),
+    (29, 'Remington M870', '12 Gauge', 7.89, 42, NULL, 7, 0.13, 30, 2, FALSE, NULL, NULL, FALSE, 25, 12, 16),
+    (30, 'Ithaca LAPD', '12 Gauge', 6.55, 38, NULL, 5, 0.13, 22, 2, FALSE, NULL, NULL, FALSE, 15, 9, 17),
+    (31, 'Colt Python (4")', '.357 Magnum', 2.43, 9, NULL, 6, NULL, 7, 1, FALSE, NULL, NULL, FALSE, 4, 5, 1),
+    (32, 'Colt Python (8")', '.357 Magnum', 2.83, 13, NULL, 6, NULL, 7, 1, FALSE, NULL, NULL, FALSE, 5, 6, 18),
+    (33, 'S&W M29 (4")', '.44 Magnum', 2.5, 9, NULL, 6, NULL, 7, 1, FALSE, NULL, NULL, FALSE, 7, 7, 1),
+    (34, 'S&W M29 (8.375")', '.44 Magnum', 3.0, 14, NULL, 6, NULL, 7, 1, FALSE, NULL, NULL, FALSE, 9, 8, 18),
+    (35, 'Glock Model 17', '9×19mm Parabellum', 1.25, 7, NULL, NULL, NULL, 4, NULL, TRUE, NULL, NULL, FALSE, 3, 4, 19),
+    (36, 'Makarov PM', '9×18mm', 1.3, 6, NULL, NULL, NULL, 5, NULL, TRUE, NULL, NULL, FALSE, 2, 3, 3),
+    (37, 'Walther PPK', '.32 ACP', 1.09, 6, NULL, NULL, NULL, 4, NULL, TRUE, NULL, NULL, FALSE, 2, 2, 3),
+    (38, 'AKS-74U', '5.45×39mm', 5, 29, 19, NULL, NULL, 8, NULL, TRUE, NULL, 5, FALSE, 3, 2, 20),
+    (39, 'F1', '9×19mm Parabellum', 7.2, 28, NULL, NULL, NULL, 9, NULL, TRUE, NULL, 5, FALSE, 3, 3, 21),
+    (40, 'MAT 49', '9×19mm Parabellum', 7.7, 28, 18, NULL, NULL, 8, NULL, TRUE, NULL, 5, FALSE, 3, 3, 22),
+    (41, 'Owen Mk1', '9×19mm Parabellum', 8.7, 32, NULL, NULL, NULL, 9, NULL, TRUE, NULL, 6, FALSE, 3, 2, 23),
+    (42, 'PPSh 41', '7.62×25mm Tokarev', 7.3, 33, NULL, NULL, NULL, 12, NULL, TRUE, NULL, 8, FALSE, 3, 2, 24),
+    (43, 'PPS 43', '7.62×25mm Tokarev', 6.5, 33, NULL, NULL, NULL, 8, NULL, FALSE, NULL, 6, FALSE, 3, 3, 25),
+    (44, 'Thompson M1A1', '.45 ACP', 10, 32, NULL, NULL, NULL, 8, NULL, TRUE, NULL, 6, FALSE, 5, 3, 26),
+    (45, 'M1 Garand', '.30-06', 9.48, 44, NULL, 8, NULL, 7, NULL, TRUE, NULL, NULL, FALSE, 11, 6, 9),
+    (46, 'M14', '7.62×51mm NATO', 9.6, 44, NULL, NULL, NULL, 8, NULL, TRUE, NULL, 6, FALSE, 10, 5, 27),
+    (47, 'FAMAS', '5.56×45mm NATO', 8.0, 30, NULL, NULL, NULL, 10, NULL, TRUE, 3, 8, TRUE, 4, 3, 12),
+    (48, 'Marlin M1894 (.357)', '.357 Magnum', 5.94, 36, NULL, 9, 0.04, 30, 2, FALSE, NULL, NULL, FALSE, 6, 5, 28),
+    (49, 'Marlin M1894 (.44)', '.44 Magnum', 6.0, 37, NULL, 10, 0.05, 33, 2, FALSE, NULL, NULL, FALSE, 11, 8, 28);
 
 
 INSERT INTO aim_time (id, at_1, at_2, at_3, at_4, at_5, at_6, at_7, at_8, at_9, at_10, at_11, at_12 ) VALUES
-    -- M1911A1, MAB PA15
+    -- M1911A1, MAB PA15, Colt Python (4"), S&W M29 (4")
     (1, -18, -11, -10, -9, -8, -7, NULL, NULL, NULL, NULL, NULL, NULL),
     -- FN Mk 1, Tokarev TT33, M92F, Lebel M1892
     (2, -17, -11, -10, -9, -8, -7, NULL, NULL, NULL, NULL, NULL, NULL),
-    -- Colt Commando
+    -- Colt Commando, Makarov PM, Walther PPK
     (3, -16, -11, -10, -9, -8, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
     -- MAC 10, Sten Mk2, Mini Uzi, Beretta M12S
     (4, -22, -12, -9, -7, -6, -5, -4, -3, NULL, NULL, NULL, NULL),
@@ -135,13 +155,13 @@ INSERT INTO aim_time (id, at_1, at_2, at_3, at_4, at_5, at_6, at_7, at_8, at_9, 
     (7, -23, -12, -9, -7, -6, -5, -4, -3, -2, -1, 0, NULL),
     -- Karabin M1938
     (8, -22, -12, -9, -7, -6, -4, -3, -2, -1, NULL, NULL, NULL),
-    -- Rifle #4 Mk1
-    (9, -23, -13, -9, -8, -6, -5, -4, -3, -2, -1, NULL, 0),
+    -- Rifle #4 Mk1, M1 Garand
+    (9, -23, -13, -9, -8, -6, -5, -4, -3, -2, -1, -1, 0),
     -- M1 Carbine, M2 Carbine
     (10, -21, -11, -9, -7, -6, -4, -3, -2, -2, -1, 0, NULL),
     -- SKS
     (11, -23, -12, -9, -7, -6, -5, -3, -3, -2, -1, NULL, NULL),
-    -- AKM
+    -- AKM, FAMAS
     (12, -23, -12, -9, -7, -6, -4, -3, -2, -1, NULL, NULL, NULL),
     -- FN FAL
     (13, -24, -13, -9, -8, -6, -5, -4, -3, -2, -1, 0, NULL),
@@ -152,7 +172,29 @@ INSERT INTO aim_time (id, at_1, at_2, at_3, at_4, at_5, at_6, at_7, at_8, at_9, 
     -- Remington M870
     (16, -23, -12, -9, -7, -6, -4, -3, -2, NULL, NULL, NULL, NULL),
     -- Ithaca LAPD
-    (17, -22, -11, -9, -7, -5, -4, -3, -2, NULL, NULL, NULL, NULL);
+    (17, -22, -11, -9, -7, -5, -4, -3, -2, NULL, NULL, NULL, NULL),
+    -- Colt Python (8"), S&W M29 (8.375")
+    (18, -18, -11, -10, -9, -8, -7, -6, NULL, NULL, NULL, NULL, NULL),
+    -- Glock Model 17
+    (19, -16, -11, -10, -9, -8, -7, NULL, NULL, NULL, NULL, NULL, NULL),
+    -- AKS-74U
+    (20, -21, -11, -8, -6, -5, -4, -3, -2, NULL, NULL, NULL, NULL),
+    -- F1
+    (21, -23, -12, -9, -8, -6, -5, -4, -3, -3, -2, NULL, NULL),
+    -- MAT 49
+    (22, -23, -12, -9, -8, -6, -5, -4, -3, -2, NULL, NULL, NULL),
+    -- Owen Mk1
+    (23, -23, -13, -10, -8, -7, -5, -4, -4, -3, -2, -1, NULL),
+    -- PPSh 41
+    (24, -23, -13, -9, -8, -6, -5, -4, -3, -2, NULL, NULL, NULL),
+    -- PPS 43
+    (25, -22, -12, -9, -7, -6, -5, -4, -3, -2, NULL, NULL, NULL),
+    -- Thompson M1A1
+    (26, -24, -14, -10, -8, -7, -6, -5, -4, -3, -2, -1, NULL),
+    -- M14
+    (27, -24, -14, -10, -8, -6, -5, -4, -3, -2, -1, -1, 0),
+    -- Marlin M1894 (.357), Marlin M1894 (.44)
+    (28, -21, -11, -8, -7, -5, -4, -3, -2, -1, NULL, NULL, NULL);
 
 INSERT INTO firearm_ballistics_range (firearm_id, range_hexes, ba, tof, ma) VALUES
     -- M1911A1
@@ -429,7 +471,174 @@ INSERT INTO firearm_ballistics_range (firearm_id, range_hexes, ba, tof, ma) VALU
     (30, 20, 19, 1, NULL),
     (30, 30, 13, 1, NULL),
     (30, 40,  9, 2, NULL),
-    (30, 80, -1, 4, NULL);
+    (30, 80, -1, 4, NULL),
+    -- Colt Python (4")
+    (31,  10, 52,  1, NULL),
+    (31,  20, 42,  1, NULL),
+    (31,  40, 33,  2, NULL),
+    (31,  70, 25,  4, NULL),
+    (31, 100, 20,  6, NULL),
+    (31, 200, 10, 14, NULL),
+    (31, 300,  4, 23, NULL),
+    (31, 400,  1, 33, NULL),
+    -- Colt Python (8")
+    (32,  10, 53,  0, NULL),
+    (32,  20, 43,  1, NULL),
+    (32,  40, 33,  2, NULL),
+    (32,  70, 25,  3, NULL),
+    (32, 100, 20,  5, NULL),
+    (32, 200, 10, 11, NULL),
+    (32, 300,  5, 19, NULL),
+    (32, 400,  1, 27, NULL),
+    -- S&W M29 (4")
+    (33,  10, 50,  0, NULL),
+    (33,  20, 40,  1, NULL),
+    (33,  40, 30,  2, NULL),
+    (33,  70, 22,  4, NULL),
+    (33, 100, 17,  6, NULL),
+    (33, 200,  7, 12, NULL),
+    (33, 300,  2, 21, NULL),
+    (33, 400, -2, 30, NULL),
+    -- S&W M29 (8.375")
+    (34,  10, 50,  0, NULL),
+    (34,  20, 40,  1, NULL),
+    (34,  40, 30,  2, NULL),
+    (34,  70, 23,  3, NULL),
+    (34, 100, 17,  5, NULL),
+    (34, 200,  8, 10, NULL),
+    (34, 300,  2, 17, NULL),
+    (34, 400, -2, 24, NULL),
+    -- Glock Model 17
+    (35,  10, 45,  1, NULL),
+    (35,  20, 37,  1, NULL),
+    (35,  40, 28,  2, NULL),
+    (35,  70, 21,  4, NULL),
+    (35, 100, 16,  6, NULL),
+    (35, 200,  6, 15, NULL),
+    (35, 300,  1, 25, NULL),
+    (35, 400, -2, 36, NULL),
+    -- Makarov PM
+    (36,  10, 41,  1, NULL),
+    (36,  20, 32,  1, NULL),
+    (36,  40, 23,  3, NULL),
+    (36,  70, 15,  5, NULL),
+    (36, 100, 10,  7, NULL),
+    (36, 200,  1, 18, NULL),
+    -- Walther PPK
+    (37,  10, 44,  1, NULL),
+    (37,  20, 36,  1, NULL),
+    (37,  40, 27,  3, NULL),
+    (37,  70, 19,  5, NULL),
+    (37, 100, 14,  8, NULL),
+    (37, 200,  5, 20, NULL),
+    -- AKS-74U
+    (38,  10, 60,  0, 0.2),
+    (38,  20, 51,  0, 0.3),
+    (38,  40, 42,  1, 0.7),
+    (38,  70, 35,  2, 1),
+    (38, 100, 30,  3, 2),
+    (38, 200, 21,  6, 3),
+    (38, 300, 16,  9, 5),
+    (38, 400, 12, 13, 7),
+    -- F1
+    (39,  10, 46,  1, 0.2),
+    (39,  20, 37,  1, 0.4),
+    (39,  40, 28,  2, 0.8),
+    (39,  70, 21,  4, 1),
+    (39, 100, 16,  6, 2),
+    (39, 200,  6, 14, 4),
+    (39, 300,  1, 24, 6),
+    (39, 400, -2, 34, 8),
+    -- MAT 49
+    (40,  10, 46,  0, 0.2),
+    (40,  20, 37,  1, 0.4),
+    (40,  40, 28,  2, 0.8),
+    (40,  70, 21,  4, 1),
+    (40, 100, 16,  6, 2),
+    (40, 200,  7, 13, 4),
+    (40, 300,  1, 22, 6),
+    (40, 400, -2, 32, 8),
+    -- Owen Mk1
+    (41,  10, 45,  0, 0.2),
+    (41,  20, 36,  1, 0.5),
+    (41,  40, 27,  2, 0.9),
+    (41,  70, 20,  4, 2),
+    (41, 100, 15,  6, 2),
+    (41, 200,  6, 13, 5),
+    (41, 300,  0, 23, 7),
+    (41, 400, -3, 32, 9),
+    -- PPSh 41
+    (42,  10, 47,  0, 0.3),
+    (42,  20, 39,  1, 0.6),
+    (42,  40, 30,  2, 1),
+    (42,  70, 22,  3, 2),
+    (42, 100, 18,  4, 3),
+    (42, 200,  8, 10, 6),
+    (42, 300,  3, 17, 9),
+    (42, 400, -1, 25, 12),
+    -- PPS 43
+    (43,  10, 47,  0, 0.3),
+    (43,  20, 39,  1, 0.5),
+    (43,  40, 30,  2, 1),
+    (43,  70, 23,  3, 2),
+    (43, 100, 18,  4, 3),
+    (43, 200,  8, 10, 5),
+    (43, 300,  3, 17, 8),
+    (43, 400, -1, 24, 11),
+    -- Thompson M1A1
+    (44,  10, 45,  1, 0.3),
+    (44,  20, 36,  1, 0.6),
+    (44,  40, 27,  3, 1),
+    (44,  70, 20,  5, 2),
+    (44, 100, 15,  8, 3),
+    (44, 200,  5, 18, 6),
+    (44, 300,  0, 30, 9),
+    (44, 400, -4, 44, 12),
+    -- M1 Garand
+    (45,  10, 62,  0, NULL),
+    (45,  20, 54,  0, NULL),
+    (45,  40, 45,  1, NULL),
+    (45,  70, 38,  2, NULL),
+    (45, 100, 33,  2, NULL),
+    (45, 200, 24,  5, NULL),
+    (45, 300, 18,  8, NULL),
+    (45, 400, 14, 11, NULL),
+    -- M14
+    (46,  10, 61,  0, 0.6),
+    (46,  20, 53,  0, 1),
+    (46,  40, 45,  1, 2),
+    (46,  70, 37,  2, 4),
+    (46, 100, 32,  2, 6),
+    (46, 200, 23,  5, 12),
+    (46, 300, 17,  8, 19),
+    (46, 400, 13, 11, 25),
+    -- FAMAS
+    (47,  10, 60,  0, 0.4),
+    (47,  20, 51,  0, 0.8),
+    (47,  40, 42,  1, 2),
+    (47,  70, 35,  1, 3),
+    (47, 100, 30,  2, 4),
+    (47, 200, 20,  5, 8),
+    (47, 300, 15,  8, 12),
+    (47, 400, 11, 11, 16),
+    -- Marlin M1894 (.357)
+    (48,  10, 49,  0, NULL),
+    (48,  20, 42,  1, NULL),
+    (48,  40, 34,  2, NULL),
+    (48,  70, 28,  3, NULL),
+    (48, 100, 23,  4, NULL),
+    (48, 200, 14,  9, NULL),
+    (48, 300,  8, 15, NULL),
+    (48, 400,  5, 21, NULL),
+    -- Marlin M1894 (.44)
+    (49,  10, 48,  0, NULL),
+    (49,  20, 41,  1, NULL),
+    (49,  40, 32,  1, NULL),
+    (49,  70, 25,  2, NULL),
+    (49, 100, 21,  4, NULL),
+    (49, 200, 11,  8, NULL),
+    (49, 300,  6, 13, NULL),
+    (49, 400,  2, 19, NULL);
 
 INSERT INTO firearm_ammo (id, firearm_id, type) VALUES
     -- M1911A1
@@ -515,7 +724,55 @@ INSERT INTO firearm_ammo (id, firearm_id, type) VALUES
     (52, 29, 'Shot'),
     -- Ithaca LAPD
     (53, 30, 'Slug'),
-    (54, 30, 'Shot');
+    (54, 30, 'Shot'),
+    -- Colt Python (4")
+    (55, 31, 'JSP'),
+    (56, 31, 'JHP'),
+    -- Colt Python (8")
+    (57, 32, 'JSP'),
+    (58, 32, 'JHP'),
+    (59, 32, 'AP'),
+    -- S&W M29 (4")
+    (60, 33, 'JSP'),
+    (61, 33, 'JHP'),
+    -- S&W M29 (8.375")
+    (62, 34, 'JSP'),
+    (63, 34, 'JHP'),
+    -- Glock Model 17
+    (64, 35, 'FMJ'),
+    -- Makarov PM
+    (65, 36, 'FMJ'),
+    -- Walther PPK
+    (66, 37, 'FMJ'),
+    (67, 37, 'JHP'),
+    -- AKS-74U
+    (68, 38, 'FMJ'),
+    (69, 38, 'AP'),
+    (70, 38, 'SUB'),
+    -- F1
+    (71, 39, 'FMJ'),
+    -- MAT 49
+    (72, 40, 'FMJ'),
+    -- Owen Mk1
+    (73, 41, 'FMJ'),
+    -- PPSh 41
+    (74, 42, 'FMJ'),
+    -- PPS 43
+    (75, 43, 'FMJ'),
+    -- Thompson M1A1
+    (76, 44, 'FMJ'),
+    -- M1 Garand
+    (77, 45, 'FMJ'),
+    -- M14
+    (78, 46, 'FMJ'),
+    -- FAMAS
+    (79, 47, 'FMJ'),
+    (80, 47, 'JHP'),
+    (81, 47, 'AP'),
+    -- Marlin M1894 (.357)
+    (82, 48, 'JSP'),
+    -- Marlin M1894 (.44)
+    (83, 49, 'JSP');
 
 INSERT INTO firearm_ammo_range (firearm_ammo_id, range_hexes, pen, dc, salm, bphc, bphc_hits, pr) VALUES
     -- M1911A1 FMJ
@@ -1014,7 +1271,262 @@ INSERT INTO firearm_ammo_range (firearm_ammo_id, range_hexes, pen, dc, salm, bph
     (54, 20, 1.2, 3, 9, 74, NULL, 0.3),
     (54, 30, 1.1, 2, 11, 32, NULL, 0.4),
     (54, 40, 0.9, 2, 14, 17, NULL, 0.6),
-    (54, 80, 0.5, 1, 19, 3, NULL, 1.2);
+    (54, 80, 0.5, 1, 19, 3, NULL, 1.2),
+    -- Colt Python (4") JSP
+    (55,  10, 2.6, 4, NULL, NULL, NULL, NULL),
+    (55,  20, 2.4, 4, NULL, NULL, NULL, NULL),
+    (55,  40, 2.1, 3, NULL, NULL, NULL, NULL),
+    (55,  70, 1.8, 3, NULL, NULL, NULL, NULL),
+    (55, 100, 1.5, 2, NULL, NULL, NULL, NULL),
+    (55, 200, 0.8, 1, NULL, NULL, NULL, NULL),
+    (55, 300, 0.4, 1, NULL, NULL, NULL, NULL),
+    (55, 400, 0.2, 1, NULL, NULL, NULL, NULL),
+    -- Colt Python (4") JHP
+    (56,  10, 2.5, 5, NULL, NULL, NULL, NULL),
+    (56,  20, 2.4, 5, NULL, NULL, NULL, NULL),
+    (56,  40, 2.1, 4, NULL, NULL, NULL, NULL),
+    (56,  70, 1.7, 3, NULL, NULL, NULL, NULL),
+    (56, 100, 1.4, 2, NULL, NULL, NULL, NULL),
+    (56, 200, 0.8, 1, NULL, NULL, NULL, NULL),
+    (56, 300, 0.4, 1, NULL, NULL, NULL, NULL),
+    (56, 400, 0.2, 1, NULL, NULL, NULL, NULL),
+    -- Colt Python (8") JSP
+    (57,  10, 3.7, 6, NULL, NULL, NULL, NULL),
+    (57,  20, 3.4, 6, NULL, NULL, NULL, NULL),
+    (57,  40, 3.1, 5, NULL, NULL, NULL, NULL),
+    (57,  70, 2.6, 4, NULL, NULL, NULL, NULL),
+    (57, 100, 2.2, 3, NULL, NULL, NULL, NULL),
+    (57, 200, 1.2, 1, NULL, NULL, NULL, NULL),
+    (57, 300, 0.7, 1, NULL, NULL, NULL, NULL),
+    (57, 400, 0.4, 1, NULL, NULL, NULL, NULL),
+    -- Colt Python (8") JHP
+    (58,  10, 3.6, 6, NULL, NULL, NULL, NULL),
+    (58,  20, 3.4, 6, NULL, NULL, NULL, NULL),
+    (58,  40, 3.0, 6, NULL, NULL, NULL, NULL),
+    (58,  70, 2.5, 5, NULL, NULL, NULL, NULL),
+    (58, 100, 2.1, 4, NULL, NULL, NULL, NULL),
+    (58, 200, 1.2, 2, NULL, NULL, NULL, NULL),
+    (58, 300, 0.7, 1, NULL, NULL, NULL, NULL),
+    (58, 400, 0.4, 1, NULL, NULL, NULL, NULL),
+    -- Colt Python (8") AP
+    (59,  10, 5.3, 4, NULL, NULL, NULL, NULL),
+    (59,  20, 5.0, 4, NULL, NULL, NULL, NULL),
+    (59,  40, 4.4, 4, NULL, NULL, NULL, NULL),
+    (59,  70, 3.7, 3, NULL, NULL, NULL, NULL),
+    (59, 100, 3.1, 3, NULL, NULL, NULL, NULL),
+    (59, 200, 1.7, 1, NULL, NULL, NULL, NULL),
+    (59, 300, 1.0, 1, NULL, NULL, NULL, NULL),
+    (59, 400, 0.5, 1, NULL, NULL, NULL, NULL),
+    -- S&W M29 (4") JSP
+    (60,  10, 3.4, 7, NULL, NULL, NULL, NULL),
+    (60,  20, 3.2, 6, NULL, NULL, NULL, NULL),
+    (60,  40, 2.8, 6, NULL, NULL, NULL, NULL),
+    (60,  70, 2.4, 5, NULL, NULL, NULL, NULL),
+    (60, 100, 2.0, 4, NULL, NULL, NULL, NULL),
+    (60, 200, 1.1, 1, NULL, NULL, NULL, NULL),
+    (60, 300, 0.6, 1, NULL, NULL, NULL, NULL),
+    (60, 400, 0.3, 1, NULL, NULL, NULL, NULL),
+    -- S&W M29 (4") JHP
+    (61,  10, 3.3, 7, NULL, NULL, NULL, NULL),
+    (61,  20, 3.2, 7, NULL, NULL, NULL, NULL),
+    (61,  40, 2.8, 6, NULL, NULL, NULL, NULL),
+    (61,  70, 2.3, 6, NULL, NULL, NULL, NULL),
+    (61, 100, 1.9, 4, NULL, NULL, NULL, NULL),
+    (61, 200, 1.1, 1, NULL, NULL, NULL, NULL),
+    (61, 300, 0.6, 1, NULL, NULL, NULL, NULL),
+    (61, 400, 0.3, 1, NULL, NULL, NULL, NULL),
+    -- S&W M29 (8.375") JSP
+    (62,  10, 4.9, 8, NULL, NULL, NULL, NULL),
+    (62,  20, 4.7, 8, NULL, NULL, NULL, NULL),
+    (62,  40, 4.2, 7, NULL, NULL, NULL, NULL),
+    (62,  70, 3.5, 7, NULL, NULL, NULL, NULL),
+    (62, 100, 3.0, 6, NULL, NULL, NULL, NULL),
+    (62, 200, 1.7, 3, NULL, NULL, NULL, NULL),
+    (62, 300, 1.0, 1, NULL, NULL, NULL, NULL),
+    (62, 400, 0.6, 1, NULL, NULL, NULL, NULL),
+    -- S&W M29 (8.375") JHP
+    (63,  10, 4.9, 8, NULL, NULL, NULL, NULL),
+    (63,  20, 4.6, 8, NULL, NULL, NULL, NULL),
+    (63,  40, 4.1, 8, NULL, NULL, NULL, NULL),
+    (63,  70, 3.5, 7, NULL, NULL, NULL, NULL),
+    (63, 100, 2.9, 7, NULL, NULL, NULL, NULL),
+    (63, 200, 1.7, 3, NULL, NULL, NULL, NULL),
+    (63, 300, 1.0, 1, NULL, NULL, NULL, NULL),
+    (63, 400, 0.5, 1, NULL, NULL, NULL, NULL),
+    -- Glock Model 17 FMJ
+    (64,  10, 1.9, 3, NULL, NULL, NULL, NULL),
+    (64,  20, 1.8, 3, NULL, NULL, NULL, NULL),
+    (64,  40, 1.5, 2, NULL, NULL, NULL, NULL),
+    (64,  70, 1.1, 2, NULL, NULL, NULL, NULL),
+    (64, 100, 0.9, 1, NULL, NULL, NULL, NULL),
+    (64, 200, 0.4, 1, NULL, NULL, NULL, NULL),
+    (64, 300, 0.1, 1, NULL, NULL, NULL, NULL),
+    (64, 400, 0.1, 1, NULL, NULL, NULL, NULL),
+    -- Makarov PM FMJ
+    (65,  10, 1.2, 2, NULL, NULL, NULL, NULL),
+    (65,  20, 1.1, 2, NULL, NULL, NULL, NULL),
+    (65,  40, 0.9, 1, NULL, NULL, NULL, NULL),
+    (65,  70, 0.6, 1, NULL, NULL, NULL, NULL),
+    (65, 100, 0.4, 1, NULL, NULL, NULL, NULL),
+    (65, 200, 0.1, 1, NULL, NULL, NULL, NULL),
+    -- Walther PPK FMJ
+    (66,  10, 1.0, 1, NULL, NULL, NULL, NULL),
+    (66,  20, 0.9, 1, NULL, NULL, NULL, NULL),
+    (66,  40, 0.7, 1, NULL, NULL, NULL, NULL),
+    (66,  70, 0.5, 1, NULL, NULL, NULL, NULL),
+    (66, 100, 0.3, 1, NULL, NULL, NULL, NULL),
+    (66, 200, 0.1, 1, NULL, NULL, NULL, NULL),
+    -- Walther PPK JHP
+    (67,  10, 0.9, 2, NULL, NULL, NULL, NULL),
+    (67,  20, 0.8, 1, NULL, NULL, NULL, NULL),
+    (67,  40, 0.7, 1, NULL, NULL, NULL, NULL),
+    (67,  70, 0.5, 1, NULL, NULL, NULL, NULL),
+    (67, 100, 0.3, 1, NULL, NULL, NULL, NULL),
+    (67, 200, 0.1, 1, NULL, NULL, NULL, NULL),
+    -- AKS-74U FMJ
+    (68,  10, 8.7, 4, NULL, NULL, NULL, NULL),
+    (68,  20, 8.2, 3, NULL, NULL, NULL, NULL),
+    (68,  40, 7.5, 3, NULL, NULL, NULL, NULL),
+    (68,  70, 6.5, 3, NULL, NULL, NULL, NULL),
+    (68, 100, 5.7, 3, NULL, NULL, NULL, NULL),
+    (68, 200, 3.6, 2, NULL, NULL, NULL, NULL),
+    (68, 300, 2.2, 2, NULL, NULL, NULL, NULL),
+    (68, 400, 1.5, 1, NULL, NULL, NULL, NULL),
+    -- AKS-74U AP
+    (69,  10, 13.0, 3, NULL, NULL, NULL, NULL),
+    (69,  20, 12.0, 3, NULL, NULL, NULL, NULL),
+    (69,  40, 11.0, 3, NULL, NULL, NULL, NULL),
+    (69,  70, 9.4, 3, NULL, NULL, NULL, NULL),
+    (69, 100, 8.2, 3, NULL, NULL, NULL, NULL),
+    (69, 200, 5.2, 2, NULL, NULL, NULL, NULL),
+    (69, 300, 3.3, 2, NULL, NULL, NULL, NULL),
+    (69, 400, 2.1, 1, NULL, NULL, NULL, NULL),
+    -- AKS-74U SUB
+    (70,  10, 2.3, 2, NULL, NULL, NULL, NULL),
+    (70,  20, 2.1, 2, NULL, NULL, NULL, NULL),
+    (70,  40, 2.0, 2, NULL, NULL, NULL, NULL),
+    (70,  70, 1.7, 2, NULL, NULL, NULL, NULL),
+    (70, 100, 1.5, 1, NULL, NULL, NULL, NULL),
+    (70, 200, 0.9, 1, NULL, NULL, NULL, NULL),
+    (70, 300, 0.6, 1, NULL, NULL, NULL, NULL),
+    (70, 400, 0.4, 1, NULL, NULL, NULL, NULL),
+    -- F1 FMJ
+    (71,  10, 2.1, 3, NULL, NULL, NULL, NULL),
+    (71,  20, 1.9, 3, NULL, NULL, NULL, NULL),
+    (71,  40, 1.6, 2, NULL, NULL, NULL, NULL),
+    (71,  70, 1.3, 2, NULL, NULL, NULL, NULL),
+    (71, 100, 1.0, 1, NULL, NULL, NULL, NULL),
+    (71, 200, 0.4, 1, NULL, NULL, NULL, NULL),
+    (71, 300, 0.2, 1, NULL, NULL, NULL, NULL),
+    (71, 400, 0.1, 1, NULL, NULL, NULL, NULL),
+    -- MAT 49 FMJ
+    (72,  10, 2.4, 3, NULL, NULL, NULL, NULL),
+    (72,  20, 2.2, 3, NULL, NULL, NULL, NULL),
+    (72,  40, 1.9, 3, NULL, NULL, NULL, NULL),
+    (72,  70, 1.5, 2, NULL, NULL, NULL, NULL),
+    (72, 100, 1.1, 2, NULL, NULL, NULL, NULL),
+    (72, 200, 0.5, 1, NULL, NULL, NULL, NULL),
+    (72, 300, 0.2, 1, NULL, NULL, NULL, NULL),
+    (72, 400, 0.1, 1, NULL, NULL, NULL, NULL),
+    -- Owen Mk1 FMJ
+    (73,  10, 2.3, 3, NULL, NULL, NULL, NULL),
+    (73,  20, 2.1, 3, NULL, NULL, NULL, NULL),
+    (73,  40, 1.8, 3, NULL, NULL, NULL, NULL),
+    (73,  70, 1.4, 2, NULL, NULL, NULL, NULL),
+    (73, 100, 1.1, 1, NULL, NULL, NULL, NULL),
+    (73, 200, 0.5, 1, NULL, NULL, NULL, NULL),
+    (73, 300, 0.2, 1, NULL, NULL, NULL, NULL),
+    (73, 400, 0.1, 1, NULL, NULL, NULL, NULL),
+    -- PPSh 41 FMJ
+    (74,  10, 3.6, 4, NULL, NULL, NULL, NULL),
+    (74,  20, 3.3, 4, NULL, NULL, NULL, NULL),
+    (74,  40, 2.8, 3, NULL, NULL, NULL, NULL),
+    (74,  70, 2.3, 2, NULL, NULL, NULL, NULL),
+    (74, 100, 1.8, 2, NULL, NULL, NULL, NULL),
+    (74, 200, 0.8, 1, NULL, NULL, NULL, NULL),
+    (74, 300, 0.4, 1, NULL, NULL, NULL, NULL),
+    (74, 400, 0.2, 1, NULL, NULL, NULL, NULL),
+    -- PPS 43 FMJ
+    (75,  10, 3.6, 4, NULL, NULL, NULL, NULL),
+    (75,  20, 3.3, 4, NULL, NULL, NULL, NULL),
+    (75,  40, 2.8, 3, NULL, NULL, NULL, NULL),
+    (75,  70, 2.3, 2, NULL, NULL, NULL, NULL),
+    (75, 100, 1.8, 2, NULL, NULL, NULL, NULL),
+    (75, 200, 0.8, 1, NULL, NULL, NULL, NULL),
+    (75, 300, 0.4, 1, NULL, NULL, NULL, NULL),
+    (75, 400, 0.2, 1, NULL, NULL, NULL, NULL),
+    -- Thompson M1A1 FMJ
+    (76,  10, 1.7, 3, NULL, NULL, NULL, NULL),
+    (76,  20, 1.5, 3, NULL, NULL, NULL, NULL),
+    (76,  40, 1.3, 2, NULL, NULL, NULL, NULL),
+    (76,  70, 1.0, 1, NULL, NULL, NULL, NULL),
+    (76, 100, 0.8, 1, NULL, NULL, NULL, NULL),
+    (76, 200, 0.4, 1, NULL, NULL, NULL, NULL),
+    (76, 300, 0.2, 1, NULL, NULL, NULL, NULL),
+    (76, 400, 0.1, 1, NULL, NULL, NULL, NULL),
+    -- M1 Garand FMJ
+    (77,  10, 22.0, 8, NULL, NULL, NULL, NULL),
+    (77,  20, 21.0, 8, NULL, NULL, NULL, NULL),
+    (77,  40, 20.0, 8, NULL, NULL, NULL, NULL),
+    (77,  70, 18.0, 8, NULL, NULL, NULL, NULL),
+    (77, 100, 17.0, 7, NULL, NULL, NULL, NULL),
+    (77, 200, 13.0, 7, NULL, NULL, NULL, NULL),
+    (77, 300, 9.3, 6, NULL, NULL, NULL, NULL),
+    (77, 400, 6.9, 6, NULL, NULL, NULL, NULL),
+    -- M14 FMJ
+    (78,  10, 19.0, 8, NULL, NULL, NULL, NULL),
+    (78,  20, 19.0, 8, NULL, NULL, NULL, NULL),
+    (78,  40, 17.0, 8, NULL, NULL, NULL, NULL),
+    (78,  70, 16.0, 7, NULL, NULL, NULL, NULL),
+    (78, 100, 14.0, 7, NULL, NULL, NULL, NULL),
+    (78, 200, 10.0, 7, NULL, NULL, NULL, NULL),
+    (78, 300, 7.3, 6, NULL, NULL, NULL, NULL),
+    (78, 400, 5.3, 5, NULL, NULL, NULL, NULL),
+    -- FAMAS FMJ
+    (79,  10, 15.0, 6, NULL, NULL, NULL, NULL),
+    (79,  20, 15.0, 6, NULL, NULL, NULL, NULL),
+    (79,  40, 13.0, 6, NULL, NULL, NULL, NULL),
+    (79,  70, 12.0, 6, NULL, NULL, NULL, NULL),
+    (79, 100, 10.0, 5, NULL, NULL, NULL, NULL),
+    (79, 200, 6.4, 4, NULL, NULL, NULL, NULL),
+    (79, 300, 4.1, 3, NULL, NULL, NULL, NULL),
+    (79, 400, 2.6, 2, NULL, NULL, NULL, NULL),
+    -- FAMAS JHP
+    (80,  10, 15.0, 8, NULL, NULL, NULL, NULL),
+    (80,  20, 14.0, 8, NULL, NULL, NULL, NULL),
+    (80,  40, 13.0, 7, NULL, NULL, NULL, NULL),
+    (80,  70, 11.0, 7, NULL, NULL, NULL, NULL),
+    (80, 100, 9.7, 7, NULL, NULL, NULL, NULL),
+    (80, 200, 6.2, 6, NULL, NULL, NULL, NULL),
+    (80, 300, 3.9, 4, NULL, NULL, NULL, NULL),
+    (80, 400, 2.5, 3, NULL, NULL, NULL, NULL),
+    -- FAMAS AP
+    (81,  10, 22.0, 6, NULL, NULL, NULL, NULL),
+    (81,  20, 21.0, 6, NULL, NULL, NULL, NULL),
+    (81,  40, 19.0, 6, NULL, NULL, NULL, NULL),
+    (81,  70, 16.0, 5, NULL, NULL, NULL, NULL),
+    (81, 100, 14.0, 5, NULL, NULL, NULL, NULL),
+    (81, 200, 9.1, 4, NULL, NULL, NULL, NULL),
+    (81, 300, 5.8, 3, NULL, NULL, NULL, NULL),
+    (81, 400, 3.7, 2, NULL, NULL, NULL, NULL),
+    -- Marlin M1894 (.357) JSP
+    (82,  10, 5.6, 7, NULL, NULL, NULL, NULL),
+    (82,  20, 5.3, 7, NULL, NULL, NULL, NULL),
+    (82,  40, 4.8, 7, NULL, NULL, NULL, NULL),
+    (82,  70, 4.1, 6, NULL, NULL, NULL, NULL),
+    (82, 100, 3.5, 6, NULL, NULL, NULL, NULL),
+    (82, 200, 2.0, 3, NULL, NULL, NULL, NULL),
+    (82, 300, 1.2, 1, NULL, NULL, NULL, NULL),
+    (82, 400, 0.7, 1, NULL, NULL, NULL, NULL),
+    -- Marlin M1894 (.44) JSP
+    (83,  10, 7.7, 9, NULL, NULL, NULL, NULL),
+    (83,  20, 7.3, 9, NULL, NULL, NULL, NULL),
+    (83,  40, 6.6, 8, NULL, NULL, NULL, NULL),
+    (83,  70, 5.6, 8, NULL, NULL, NULL, NULL),
+    (83, 100, 4.8, 8, NULL, NULL, NULL, NULL),
+    (83, 200, 2.9, 6, NULL, NULL, NULL, NULL),
+    (83, 300, 1.8, 3, NULL, NULL, NULL, NULL),
+    (83, 400, 1.1, 1, NULL, NULL, NULL, NULL);
 
 INSERT INTO magazine (id, name, feed_type, capacity, weight) VALUES
     (1 , 'M1911A1', 'Mag', 7, 0.7),
@@ -1042,7 +1554,22 @@ INSERT INTO magazine (id, name, feed_type, capacity, weight) VALUES
     (23, 'AKM', 'Mag', 30, 1.8),
     (24, 'FN FAL', 'Mag', 20, 1.4),
     (25, 'STANAG', 'Mag', 20, 0.7),
-    (26, 'STANAG', 'Mag', 30, 1.0);
+    (26, 'STANAG', 'Mag', 30, 1.0),
+    (27, 'Colt Python', 'SL', 6, 0.37),
+    (28, 'S&W M29', 'SL', 6, 0.5),
+    (29, 'Glock Model 17', 'Mag', 17, 0.55),
+    (30, 'Makarov PM', 'Mag', 8, 0.4),
+    (31, 'Walther PPK', 'Mag', 7, 0.31),
+    (32, 'AKS-74U', 'Mag', 30, 1.1),
+    (33, 'F1', 'Mag', 34, 1.4),
+    (34, 'MAT 49', 'Mag', 32, 1.5),
+    (35, 'Owen Mk1', 'Mag', 34, 1.4),
+    (36, 'PPSh 41', 'Drm', 71, 2.4),
+    (37, 'PPS 43', 'Mag', 35, 1.2),
+    (38, 'Thompson M1A1', 'Mag', 30, 2.0),
+    (39, 'M1 Garand', 'Cp', 8, 0.52),
+    (40, 'M14', 'Mag', 20, 1.6),
+    (41, 'FAMAS', 'Mag', 25, 1.0);
 
 INSERT INTO firearm_magazine (firearm_id, magazine_id) VALUES
     (1 , 1),
@@ -1079,4 +1606,21 @@ INSERT INTO firearm_magazine (firearm_id, magazine_id) VALUES
     (27, 26),
     -- FN FNC uses STANAG; card AW 1.2 used only for base weight
     (28, 25),
-    (28, 26);
+    (28, 26),
+    (31, 27),
+    (32, 27),
+    (33, 28),
+    (34, 28),
+    (35, 29),
+    (36, 30),
+    (37, 31),
+    (38, 32),
+    (39, 33),
+    (40, 34),
+    (41, 35),
+    (42, 36),
+    (43, 37),
+    (44, 38),
+    (45, 39),
+    (46, 40),
+    (47, 41);
