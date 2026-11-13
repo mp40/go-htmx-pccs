@@ -40,7 +40,7 @@ func getGearHandler(render getGearPageRender, identity getGearPageIdentity, gear
 
 		firearms, err := gearService.GetFirearms()
 		if err != nil {
-			slog.Error("state get equipment", "err", err)
+			slog.Error("state get firearms", "err", err)
 			// TODO decide what to do on firearm error
 			// for now empty list is OK
 			// in future maybe also error msg for UI

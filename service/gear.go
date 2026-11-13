@@ -2,7 +2,6 @@ package service
 
 import (
 	"fmt"
-	"reflect"
 
 	"github.com/mp40/go-htmx-pccs/domain"
 	"github.com/mp40/go-htmx-pccs/state"
@@ -140,23 +139,19 @@ func mapRangeBrackets(rawBallistics []state.Ballistics) []int {
 }
 
 func mapAimTimesToIntSlice(rawAims state.AimTime) []int {
-	aims := []int{}
+	aims := []int{rawAims.AimTime1, rawAims.AimTime2, rawAims.AimTime3, rawAims.AimTime4}
 
-	values := reflect.Indirect(reflect.ValueOf(rawAims))
-	for i := 1; i < values.NumField(); i++ {
-		f := values.Field(i)
-		switch {
-		case f.Kind() == reflect.Int:
-			aims = append(aims, int(f.Int()))
-		case f.Kind() == reflect.Ptr && f.Type().Elem().Kind() == reflect.Int:
-			if f.IsNil() {
-				break
-			} else {
-				aims = append(aims, int(f.Elem().Int()))
-			}
-		}
-
+	optional := []*int{
+		rawAims.AimTime5, rawAims.AimTime6, rawAims.AimTime7, rawAims.AimTime8,
+		rawAims.AimTime9, rawAims.AimTime10, rawAims.AimTime11, rawAims.AimTime12,
 	}
+	for _, at := range optional {
+		if at == nil {
+			break
+		}
+		aims = append(aims, *at)
+	}
+
 	return aims
 }
 
@@ -164,7 +159,7 @@ func mapBallistics(rawBallistics []state.Ballistics) (domain.Ballistics, error) 
 	b := domain.Ballistics{}
 
 	for _, r := range rawBallistics {
-		b.BalisticAccuracy = append(b.BalisticAccuracy, r.BA)
+		b.BallisticAccuracy = append(b.BallisticAccuracy, r.BA)
 		b.TimeOfFlight = append(b.TimeOfFlight, r.TOF)
 
 		if r.MA != nil {
@@ -172,7 +167,7 @@ func mapBallistics(rawBallistics []state.Ballistics) (domain.Ballistics, error) 
 		}
 	}
 
-	if len(b.MinimumArc) > 0 && len(b.MinimumArc) != len(b.BalisticAccuracy) {
+	if len(b.MinimumArc) > 0 && len(b.MinimumArc) != len(b.BallisticAccuracy) {
 		return b, fmt.Errorf("unexpected ballistic data")
 	}
 

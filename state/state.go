@@ -9,7 +9,7 @@ import (
 type Firearm struct {
 	ID                 int      `json:"id"`
 	Name               string   `json:"name"`
-	Calibre            string   `json:"string"`
+	Calibre            string   `json:"calibre"`
 	BaseWeight         float32  `json:"base_weight"`
 	Length             float32  `json:"length"`
 	LengthStockFolded  *float32 `json:"length_stock_folded"`

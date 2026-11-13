@@ -149,9 +149,9 @@ func TestGetEnrichedFirearmByID(t *testing.T) {
 			AimTimes:      []int{20, 15, 14, 13, 12, 11, 10, 9, 8},
 			RangeBrackets: []int{10, 20, 40, 70, 100, 200, 300, 400},
 			Ballistics: domain.Ballistics{
-				BalisticAccuracy: []int{61, 60, 59, 55, 50, 45, 40, 30},
-				TimeOfFlight:     []int{0, 0, 0, 1, 2, 3, 4, 5},
-				MinimumArc:       []float32{0.3, 0.6, 1, 2, 3, 6, 9, 12},
+				BallisticAccuracy: []int{61, 60, 59, 55, 50, 45, 40, 30},
+				TimeOfFlight:      []int{0, 0, 0, 1, 2, 3, 4, 5},
+				MinimumArc:        []float32{0.3, 0.6, 1, 2, 3, 6, 9, 12},
 			},
 			Ammunition: []domain.Ammunition{
 				{
@@ -234,8 +234,8 @@ func TestGetEnrichedFirearmByID(t *testing.T) {
 			AimTimes:      []int{20, 15, 10, 5},
 			RangeBrackets: []int{1, 2, 4, 6, 8, 10, 15, 20, 30, 40, 80},
 			Ballistics: domain.Ballistics{
-				BalisticAccuracy: []int{61, 52, 42, 36, 32, 29, 23, 19, 13, 9, -1},
-				TimeOfFlight:     []int{0, 0, 0, 0, 0, 0, 1, 1, 1, 2, 4},
+				BallisticAccuracy: []int{61, 52, 42, 36, 32, 29, 23, 19, 13, 9, -1},
+				TimeOfFlight:      []int{0, 0, 0, 0, 0, 0, 1, 1, 1, 2, 4},
 			},
 			Ammunition: []domain.Ammunition{
 				{

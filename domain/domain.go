@@ -112,16 +112,15 @@ type Magazine struct {
 }
 
 type Ballistics struct {
-	BalisticAccuracy []int
-	TimeOfFlight     []int
-	MinimumArc       []float32
+	BallisticAccuracy []int
+	TimeOfFlight      []int
+	MinimumArc        []float32
 }
 
 type Ammunition struct {
-	Type          string
-	RangeBrackets []int
-	Pen           []float32
-	DC            []int
+	Type string
+	Pen  []float32
+	DC   []int
 	*Pellet
 }
 

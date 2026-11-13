@@ -60,7 +60,7 @@ func getGearFirearmHandler(render getGearFirearmRender, gearService getGearFirea
 		err = render.RenderEnrichedFirearm(w, *firearm)
 		if err != nil {
 			slog.Error("server error rendering", "err", err)
-			w.WriteHeader(http.StatusInternalServerError)
+			http.Error(w, "internal server error", http.StatusInternalServerError)
 			return
 		}
 	})
