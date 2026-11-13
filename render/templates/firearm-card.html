@@ -10,25 +10,34 @@
       <div class="firearm-panel-head">Data</div>
       <div>
         <span>L</span>
-        <span>{{.Firearm.Length}}{{with .Firearm.LengthStockFolded}}/{{.}}{{end}}</span>
+        <span
+          >{{.Firearm.Length}}{{with
+          .Firearm.LengthStockFolded}}/{{.}}{{end}}</span
+        >
       </div>
       <div><span>BW</span><span>{{.Firearm.BaseWeight}}</span></div>
       <div><span>RT</span><span>{{.Firearm.ReloadTime}}</span></div>
       <div>
         <span>ROF</span>
         <span>
-          {{- if .Firearm.ManualCycleTime}}{{.Firearm.ManualCycleTime}}{{else}}*{{end -}}
-          {{- if .Firearm.BurstRounds}}*{{end -}}
-          {{- if .Firearm.FullAutoRateOfFire}}{{.Firearm.FullAutoRateOfFire}}{{end -}}
+          {{- if
+          .Firearm.ManualCycleTime}}{{.Firearm.ManualCycleTime}}{{else}}*{{end
+          -}} {{- if .Firearm.BurstRounds}}*{{end -}} {{- if
+          .Firearm.FullAutoRateOfFire}}{{.Firearm.FullAutoRateOfFire}}{{end -}}
         </span>
       </div>
       <div>
         <span>Cap</span>
-        <span>{{if .Firearm.InternalCapacity}}{{.Firearm.InternalCapacity}}{{else}}-{{end}}</span>
+        <span
+          >{{if
+          .Firearm.InternalCapacity}}{{.Firearm.InternalCapacity}}{{else}}-{{end}}</span
+        >
       </div>
       <div>
         <span>AW</span>
-        <span>{{if .Firearm.RoundWeight}}{{.Firearm.RoundWeight}}<br />Rnd{{else}}-{{end}}</span>
+        <span
+          >{{if .Firearm.RoundWeight}}{{.Firearm.RoundWeight}}<br />Rnd{{else}}-{{end}}</span
+        >
       </div>
       <div><span>KD</span><span>{{.Firearm.KnockDown}}</span></div>
       <div><span>SAB</span><span>{{.Firearm.SAB}}</span></div>
@@ -99,6 +108,19 @@
           </tr>
         </tbody>
       </table>
+    </div>
+  </div>
+  <div class="firearm-additional-data">
+    <div>
+      {{if .Firearm.AvailableMagazines}}
+      <div>Available Reloads</div>
+      {{range .Firearm.AvailableMagazines}}
+      <div>Type: {{.Type}}, Cap: {{.Capacity}}, Lbs: {{.Weight}}</div>
+      {{end}} {{end}}
+    </div>
+    <div>
+      {{- if and (not .Firearm.SemiAutomatic) .Firearm.FullAutoRateOfFire}} Full
+      Auto Only {{- end}}
     </div>
   </div>
 </article>
