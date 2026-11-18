@@ -140,12 +140,25 @@
       {{if .Firearm.AvailableMagazines}}
       <div>Available Reloads</div>
       {{range .Firearm.AvailableMagazines}}
-      <div>Type: {{.Type}}, Cap: {{.Capacity}}, Lbs: {{.Weight}}</div>
+      <div>{{.Name}} Type: {{.Type}}, Cap: {{.Capacity}}, Lbs: {{.Weight}}</div>
       {{end}} {{end}}
     </div>
     <div>
-      {{- if and (not .Firearm.SemiAutomatic) .Firearm.FullAutoRateOfFire}} Full
-      Auto Only {{- end}}
+      {{if .Firearm.AvailableOptics}}
+      <div>Available Optics</div>
+      {{range .Firearm.AvailableOptics}}
+      <div>
+        Name: {{.Name}}, FoV: {{.FieldOfView}}, Min Range: {{.MinRange}}
+      </div>
+      {{end}} {{end}}
+    </div>
+    <div>
+      {{- if .Firearm.Bipod}}
+      <div>Bipod</div>
+      {{- end}} {{- if and (not .Firearm.SemiAutomatic)
+      .Firearm.FullAutoRateOfFire}}
+      <div>Full Auto Only</div>
+      {{- end}}
     </div>
   </div>
 </article>
