@@ -83,6 +83,7 @@ type EnrichedFirearmDTO struct {
 	Ballistics
 	Ammunition         []Ammunition
 	AvailableMagazines []Magazine
+	AvailableOptics    []Optic
 }
 
 type FirearmDTO struct {
@@ -101,6 +102,7 @@ type FirearmDTO struct {
 	FullAutoRateOfFire *int     `json:"full_auto_rof"`
 	KnockDown          int      `json:"knock_down"`
 	SAB                int      `json:"sab"`
+	Bipod              bool     `json:"bipod"`
 }
 
 type Magazine struct {
@@ -129,6 +131,15 @@ type Pellet struct {
 	BasePelletHitChance []*int
 	BasePelletHits      []*int
 	PelletRadius        []float32
+}
+
+type Optic struct {
+	ID              int
+	Name            string
+	Weight          float32
+	FieldOfView     int
+	MinRange        int
+	AimTimeModifier []int
 }
 
 func (l *Load) calculateLoadWeight() float32 {

@@ -19,6 +19,7 @@ type equipmentState interface {
 	GetFirearmBallistics(firearmID int) ([]state.Ballistics, error)
 	GetFirearmAmmo(firearmID int) ([]state.Ammunition, error)
 	GetFirearmMagazines(firearmID int) ([]state.Magazine, error)
+	GetFirearmOptics(firearmID int) ([]state.Optic, error)
 }
 
 func NewGearService(state equipmentState) *GearService {
@@ -79,7 +80,12 @@ func (g *GearService) GetEnrichedFirearmByID(id int) (*domain.EnrichedFirearmDTO
 		return nil, err
 	}
 
-	enriched, err := mapStateToEnrichedFirearm(*firearm, *aims, ballistics, ammo, mags)
+	optics, err := g.state.GetFirearmOptics(id)
+	if err != nil {
+		return nil, err
+	}
+
+	enriched, err := mapStateToEnrichedFirearm(*firearm, *aims, ballistics, ammo, mags, optics)
 	if err != nil {
 		return nil, err
 	}
@@ -104,11 +110,12 @@ func mapStateFirearmToDomainFirearm(raw state.Firearm) domain.FirearmDTO {
 		FullAutoRateOfFire: raw.FullAutoRateOfFire,
 		KnockDown:          raw.KnockDown,
 		SAB:                raw.SAB,
+		Bipod:              raw.Bipod,
 	}
 	return mapped
 }
 
-func mapStateToEnrichedFirearm(rawFirearm state.Firearm, rawAims state.AimTime, rawBallistics []state.Ballistics, rawAmmo []state.Ammunition, rawMags []state.Magazine) (domain.EnrichedFirearmDTO, error) {
+func mapStateToEnrichedFirearm(rawFirearm state.Firearm, rawAims state.AimTime, rawBallistics []state.Ballistics, rawAmmo []state.Ammunition, rawMags []state.Magazine, rawOptics []state.Optic) (domain.EnrichedFirearmDTO, error) {
 	firearmDTO := mapStateFirearmToDomainFirearm(rawFirearm)
 
 	ballistics, err := mapBallistics(rawBallistics)
@@ -123,6 +130,7 @@ func mapStateToEnrichedFirearm(rawFirearm state.Firearm, rawAims state.AimTime, 
 		Ballistics:         ballistics,
 		Ammunition:         mapAmmo(rawAmmo),
 		AvailableMagazines: mapMags(rawMags),
+		AvailableOptics:    mapOptics(rawOptics),
 	}
 
 	return enriched, nil
@@ -142,8 +150,8 @@ func mapAimTimesToIntSlice(rawAims state.AimTime) []int {
 	aims := []int{rawAims.AimTime1, rawAims.AimTime2, rawAims.AimTime3, rawAims.AimTime4}
 
 	optional := []*int{
-		rawAims.AimTime5, rawAims.AimTime6, rawAims.AimTime7, rawAims.AimTime8,
-		rawAims.AimTime9, rawAims.AimTime10, rawAims.AimTime11, rawAims.AimTime12,
+		rawAims.AimTime5, rawAims.AimTime6, rawAims.AimTime7, rawAims.AimTime8, rawAims.AimTime9,
+		rawAims.AimTime10, rawAims.AimTime11, rawAims.AimTime12, rawAims.AimTime13,
 	}
 	for _, at := range optional {
 		if at == nil {
@@ -214,4 +222,20 @@ func mapMags(rawMags []state.Magazine) []domain.Magazine {
 		mags = append(mags, m)
 	}
 	return mags
+}
+
+func mapOptics(rawOptics []state.Optic) []domain.Optic {
+	optics := []domain.Optic{}
+	for _, o := range rawOptics {
+		o := domain.Optic{
+			ID:              o.ID,
+			Name:            o.Name,
+			Weight:          o.Weight,
+			FieldOfView:     o.FieldOfView,
+			MinRange:        o.MinRange,
+			AimTimeModifier: []int{o.AimTime1Mod, o.AimTime2Mod, o.AimTime3Mod, o.AimTime4Mod, o.AimTime5Mod, o.AimTime6Mod, o.AimTime7Mod, o.AimTime8Mod, o.AimTime9Mod, o.AimTime10Mod, o.AimTime11Mod, o.AimTime12Mod, o.AimTime13Mod},
+		}
+		optics = append(optics, o)
+	}
+	return optics
 }

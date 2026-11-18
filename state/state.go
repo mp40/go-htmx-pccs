@@ -23,6 +23,7 @@ type Firearm struct {
 	KnockDown          int      `json:"knock_down"`
 	SAB                int      `json:"sab"`
 	AimTimeID          int      `json:"aim_time_id"`
+	Bipod              bool     `json:"bipod"`
 }
 
 type AimTime struct {
@@ -39,6 +40,7 @@ type AimTime struct {
 	AimTime10 *int `json:"at_10"`
 	AimTime11 *int `json:"at_11"`
 	AimTime12 *int `json:"at_12"`
+	AimTime13 *int `json:"at_13"`
 }
 
 type Ballistics struct {
@@ -51,7 +53,6 @@ type Ballistics struct {
 
 type Ammunition struct {
 	ID                  int      `json:"id"`
-	FirearmID           int      `json:"firearm_id"`
 	Range               int      `json:"range_hexes"`
 	Type                string   `json:"type"`
 	Pen                 float32  `json:"pen"`
@@ -63,12 +64,32 @@ type Ammunition struct {
 }
 
 type Magazine struct {
-	ID        int     `json:"magazine_id"`
-	FirearmID int     `json:"firearm_id"`
-	Name      string  `json:"name"`
-	FeedType  string  `json:"feed_type"`
-	Capacity  int     `json:"capacity"`
-	Weight    float32 `json:"weight"`
+	ID       int     `json:"magazine_id"`
+	Name     string  `json:"name"`
+	FeedType string  `json:"feed_type"`
+	Capacity int     `json:"capacity"`
+	Weight   float32 `json:"weight"`
+}
+
+type Optic struct {
+	ID           int     `json:"id"`
+	Name         string  `json:"name"`
+	Weight       float32 `json:"weight"`
+	FieldOfView  int     `json:"fov"`
+	MinRange     int     `json:"minimum_range"`
+	AimTime1Mod  int     `json:"at_1_mod"`
+	AimTime2Mod  int     `json:"at_2_mod"`
+	AimTime3Mod  int     `json:"at_3_mod"`
+	AimTime4Mod  int     `json:"at_4_mod"`
+	AimTime5Mod  int     `json:"at_5_mod"`
+	AimTime6Mod  int     `json:"at_6_mod"`
+	AimTime7Mod  int     `json:"at_7_mod"`
+	AimTime8Mod  int     `json:"at_8_mod"`
+	AimTime9Mod  int     `json:"at_9_mod"`
+	AimTime10Mod int     `json:"at_10_mod"`
+	AimTime11Mod int     `json:"at_11_mod"`
+	AimTime12Mod int     `json:"at_12_mod"`
+	AimTime13Mod int     `json:"at_13_mod"`
 }
 
 type Equipment struct {
@@ -92,7 +113,7 @@ func NewStateService(db *sql.DB) *State {
 }
 
 func (s *State) GetFirearms() ([]Firearm, error) {
-	rows, err := s.db.Query("SELECT id, name, calibre, base_weight, length, length_stock_folded, internal_capacity, round_weight, reload_time, manual_cycle_time, semi_automatic, burst_rounds, full_auto_rof, knock_down, sab, aim_time_id FROM firearm")
+	rows, err := s.db.Query("SELECT id, name, calibre, base_weight, length, length_stock_folded, internal_capacity, round_weight, reload_time, manual_cycle_time, semi_automatic, burst_rounds, full_auto_rof, knock_down, sab, aim_time_id, bipod FROM firearm ORDER BY name")
 	if err != nil {
 		return nil, err
 	}
@@ -102,7 +123,7 @@ func (s *State) GetFirearms() ([]Firearm, error) {
 
 	for rows.Next() {
 		f := Firearm{}
-		err := rows.Scan(&f.ID, &f.Name, &f.Calibre, &f.BaseWeight, &f.Length, &f.LengthStockFolded, &f.InternalCapacity, &f.RoundWeight, &f.ReloadTime, &f.ManualCycleTime, &f.SemiAutomatic, &f.BurstRounds, &f.FullAutoRateOfFire, &f.KnockDown, &f.SAB, &f.AimTimeID)
+		err := rows.Scan(&f.ID, &f.Name, &f.Calibre, &f.BaseWeight, &f.Length, &f.LengthStockFolded, &f.InternalCapacity, &f.RoundWeight, &f.ReloadTime, &f.ManualCycleTime, &f.SemiAutomatic, &f.BurstRounds, &f.FullAutoRateOfFire, &f.KnockDown, &f.SAB, &f.AimTimeID, &f.Bipod)
 		if err != nil {
 			return nil, err
 		}
@@ -120,8 +141,8 @@ func (s *State) GetFirearms() ([]Firearm, error) {
 
 func (s *State) GetFirearmByID(firearmID int) (*Firearm, error) {
 	f := Firearm{}
-	err := s.db.QueryRow("SELECT id, name, calibre, base_weight, length, length_stock_folded, internal_capacity, round_weight, reload_time, manual_cycle_time, semi_automatic, burst_rounds, full_auto_rof, knock_down, sab, aim_time_id FROM firearm WHERE id = ?", firearmID).
-		Scan(&f.ID, &f.Name, &f.Calibre, &f.BaseWeight, &f.Length, &f.LengthStockFolded, &f.InternalCapacity, &f.RoundWeight, &f.ReloadTime, &f.ManualCycleTime, &f.SemiAutomatic, &f.BurstRounds, &f.FullAutoRateOfFire, &f.KnockDown, &f.SAB, &f.AimTimeID)
+	err := s.db.QueryRow("SELECT id, name, calibre, base_weight, length, length_stock_folded, internal_capacity, round_weight, reload_time, manual_cycle_time, semi_automatic, burst_rounds, full_auto_rof, knock_down, sab, aim_time_id, bipod FROM firearm WHERE id = ?", firearmID).
+		Scan(&f.ID, &f.Name, &f.Calibre, &f.BaseWeight, &f.Length, &f.LengthStockFolded, &f.InternalCapacity, &f.RoundWeight, &f.ReloadTime, &f.ManualCycleTime, &f.SemiAutomatic, &f.BurstRounds, &f.FullAutoRateOfFire, &f.KnockDown, &f.SAB, &f.AimTimeID, &f.Bipod)
 	if err == sql.ErrNoRows {
 		return nil, nil
 	}
@@ -134,8 +155,8 @@ func (s *State) GetFirearmByID(firearmID int) (*Firearm, error) {
 
 func (s *State) GetFirearmAimTimesByID(aimTimeID int) (*AimTime, error) {
 	at := AimTime{}
-	err := s.db.QueryRow("SELECT id, at_1, at_2, at_3, at_4, at_5, at_6, at_7, at_8, at_9, at_10, at_11, at_12 FROM aim_time WHERE id = ?", aimTimeID).
-		Scan(&at.ID, &at.AimTime1, &at.AimTime2, &at.AimTime3, &at.AimTime4, &at.AimTime5, &at.AimTime6, &at.AimTime7, &at.AimTime8, &at.AimTime9, &at.AimTime10, &at.AimTime11, &at.AimTime12)
+	err := s.db.QueryRow("SELECT id, at_1, at_2, at_3, at_4, at_5, at_6, at_7, at_8, at_9, at_10, at_11, at_12, at_13 FROM aim_time WHERE id = ?", aimTimeID).
+		Scan(&at.ID, &at.AimTime1, &at.AimTime2, &at.AimTime3, &at.AimTime4, &at.AimTime5, &at.AimTime6, &at.AimTime7, &at.AimTime8, &at.AimTime9, &at.AimTime10, &at.AimTime11, &at.AimTime12, &at.AimTime13)
 	if err == sql.ErrNoRows {
 		return nil, nil
 	}
@@ -148,8 +169,8 @@ func (s *State) GetFirearmAimTimesByID(aimTimeID int) (*AimTime, error) {
 
 func (s *State) GetFirearmBallistics(firearmID int) ([]Ballistics, error) {
 	rows, err := s.db.Query("SELECT firearm_id, range_hexes, ba, tof, ma FROM firearm_ballistics_range WHERE firearm_id = ? ORDER BY range_hexes ASC", firearmID)
-	if err == sql.ErrNoRows {
-		return nil, nil
+	if err != nil {
+		return nil, err
 	}
 	defer rows.Close()
 
@@ -172,7 +193,7 @@ func (s *State) GetFirearmBallistics(firearmID int) ([]Ballistics, error) {
 }
 
 func (s *State) GetFirearmAmmo(firearmID int) ([]Ammunition, error) {
-	rows, err := s.db.Query("SELECT fa.id, fa.firearm_id, fa.type, r.range_hexes, r.pen, r.dc, r.salm, r.bphc, r.bphc_hits, r.pr FROM firearm_ammo fa INNER JOIN firearm_ammo_range r ON fa.id = r.firearm_ammo_id WHERE fa.firearm_id = ? ORDER BY id, range_hexes", firearmID)
+	rows, err := s.db.Query("SELECT fa.id, fa.type, r.range_hexes, r.pen, r.dc, r.salm, r.bphc, r.bphc_hits, r.pr FROM firearm_ammo fa INNER JOIN firearm_ammo_range r ON fa.id = r.firearm_ammo_id WHERE fa.firearm_id = ? ORDER BY fa.id, r.range_hexes", firearmID)
 	if err != nil {
 		return nil, err
 	}
@@ -182,7 +203,7 @@ func (s *State) GetFirearmAmmo(firearmID int) ([]Ammunition, error) {
 
 	for rows.Next() {
 		a := Ammunition{}
-		err := rows.Scan(&a.ID, &a.FirearmID, &a.Type, &a.Range, &a.Pen, &a.DC, &a.SALM, &a.BasePelletHitChance, &a.PelletHits, &a.PelletRadius)
+		err := rows.Scan(&a.ID, &a.Type, &a.Range, &a.Pen, &a.DC, &a.SALM, &a.BasePelletHitChance, &a.PelletHits, &a.PelletRadius)
 		if err != nil {
 			return nil, err
 		}
@@ -199,7 +220,7 @@ func (s *State) GetFirearmAmmo(firearmID int) ([]Ammunition, error) {
 }
 
 func (s *State) GetFirearmMagazines(firearmID int) ([]Magazine, error) {
-	rows, err := s.db.Query("SELECT fm.magazine_id, fm.firearm_id, m.name, m.feed_type, m.capacity, m.weight FROM firearm_magazine fm INNER JOIN magazine m ON fm.magazine_id = m.id WHERE fm.firearm_id = ?", firearmID)
+	rows, err := s.db.Query("SELECT fm.magazine_id, m.name, m.feed_type, m.capacity, m.weight FROM firearm_magazine fm INNER JOIN magazine m ON fm.magazine_id = m.id WHERE fm.firearm_id = ? ORDER BY m.capacity", firearmID)
 	if err != nil {
 		return nil, err
 	}
@@ -209,7 +230,7 @@ func (s *State) GetFirearmMagazines(firearmID int) ([]Magazine, error) {
 
 	for rows.Next() {
 		m := Magazine{}
-		err := rows.Scan(&m.ID, &m.FirearmID, &m.Name, &m.FeedType, &m.Capacity, &m.Weight)
+		err := rows.Scan(&m.ID, &m.Name, &m.FeedType, &m.Capacity, &m.Weight)
 		if err != nil {
 			return nil, err
 		}
@@ -223,6 +244,33 @@ func (s *State) GetFirearmMagazines(firearmID int) ([]Magazine, error) {
 	}
 
 	return mags, nil
+}
+
+func (s *State) GetFirearmOptics(firearmID int) ([]Optic, error) {
+	rows, err := s.db.Query("SELECT o.id, o.name, o.weight, o.fov, o.minimum_range, o.at_1_mod, o.at_2_mod, o.at_3_mod, o.at_4_mod, o.at_5_mod, o.at_6_mod, o.at_7_mod, o.at_8_mod, o.at_9_mod, o.at_10_mod, o.at_11_mod, o.at_12_mod, o.at_13_mod FROM optic o INNER JOIN firearm_optic fo ON fo.optic_id = o.id WHERE fo.firearm_id = ?", firearmID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	optics := []Optic{}
+
+	for rows.Next() {
+		o := Optic{}
+		err := rows.Scan(&o.ID, &o.Name, &o.Weight, &o.FieldOfView, &o.MinRange, &o.AimTime1Mod, &o.AimTime2Mod, &o.AimTime3Mod, &o.AimTime4Mod, &o.AimTime5Mod, &o.AimTime6Mod, &o.AimTime7Mod, &o.AimTime8Mod, &o.AimTime9Mod, &o.AimTime10Mod, &o.AimTime11Mod, &o.AimTime12Mod, &o.AimTime13Mod)
+		if err != nil {
+			return nil, err
+		}
+
+		optics = append(optics, o)
+	}
+
+	err = rows.Err()
+	if err != nil {
+		return nil, err
+	}
+
+	return optics, nil
 }
 
 func (s *State) GetEquipment() ([]Equipment, error) {

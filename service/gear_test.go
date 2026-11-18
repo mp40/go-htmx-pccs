@@ -16,6 +16,7 @@ type stubGearState struct {
 	ballistics []state.Ballistics
 	ammunition []state.Ammunition
 	magazines  []state.Magazine
+	optics     []state.Optic
 	err        error
 }
 
@@ -41,6 +42,10 @@ func (g *stubGearState) GetFirearmAmmo(firearmID int) ([]state.Ammunition, error
 
 func (g *stubGearState) GetFirearmMagazines(firearmID int) ([]state.Magazine, error) {
 	return g.magazines, g.err
+}
+
+func (g *stubGearState) GetFirearmOptics(firearmID int) ([]state.Optic, error) {
+	return g.optics, g.err
 }
 
 func (g *stubGearState) GetEquipment() ([]state.Equipment, error) {
@@ -129,6 +134,27 @@ func TestGetEnrichedFirearmByID(t *testing.T) {
 				{Name: "STANAG", FeedType: "Mag", Capacity: 20, Weight: 0.7},
 				{Name: "STANAG", FeedType: "Mag", Capacity: 30, Weight: 1},
 			},
+			optics: []state.Optic{
+				{
+					Name:         "Test Scope",
+					Weight:       1.1,
+					FieldOfView:  15,
+					MinRange:     10,
+					AimTime1Mod:  1,
+					AimTime2Mod:  1,
+					AimTime3Mod:  1,
+					AimTime4Mod:  1,
+					AimTime5Mod:  1,
+					AimTime6Mod:  2,
+					AimTime7Mod:  2,
+					AimTime8Mod:  2,
+					AimTime9Mod:  2,
+					AimTime10Mod: 3,
+					AimTime11Mod: 3,
+					AimTime12Mod: 3,
+					AimTime13Mod: 4,
+				},
+			},
 		}
 		service := NewGearService(state)
 
@@ -168,6 +194,15 @@ func TestGetEnrichedFirearmByID(t *testing.T) {
 			AvailableMagazines: []domain.Magazine{
 				{Name: "STANAG", Type: "Mag", Capacity: 20, Weight: 0.7},
 				{Name: "STANAG", Type: "Mag", Capacity: 30, Weight: 1},
+			},
+			AvailableOptics: []domain.Optic{
+				{
+					Name:            "Test Scope",
+					Weight:          1.1,
+					FieldOfView:     15,
+					MinRange:        10,
+					AimTimeModifier: []int{1, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 4},
+				},
 			},
 		}
 
@@ -256,6 +291,7 @@ func TestGetEnrichedFirearmByID(t *testing.T) {
 				},
 			},
 			AvailableMagazines: []domain.Magazine{},
+			AvailableOptics:    []domain.Optic{},
 		}
 
 		if !cmp.Equal(*got, want) {
@@ -302,7 +338,7 @@ func TestMapAimTimesToIntSlice(t *testing.T) {
 		}
 	})
 
-	t.Run("it maps manidtory aims with alll optional non nil", func(t *testing.T) {
+	t.Run("it maps manidtory aims with all optional non nil", func(t *testing.T) {
 		aims := state.AimTime{
 			AimTime1:  -10,
 			AimTime2:  -5,
@@ -316,11 +352,12 @@ func TestMapAimTimesToIntSlice(t *testing.T) {
 			AimTime10: intToPointer(15),
 			AimTime11: intToPointer(16),
 			AimTime12: intToPointer(17),
+			AimTime13: intToPointer(18),
 		}
 
 		got := mapAimTimesToIntSlice(aims)
 
-		want := []int{-10, -5, 0, 5, 10, 11, 12, 13, 14, 15, 16, 17}
+		want := []int{-10, -5, 0, 5, 10, 11, 12, 13, 14, 15, 16, 17, 18}
 
 		if !cmp.Equal(got, want) {
 			t.Errorf("unexpected result: %v", cmp.Diff(got, want))
